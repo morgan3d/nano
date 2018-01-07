@@ -171,11 +171,11 @@ var src =
     //tests.nanoReset;
     //tests.rgb;
     //tests.text;
-    //tests.spacedash;
+    tests.spacedash;
     //tests.variables;
     //tests.runner;
     //tests.hash;
-    tests.plasma;
+    //tests.plasma;
     //tests.colorgrid;
 
 function getImageData(image) {
