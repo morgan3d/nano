@@ -171,11 +171,11 @@ var src =
     //tests.nanoReset;
     //tests.rgb;
     //tests.text;
-    tests.spacedash;
+    //tests.spacedash;
     //tests.variables;
     //tests.runner;
     //tests.hash;
-    //tests.plasma;
+    tests.plasma;
     //tests.colorgrid;
 
 function getImageData(image) {
@@ -597,7 +597,6 @@ function updatePaletteToolCmd() {
 function cartridgeDragStart(event) {
     // Needed for Firefox to render the component
     event.dataTransfer.setData('text/plain', null);
-    console.log("Drag");
 }
 
 
@@ -721,7 +720,7 @@ function onPlayButton() {
     if (! coroutine) {
         // Compile as needed
         var jsoutput = compile(editor.getValue());
-        console.log(jsoutput);
+        if (location.href.substring(0, 8) === 'file:///') { console.log(jsoutput); }
         if (jsoutput === null) {
             programNumLines = 0;
             onStopButton();
