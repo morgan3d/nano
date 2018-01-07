@@ -1,0 +1,11 @@
+if(τ≟0)x=9;d=draw
+if(l>99)reset
+if(l)circ(x,99,l,8+3ξ);++l;cont
+srand()
+x=(x+2joy.x)%2⁷
+for u≤2⁷
+ v=τ-6⁵ξ;d(8,u,v,4)
+ if(|x-u|+|v-99|<6)l=1
+ s=2ξ;d(u,(2⁸ξ+τ*s)%2⁸,5+s)
+spr(5,x,98)
+spr(7,x+2,99,8)

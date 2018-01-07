@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="nano.css">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16">
+    <title>nano ᴊᴀᴍᴍᴇʀ</title>
+  </head>
+
+  <script>
+    function makeButton(label, title, onclick) {
+      document.write('<div class="button" onclick="' + (onclick || '') + '(event)" title="' + (title || label) + '"><label><span class="label">' + label + '</span></label></div>');
+    }
+    
+    function makeRadio(labelHTML, id, selected, attribs) {
+       document.write('<div id="' + id + 'Container" class="button" ' + (attribs ? attribs : '') + '><label><input name="controls" type="radio" id="' + id + '" onclick="onRadio()" autocomplete="off" value="1" ' + (selected ? 'checked="1"' : '') + '><span class="label">' + labelHTML + '</span></label></div>');
+    }
+
+    function makeToggle(labelHTML, style, title, id) {
+       id = id || title.toLowerCase();
+       document.write('<div class="button" title="' + title + '" style="' + (style ? style : '') + '" onmousedown="event.stopPropagation()"><label><input id="' + id + 'Button" autocomplete="off" type="checkbox" onclick="onToggle(this)"><span class="label">' + labelHTML + '</span></label></div>');
+    }
+  </script>
+  <body>
+    <div id="header">
+      <a href="http://casual-effects.com">CasualEffects</a> &nbsp;&nbsp; &middot; &nbsp;&nbsp; <a href="doc/specification.md.html"><span style="font-size:110%">nano</span> Manual</a> &nbsp;&nbsp; &middot; &nbsp;&nbsp; <a href="https://twitter.com/search?q=%23nanojam&src=typd">#nanojam</a>
+      &nbsp;&nbsp; &middot; &nbsp;&nbsp;
+      F6 screenshot
+      &nbsp;&nbsp; &middot; &nbsp;&nbsp;
+      F8 record GIF
+      <script>
+        //makeButton('Help', '', 'onHelp');
+        //makeToggle('Carts', undefined, 'Cartridges');
+      </script>
+      
+    </div>
+    <div class="ide" style="position:absolute; top:2px; left:10px; right:420px">
+      <div class="case">
+        <div class="title"> </div>
+        <table id="menu" cellpadding=0 cellspacing=0><tr>
+            <td style="text-align:left; padding-left: 7px; width: 30%">
+              <script>
+                makeButton('<img src="reload-icon.png" width=12>', 'Start/Restart (F5)', 'onRestartButton');
+                makeRadio('<span style="top:-2px;position:relative">▶</span>', 'playButton', false, 'title="Run (Ctrl+F5)"');
+                makeRadio('<b style="font-size:80%">||</b>', 'pauseButton', false, 'title="Pause (Ctrl+Break)"');
+                makeRadio('<span style="font-size:120%;top:-5px;position:relative">■<span>', 'stopButton', true, 'title="Stop (Shift+F5)"');
+              </script>
+            </td>
+            <td style="text-align:center">
+              <script>
+                makeToggle('ξ½≤', undefined, 'Symbols');
+                makeToggle('<img src="sprite-icon.png" width=14>', undefined, 'Sprites');
+                makeToggle('<div style="width:7px;height:11px;background:#000;display:inline-block"> </div><div title="Show Palette" style="width:7px;height:11px;background:#888;display:inline-block"> </div><div style="width:7px;height:11px;background:#CCC;display:inline-block"> </div>', undefined, 'Palette');
+              </script>
+            </td>
+            <td style="text-align:right; padding-right: 10px; width: 30%">
+              <script>
+                makeButton('<img src="undo-icon.png" width=14>', 'Undo (Ctrl-Z)', 'editor.undo();');
+                makeButton('<img src="redo-icon.png" width=14>', 'Redo (Ctrl-Y)', 'editor.redo();');
+              </script>
+              <div class="button" style="margin-left:0; margin-right:-1px" title="Load a file from the local disk" onmousedown="event.stopPropagation()"><label><input type="file" accept="nano" onchange="onImportFile(event)"><span class="label"><img src="upload-icon.png" width=14 style="margin-top:-1px"></span></label></div>
+              <script>
+                makeButton('<img src="download-icon.png" width=14 style="margin-top:-1px">', 'Download to local disk', 'onExportFile');
+              </script>
+            </td>
+        </tr></table>
+        <div class="innerCase">
+          <div class="editorScreen">
+            <div id="editor" style="width:100%"> </div>
+            <div id="error"> </div>
+          </div>
+        </div>
+        <div id="status" style="">STATUS </div>
+      </div>
+    </div>
+    <div style="position:absolute; right:0; top:0;" class="emulator" id="emulator" onclick="document.getElementById('emulatorKeyboardInput').focus()">
+      <!-- MacOS can't assign keyboard focus to a non-keyboard control, so we introduce this
+           dummy object and hide it behind the screen. It can't be a textbox because those
+           pop up keyboards on mobile and accent options when holding a key.-->
+      <input type="button" id="emulatorKeyboardInput" style="z-index:-1;position:absolute;width:10px;top:200px;left:200px">
+      <div class="case">
+        <canvas id="screen" width=256 height=256></canvas>
+      </div>
+    </div>
+
+    <div id="cartridgesWindow" class="hidden toolWindow" onmousedown='DragLib.startMoving(this,event)' onmouseup='DragLib.stopMoving(this)'>
+      <div id="load" class="tool" style="padding-top: 3px; padding-left:0px; padding-right:0px">
+        <div style="width: 100%; border-bottom: 4px solid #ddd; padding-bottom: 1px; font-weight: bold; margin-bottom:10px">Cartridges</div>
+        <div style="width: 25%">
+          <div class="button" title="Load from your Google Drive account" onmousedown="event.stopPropagation()"><label><span class="label"><img src="google-drive-icon.png" width=11> Drive</span></label></div>
+          <br/><div class="button" title="Load from browser storage" onmousedown="event.stopPropagation()"><label><span class="label">Browser</span></label></div>
+          <br/><div class="button" title="Load a nano sample program" onmousedown="event.stopPropagation()"><label><span class="label">Sample</span></label></div>
+        </div>
+        <div class="cartridge"
+             draggable="true" 
+             onmousedown="event.stopPropagation()"
+             ondragstart="cartridgeDragStart(event)"
+             style="position:absolute; top:30px; right: 10px"><div class="label">Space Dash</div></div>
+
+        <div class="cartridge"
+             draggable="true" 
+             onmousedown="event.stopPropagation()"
+             ondragstart="cartridgeDragStart(event)"
+             style="position:absolute; top:65px; right: 5px"><div class="label" style="background:linear-gradient(135deg, #00ccb1 0%,#007432 50%,#005507 51%,#00955e 100%)">Racecar</div></div>
+
+      </div>
+    </div>
+    
+    <div id="symbolsWindow" class="hidden toolWindow" onmousedown='DragLib.startMoving(this,event)' onmouseup='DragLib.stopMoving(this)'>
+      <div id="keys" class="tool"> </div>
+    </div>
+
+    <div id="paletteWindow" class="hidden toolWindow" onmousedown='DragLib.startMoving(this,event)' onmouseup='DragLib.stopMoving(this)'>
+      <div id="paletteTray" class="tool"> </div>
+    </div>
+
+    <div id="spritesWindow" class="hidden toolWindow" onmousedown='DragLib.startMoving(this,event)' onmouseup='DragLib.stopMoving(this)'>
+      <div class="tool">
+        <canvas id="spritesDisplay" width=512 height=192 onmousedown='event.stopPropagation()'></canvas>
+        <canvas id="selectedSprite" style="width:64px; height:64px; position: absolute; left:10px; bottom:10px; background:#000; border: 1px inset; border-radius: 0 0 0 8px;" width=64 height=64>
+        </canvas>
+        <div style="position: absolute; bottom: 51px; left: 82px">
+        <script>
+          makeToggle('<span style="top:-4px;font-size: 125%;position:relative">↔</span>', '', 'Flip horizontal', 'selectedSpriteHorizontal');
+          makeToggle('<span style="top:-4px;font-size: 125%;position:relative">↕</span>', '', 'Flip vertical', 'selectedSpriteVertical');
+          makeToggle('<span style="top:-6px;font-size: 190%;position:relative">⤢</span>', '', 'Flip diagonal', 'selectedSpriteDiagonal');
+        </script>
+        <datalist id="ticks">
+          <option>-180</option>
+          <option>-150</option>
+          <option>-135</option>
+          <option>-120</option>
+          <option>-90</option>
+          <option>-60</option>
+          <option>-45</option>
+          <option>-30</option>
+          <option>0</option>
+          <option>30</option>
+          <option>45</option>
+          <option>60</option>
+          <option>90</option>
+          <option>120</option>
+          <option>135</option>
+          <option>150</option>
+          <option>180</option>
+        </datalist>
+        <span style="position:relative;top:-8px;margin-left:2px;">-π</span><input oninput="redrawSelectedSprite()" onchange="redrawSelectedSprite()" style="margin-left:5px; margin-right:5px; width:130px" type="range" min="-180" max="180" value="0" id="selectedSpriteAngle" onmousedown="event.stopPropagation()" autocomplete="off" list="ticks"><span style="position:relative;top:-8px">+π</span>
+        </div>
+        <input type="text" class="cmd" id="spriteColormap" maxlength=4 style="text-align:right; position: absolute; right: 10px; width:30px; bottom: 48px" onmousedown="event.stopPropagation()" value="4321" autocomplete="off" pattern="[0-9]" type="number"  onchange="redrawSelectedSprite()" onkeyup="redrawSelectedSprite()">
+        <input type="text" class="cmd" id="spriteCmd" onmousedown="event.stopPropagation()" readonly="true">
+      </div>
+    </div>
+
+    <!--
+    <div style="position:absolute; top:580px;left:2px;right:4px;width:0px;height:0px; visibility:hidden">
+      Intermediate JavaScript
+      <div id="jsCode" style="width:100%;height:256px;border: solid 1px #000; font-family:monospace; white-space: pre; font-size:80%"> </div>
+    </div>
+    -->
+  </body>
+  
+  <iframe name="Runtime" style="visibility:hidden"> </iframe>
+  <script src="ace/ace.js"></script>
+  <script src="color.js" charset="utf-8"> </script>
+  <script src="nano-compiler.js" charset="utf-8"></script>
+  <script src="nano-ide.js" charset="utf-8"> </script>
+  <script src="gif.js" async="async"> </script>
+</html>

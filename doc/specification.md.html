@@ -1,0 +1,869 @@
+<meta charset="utf-8">
+                               **nano**
+                               *JAMMER*
+                  **Fantasy Console Specification**
+            **by [Casual Effects](https://casual-effects.com)**
+
+The
+[**<span style="font-size:118%">nano</span> <span style="font-size:90%">JAMMER</span>**](../index.html)
+is a fantasy console for tiny games with a single page of source code. It is perfect for
+tweetjams and hobby coding on a busy schedule. Features:
+
+- 64x64 pixel screen
+- 32 colors
+- 60 fps
+- 96 built-in sprites
+- 32 built-in sound effects
+- Six-button gamepad
+- External 2nd gamepad for multiplayer
+
+The nano programming language is based on mathematics notation and looks just like
+pseudocode. It is terse and context-sensitive, with indentation and newlines signifying blocks
+and ends of statements.
+
+For hassle-free hacking, nano comes with an integrated development environment that is free,
+runs in a browser, and connects to Google Drive. So, you can turn a few spare minutes on any
+device into productive coding time.
+
+Beware that nano is intended as a challenge instead of a "reasonable" development platform.
+The built-in restrictions are severe to limit the scope of your projects.  As a hobby project
+itself, the compiler and documentation are minimalist.  We're talking old-school and no
+hand-holding here. You must learn from examples, experiment, and cheerfully recover from
+cryptic failures.
+
+![](nano.jpg width=512 border=1)
+
+Examples
+=============================================================================================
+
+Space Dash
+---------------------------------------------------------------------------------------------
+
+*Space Dash* is a complete game in 274 characters (less than one tweet!) once comments and
+blank lines are removed. The player flies a space ship through enemy fighters to reach their
+home planet. It has a loading screen, background animation, controls, collision detection, and
+end-game scene.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+#nanojam SPACE DASH
+if(¬τ)x=32
+// Game-over explosion
+if(τ<0)pal(⌊8+3ξ⌋);circ(x,50,99+τ,19);cont
+
+srand(5)
+x=mid(9,x+2joy.x,54)
+for u≤64
+ // Stars
+ s=3ξ;pset(u,(2⁸ξ+τs)%2⁸,5+s)
+ // Enemy ships
+ k=⌊2ξ+1⌋;v=τk-3⁸ξ;draw(5+14k,u,v,324,4);if(|x-u|+|v-50|<6)τ=-99
+
+// Player ship
+draw(3,x,50,641)
+
+// End planet
+circ(32,τ-9³,28)
+
+// Victory screen
+if(τ≥9³)text("YOU WIN");wait;τ=0
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You're probably wondering where the main loop is. Every nano program is implicitly within an
+infinite `for` loop with variable variable `τ` that starts at zero, a clear screen command, and
+a page flip.
+
+A program always begins with `#nano` and the title of the game, which is used for the automatic
+title screen and the cartridge label.
+
+The first real line of *Space Dash* initializes the `x` position of the player spaceship. The
+second line of code is the game-over animation. Line 3 resets the random number generator `ξ`
+every frame with `srand()` so that can treat "random numbers" as stable game-level data.
+
+I see an opportunity to save two more characters in this program. Can you find it? Can you find
+*more*? With the remaining room, maybe you could remove the end planet to recover enough
+characters to add a third type of enemy, while staying in character limit of a single
+tweet. Now you're thinking like a nano programmer.
+
+
+Plasma
+------------------------------------------------------------------------------------
+
+*Plasma* is a little graphics doodle instead of a game. It shows field of animated value
+noise. The two loops iterate over each pixel, computing its value independently.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+#nanojam Plasma,1
+for y<64
+ for x<64
+  ψ=y+τ;v=mid(noise(3,⅛²x,⅛²ψ,¼³τ)+½,0,1)
+  pset(x,y,hsv(⅗v+½,(1-v)^⅗,v,x,ψ))
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The same setup is great for computing fractals and ray marching in 3D.
+  
+
+Emulator
+====================================================================================
+
+The emulator accepts keyboard and game controller input.
+On a gamepad, you must press a button before directional input will register. 
+
+Player 1
+: Directions: WASD or arrow keys
+  <br> A button: Z or Space
+  <br> B button: X or Enter 
+
+Player 2 ("external gamepad")
+: Directions: IJKL
+  <br> A button: G or ;
+  <br> B button: H or .
+
+Pressing the "run" button on the editor automatically transfers keyboard focus to the emulator.
+There is currently no way to push the small third button. 
+
+The emulator has special keyboard keys for:
+
+- F6: screenshot
+- F8: start/stop recording GIF
+
+
+Numbers
+=============================================================================================
+
+Numbers are stored internally as double-precision (64-bit) IEEE floating point
+values. Integer operators truncate the decimal places of their arguments. 
+
+The first 2^53=9007199254740992 contiguous positive integers are exactly
+representable. The largest finite representable number is about 1.7977x10^308. There are
+about seventeen decimal digits of precision on arbitrary numbers. NaN and positive and
+negative infinity are also exactly representable.
+
+Numeric literals contain an optional single plus or minus sign and one of:
+
+- a series of digits, followed by an optional decimal point and a series of digits
+- a decimal point followed by a series of digits
+- one of the following single-character fractions: `½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒`
+
+Examples of legal numeric literals:
+
+~~~~~~~~~~~~~~ none
+1
+-21.4
+0
+-0
+.0
+0.5
+-½
++72.41
+~~~~~~~~~~~~~~
+
+No hexadecimal, octal, binary, or exponential notation are allowed. Trailing decimal points
+are not allowed.
+
+
+Booleans
+==========================================================================================
+
+There are no literals for booleans. Comparison operations create booleans, but explicit
+boolean values are never required because the logical operators work with any values.
+For logical operators and flow control, `0`, `∅`, and empty string act as false.
+
+
+Strings
+==========================================================================================
+
+String literals are enclosed in double quotes (`"..."`). They may not contain newlines or
+double quotes. 
+
+The `+` operator performs string concatenation, coercing the right-hand argument if it is not a
+string. String characters are read-only substrings accessed using zero-based array syntax.
+
+The `.len` property of a string returns its length.
+
+
+Arrays
+==========================================================================================
+
+Arrays are zero-based and have dynamically typed elements.  Array literals are surrounded in
+square brackets and separated by commas. Square brackets are also used for l-value and r-value
+dereference. Arrays also support the special indexing syntax described in the Subscripts
+section.
+
+The `len` property of an Array is its length. It is both readable and writable.
+
+Array examples:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ JavaScript
+a=[8,4,1]
+a[0]="hello"
+text(a[0],32,4)
+text(a.len,32,12)
+a₁+=2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Negative indices are permitted on arrays but will not be reported in the length. Reading an
+out-of-bounds value from an Array returns the `undefined` value.
+
+
+Tables
+==========================================================================================
+
+Tables (also known as dictionaries and objects in other languages) map keys to values.
+Literals are created using key-value pairs separated by a colon, surrounded by curly braces,
+and delimited by commas. Table elements can be accessed using the string name of a property
+in square brackets or by a period. This allows them to act as objects/structs.
+
+Table examples:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ JavaScript
+t={x:3,y:10}
+t.x+=1
+text(t["x"],4,4)
+text(t.len,4,12)
+text(t.keys[0],4,20)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The `keys` property of a table returns an Array of its keys. The read-only `len` property
+of the Table directly gives the number of keys.
+
+
+Variables
+=============================================================================================
+
+Variables are implicitly declared by their first assignment. Scopes are created only by
+function definitions (specifically, loops and blocks do not create a scope the way that they do
+in C++). Because user-defined functions are not supported in the current implementation, that
+means all variables are global.
+
+Variable name identifiers consist of an optional lower-case or upper case delta, plus 1-3
+Roman letters or the unambiguous-looking Greek letters `αβδθλμξρσφψωΔΩ` by
+themselves. The identifier must not be a reserved word. No numbers, underscores, or other
+unicode characters are allowed in identifiers.
+
+Examples of legal identifiers:
+
+~~~~~~~~~~~~~~~~~~~ none
+col
+scr
+L
+on
+i
+k
+Δx
+θ
+~~~~~~~~~~~~~~~~~~~
+
+
+Reserved
+------------------------------------------------------------------------------------------
+
+These are reserved tokens that cannot be used as variable names despite meeting the other
+naming criteria:
+
+`and`, `do`, `end`, `fcn`, `for`, `go`, `if`, `len`, `let`, `NaN`, `not`, `or`, `ret`, `to`,
+`try`, `var`, `xor`, `new`, `get`, `in`, `has`, `set`
+
+Built-in functions such as `cos` that are legal identifiers can be rebound. They are not
+reserved.
+
+The words below are not legal variable names anyway because they contain illegal characters 
+or more than three letters, although the current compiler may not enforce that. They
+are reserved. All JavaScript and C++ reserved words are also reserved in nano. 
+
+`#`, `$`, `then`, `else`, `elif`, `begin`, `while`, `until`, `loop`, `?`, `:`, `break`, `cont`,
+`flip`, `reset`, `main`, `catch`, `finally`, `enum`, `class`, `throw`, `return`, `yield`,
+`await`, `auto`, `template`, `public`, `private`, `protected`, `const`, `static` `async`,
+`goto`, `print`, `window`, `location`
+
+Comments
+==========================================================================================
+
+Comments follow C/C++/Java/JavaScript syntax of `//` for single line comments and `/*`...`*/`
+for multi-line comments. 
+
+Because comments are the front line in the conflict between nano's goals of letting you write
+*short* and *readable* programs, the editor shows the total character count with comments and
+blank lines removed in the "min" section of the status bar at the bottom.
+
+
+Operators
+==========================================================================================
+
+Symbol | Meaning
+-------|-----------
+`++`   | increment
+`--`   | decrement
+`=`    | assignment
+`≟`    | equality test
+`≠`    | inequality test (also logical XOR)
+`+`    | addition and string concatenation
+`-`    | negation
+`+=`   | mutating addition, string concatenation
+`-=`   | mutating subtraction
+`<`    | less-than
+`≤`    | less-than or equal to
+`>`    | greater-than
+`≥`    | greater-than or equal to
+`^`    | exponentiation
+`*`    | multiplication (see also implicit multiplication)
+`*=`   | mutating multiplication
+`/`    | floating-point division
+`/=`   | mutating division
+`%`    | remainder (modulo)
+`%=`   | mutating modulo
+`⌊⌋`   | floor function
+`⌈⌉`   | ceiling function
+`||`   | absolute value
+`[]`   | table/array element or array constructor
+`{}`   | table constructor (follow JavaScript syntax)
+`.`    | table string-named element ("object member")
+`()`   | grouping or function call
+`∩`    | bitwise AND (bit set intersection)
+`∪`    | bitwise OR (bit set union)
+`&`    | logical AND
+`or`   | logical OR (you can often use the shorter `∪`)
+`⊕`    | bitwise XOR
+`~`    | bitwise NOT
+`¬`    | logical NOT
+`◅`    | bit shift left
+`▻`    | bit shift right
+
+There is no conditional ("ternary ?:") operator in nano. 
+
+Spaces are not required around operators in most cases, so long as the text parses
+unambiguously. For example, `1or3` is equivalent to `1 or 3`.
+
+Behaviour of these operators is consistent with the JavaScript definition of the operation
+(even though JavaScript uses different operators). For example, the <b>logical</b>-AND expression 
+`4 & 1` evaluates to `1` because `4` is non-false and the result of non-false AND another
+value is the other value.
+
+
+Exponents
+----------------------------------------------------------------------------------------------
+The characters `⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁽⁾` can form exponent expressions that operate as if
+the `^` operator or `pow` function was invoked using those expressions as a second argument.
+The entire exponent expression is implicitly surrounded in parentheses.
+
+The variables `a`, `β`, `i`, `j`, `x`, `n`, `k`, and `u` may appear only as single-character
+variable names in exponents.
+
+Exponentiation, including via exponent characters, may not be performed on a negative number
+without parentheses. This follows the rules from JavaScript's `**` operator. For example,
+`x=y-1²` is legal, but `x=y+-1²` is illegal and must be rewritten as `x=y+(-1)²` or (the
+confusing and redundant expression, if that's really what was intended) `x=y+-(1²)`.
+
+
+Subscripts
+----------------------------------------------------------------------------------------------
+
+The characters `₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₍₎` can form subscript expressions that operate as if
+the array/table element accessor was invoked using those expressions as the second
+argument.  For example, `aᵢ₊₂` is equivalent to `a[i+2]`. The entire subscript expression
+is implicitly surrounded in parentheses.
+
+The variables `a`, `β`, `i`, `j`, `x`, `n`, `k`, and `u` may appear only as single-character
+variable names in subscripts.
+
+
+Implicit Multiplication
+----------------------------------------------------------------------------------------------
+
+Multiplication is implicit wherever a number is immediately followed by a parenthesized
+expression or variable (including a function call). This also ocurs when any exponent
+appears immediately preceeding a parenthesized expression or variable. For example,
+`2x`, `x²y`, `3(x+y)`.
+
+Implicit multiplication can be used within subscripts or exponents.
+
+
+Built-in Objects
+--------------------------------------------------------------------------------------------
+
+The following are special zero-argument operators for special functions and constants. They are
+not variable names and thus cannot be redefined.
+
+Name   | Value
+-------|-----------
+`ε`    | `0.0001`
+`π`    | `3.141592653589793115997963468544185161590576171875`
+`∞`    | infinity
+`NaN`  | floating-point "not-a-number" value
+`∅`    | nil ("undefined")
+`pad`  | array gamepad of tables 
+`joy`  | shorthand for `pad₀`
+`ξ`    | random number on [0, 1), resampled every time the expression is used
+
+Each gamepad table has direction fields `x` and `y` on [-1, 1] and `a` and `b` buttons on [0, 1] for current state.
+It also indicates which directions and buttons were pressed *in the current frame* with 
+`xx`, `yy`, `aa`, and `bb`, which have the same ranges as their current-state counterparts.
+
+The main-loop variable `τ` is time, as integer number of frames. It may be reassigned 
+to reset time.
+
+
+Flow Control
+==============================================================================================
+
+The flow control statements are:
+
+- `if` conditional with optional `else` and `elif` clauses
+- `while` loop
+- `until` loop
+- `for` loop
+- `loop` infinite loop
+- `break` and `cont` within loops
+- `reset` to restart the game
+
+There is no switch, do loop, goto, try/catch, or other flow control.
+
+Whitespace is significant, as in Python. Indentation must be exactly a single space per nested
+block.
+
+For flow control purposes, the empty string, 0, and `∅` are false.  All other objects
+(including empty data structures) are true.
+
+The entire program is implicitly wrapped in an infinite loop. This loop:
+
+- flips the buffer
+- clears the screen to colour `clr` (set `clr=∅` to avoid clearing the screen)
+- increments `τ`
+
+Explicitly setting `τ=0` within the main loop resets the game on the next loop iteration. 
+There is no way to reset the game on the first iteration.
+
+Within any loop, `cont` skips to the next iteration of the loop and `break` exits the loop.
+
+Because the entire program has an implicit time loop surrounding it, executing `cont` at the
+top level outside of any explicit loop will skip to the next `τ` loop iteration.  `break` at
+top level will restart the entire program at `τ=0` with the default palette and clear color.
+
+Multi-line `if` statements may be followed by `else` and `elif` clauses. These must always be
+multi-line.
+
+`for` loops increment by 1 each iteration and always count up. The loop variable must be on the
+left-side of a single comparison loop expression or the center of a multi-comparison
+expression.
+
+Single-line `for`, `if`, `while`, and `until` are permitted. In each case, the test must be
+enclosed in parentheses and the body runs to the end of the line. There can be multiple
+single-line expressions on the same line. No `else` is permitted with single-line `if`.
+
+nano            | JavaScript
+----------------|------------------------
+`for i≤k`       | `for (i = 0; i <= k; ++i)`
+`for i&lt;k`    | `for (i = 0; i &lt; k; ++i)`
+`for 4≤i&lt;k`  | `for (i = 4; i &lt; k; ++i)`
+
+The comparison operators in a `for` loop declaration are an overloaded syntax for comparison
+operators (just as many languages overload the `=` operator for `for` loops).  They have
+the lowest precedence. For example, `for i&lt;a||b` is equivalent to `for i&lt;(a||b)`.
+To use regular comparison operators within `for` loop preamble, you *must* use parentheses to
+make the parsing unambiguous, for example, `for i&lt;(a&lt;b)`.
+
+
+Special
+---------------------------------------------------------
+
+The following are unconditional statements:
+
+- `flip`: Flip the buffers and update `pad`. Does not clear the screen.
+- `wait`: Flip the buffers and update `pad` until a gamepad button (not direction) is pressed.
+
+
+They are not functions and cannot be bound to variables or invoked with parentheses.
+
+
+
+Standard Library
+=========================================================
+
+Standard library functions are first-class values. They can be stored in data structures and
+variables. There is no way to create new user functions in nano.
+
+Array
+---------------------------------------------------------
+`array.add(x)`
+: Append `x` to the array. O(1) expected amortized time.
+
+`array.del(i)`
+: Delete element `i` from the array, preserving order. O(n) expected time.
+
+`array.find(x,i)`
+: Find the index of the element whose value is `x`, starting at optional index `i` (default 0).
+  Returns `∅` if not found. O(n)
+
+`array.kill(i)`
+: Delete element `i` from the array, swapping it with the last element. O(1) expected amortized time.
+
+`array.len`
+: Set or get the length of the array. O(1) time to read, O(n) amortized time to write.
+
+`array.rem(x)`
+: Delete the first instance of `x` in the array, maintaining order. O(n) time in the length of the array.
+
+
+String
+---------------------------------------------------------
+`string.find(x,i)`
+: Find the index of the substring whose value is `x`, starting at optional index `i` (default 0).
+  Returns `∅` if not found. O(n) time.
+
+`string.len`
+: Get the length of the string. O(1) time.
+
+`string.sub(s,e)`
+: Return the substring between `s` (inclusive) and optional `e` (exclusive, defaults to length).
+
+
+Table
+---------------------------------------------------------
+`table.del(k)`
+: Remove a key-value pair by key.
+
+`table.keys`
+: An Array of the keys.
+
+`table.len`
+: The length of the table (read only).
+
+
+Math
+---------------------------------------------------------
+`abs(x)`
+: Absolute value
+
+`acos(x)`
+: Inverse cosine in radians
+
+`atan(y, x)`
+: Arctangent of y/x, in radians
+
+`asin(x)`
+: Inverse sine in radians
+
+`cos(x)`
+: Cosine, `x` in radians 
+
+`hash(x,y)`
+: A hash value of string or number `x`, returning a value on [0, 1].
+  If `y` is specified, the hash considers the union of the values.
+
+`min(a,b,...)`
+: Smallest of the arguments
+
+`max(a,b,...)`
+: Largest of the arguments
+
+`mid(a,b,c)`
+: Middle argument once sorted. Can be used for clamping.
+
+`noise(octaves,x,y,z)`
+: Value noise on the range [-1, 1], bicubically interpolated between integer locations at
+  octave 0. Unused dimensions default to zero.
+
+`pow(a,b)`
+: Exponent. See also the `^` operator.
+
+`rnd()`
+: Random number. See also the `ξ` operator.
+
+`sgn(x)`
+: Sign of `x`.
+
+`sqrt(x)`
+: Square root.
+
+`sin(x)`
+: Sine of `x` radians.
+
+`srand(seed)`
+: Reset the random number generator, using an optional seed.
+
+`tan(x)`
+: Tangent of `x` radians.
+
+<!--
+Memory
+---------------------------------------------------------
+`get(i)`
+: Read from memory address `i`.
+
+`put(i, b)`
+: Write byte `b` to memory address `i`.
+
+-->
+
+Graphics
+---------------------------------------------------------
+
+`cls(c)`
+: Clear the screen to colour `c`. Unlike all other rendering commands, 
+  requires a colour argument and does not set the current colour to `c`.
+
+`circ(Ax,Ay,r,colourmap)`
+: Draw a circle centered at (`Ax`, `Ay`) with radius `r`.
+
+`draw(s,x,y,colourmap,xform,rot)`
+: Draw sprite with index `s` centered at (`x`, `y`), remapping sprite colours by 4-digit
+  `colourmap` and transforming by `xform`. See the Sprites section for more information.
+  The result is undefined and may change between versions for the cases where `s` is less than
+  zero or greater than 63.
+
+`gray(v,x,y)`
+: Same as `rgb(v,v,v,x,y)`
+
+`hsv(h,s,v,x,y)`
+: Return the colour closest to the hue-saturate-value specification, which are each on [0, 1].
+  If `x` and `y` are specified, apply a dithering pattern based on the pixel position.
+
+`pget(x,y)`
+: Get the screen colour of pixel (`x`, `y`). Returns `∅` if out of bounds.
+
+`line(Ax,Ay,Bx,By,colourmap)`
+: Draw a line from (`Ax`, `Ay`) to (`Bx`, `By`) using the 1-digit colourmap.
+
+`pal(p)`
+: Sets the draw palette colours 1-6 from the 12-digit palette. See the Colours section for details.
+  With no arguments, resets to the default palette.
+
+`pset(x,y,c)`
+: Set the colour of pixel (`x`, `y`) to colour `c` (*not* a colourmap). If `c` is not
+  specified, use the previous colour.
+
+`pset(c)`
+: Set the previous colour to `c` (*not* a colourmap) and draw a single pixel offscreen. 
+
+`rect(Ax,Ay,Bx,By,colourmap)`
+: Draw the rectangle from any two points. The 2-digit `colourmap` is the fill and the border.
+
+`rgb(r,g,b,x,y)`
+: Return the colour closest to (`r`,`g`,`b`), which are each on [0, 1].
+  If `x` and `y` are specified, apply a dithering pattern based on the pixel position.
+
+`text(s,x,y,colourmap)`
+: Print string `s` centered at (`x`, `y`) using the 2-digit colourmap. The first digit (1's place) is
+  the text colour, the second digit (10's place) is the shadow colour, and the third digit (100's place)
+  is the outline colour. The second digit is handled differently for other commands. 0 means transparent 
+  instead of "previous colour" so that single-digit colourmaps render text with no outline or shadow.
+  If only `s` is provided, defaults to drawing in the center of the screen in the previous color.
+
+`tri(Ax,Ay,Bx,By,Cx,Cy,colourmap)`
+: Draw the triangle using the 2-digit colourmap for fill and border.
+
+The default colourmap is 0, which corresponds to the colour from the previous command.
+
+Borders are drawn inside shape coordinate boundaries and on top of fills, so a transparent 
+border is identical to a border that is the same colour as the fill. Shapes include their
+endpoints and borders.
+
+Pixel centers are at integer locations. That is, pixel (0,0) covers (-½, -½) to (½, ½).
+
+### Colours
+
+The nano can display 32 different *colours*. The first 16 colours follow the order of the [PICO-8](https://www.lexaloffle.com/pico-8.php) colours by 
+Joseph White, but are shifted slightly towards [DawnBringer's DB16](http://pixeljoint.com/forum/forum_posts.asp?TID=12795) and tweaked
+to give a better grayscale. The second 16 colours fill some holes between them and add the original Gameboy palette.
+
+ ![<center>The nano Palette Tool</center>](palette-tool.png width=50%)
+
+
+The *palette* is a set of 10 colours available for drawing shapes and sprites, which are
+selected from the full 32 possible colours on the screen. In the palette, six colours are
+user-selectable and four are special values that are not configurable.
+
+The `pal` command changes configurable part of the palette by specifying a 12-digit integer.
+Every two digits are one colour. Changing the palette does not affect colours already
+written to the screen.
+
+A *colourmap* is a mapping from parts of a shape or sprite to colours in the palette.
+These are used for specifying the borders and fill colours (as a two-digit integer) of a 
+shape, the colour of a line (as a one-digit integer), and remapping the four colours 
+from a sprite (as a 1-4 digit integer).
+
+The interpretation of colour map digits within the palette is:
+
+- 0 = default colour for this command
+- 1-6 = configurable
+- 7 & 8 = reserved for future features
+- 9 = transparent
+
+For example, to set the configurable colours to a grayscale ramp (0,1,5,13,6,7) of PICO-8
+colours, use `pal(70613050100)`. Note that there cannot be a leading zero on the number.
+
+The default colour for most commands is the previous colour used. For text, the default is the
+previous colour for the main stroke and transparent for the outline and shadow.
+
+The initial configurable palette is equivalent to `pal(121008000607)`. This corresponds to
+white, gray, black, red, yellow, aqua. The initial default colour is white. Changing the
+palette preserves the default colour.
+
+Note that unlike other drawing commands, `pset` and `pget` operate directly on colours instead
+of palette values.
+
+
+<!-- 
+Largest palette value:
+3131313131313131
+
+Largest consecutively-representable double:
+9007199254740992
+-->
+
+### Sprites
+
+There are 96 hard-coded 8x8 sprites provided in read-only memory:
+
+  ![<center>The nano Spritesheet</center>](../sprites.png width=512 border=2 style="image-rendering: pixelated; image-rendering: -moz-crisp-edges; -ms-interpolation-mode: nearest-neighbor;")
+
+They are designed so that the colourmap for `draw()` allows animation and re-use of individual
+sprites as multiple images. For example, the heart sprite can be shown as an outline, half
+full, completely full, or full and small by changing the colourmap.
+
+`draw` renders centered sprites. Centering for an 8x8 sprite means offsetting x,y by 3.5 in each dimension. This makes 
+(3,3) the "center" for integer coordinates.
+
+The xform value is encoded in three bits as:
+  - if `(xform ∩ 1)`, flip diagonally
+  - if `(xform ∩ 2)`, flip horizontally
+  - if `(xform ∩ 4)`, flip vertically
+    
+This allows all axis-aligned transformations to be encoded in a single digit. The 90-degree
+clockwise rotations are thus (xor these with with 2 or 4 if you want to also flip H or V):
+
+ CW Rotation |VHD Bits| `xform`
+ -----------:|--------|---------
+ 0 degrees   | 000    | 0
+ 90 degrees  | 011    | 3
+ 180 degrees | 110    | 6
+ 270 degrees | 101    | 5
+
+The `rot` argument rotates an arbitrary amount clockwise in radians *after* the `xform`
+transformation. It defaults to zero.
+
+For rotating by 0 &leq; `i` &lt; 4 integer 90-degree clockwise intervals programmatically,
+consider these three different methods:
+
+~~~~~~~~~~~~~~~~~~~~~ JavaScript
+draw(s,x,y,c,0,½πi)
+
+draw(s,x,y,c,3i-4⌊⅓i⌋)
+
+r=[0,3,6,5]
+draw(s,x,y,c,rᵢ)
+~~~~~~~~~~~~~~~~~~~~~
+
+The first approach has the advantage that it works for all (reasonably small) integer values of
+`i`, including negative ones.
+
+
+
+
+Sound
+---------------------------------------------------------
+
+`sfx(s)`
+: Play sound effect `s`
+
+
+Title Flags
+---------------------------------------------------------
+
+The first line of a nano program must be `#nanojam` followed by the game title and an optional
+comma and integer flags. The only current flags are `1` = no title screen and `0` = default.
+Future flags will affect the rendering of the title screen and cartridge label.
+
+
+Implementation
+====================================================================================
+
+The current implementation compiles the nano source code to JavaScript for execution, and
+passes through many JavaScript expressions even if not defined by the nano specification.
+
+JavaScript features not explicitly mentioned in this specification are illegal. They might
+sneak past the current version of the compiler, but are likely to break in future versions
+or as the surrounding code changes.
+
+
+Limitations
+------------------------------------------------------------------------------------
+
+The following functionality is documented, but not implemented in the current Alpha build. It
+is scheduled for upcoming releases:
+
+- Sound effects
+- Google Drive support for cartridges
+- Title screen animations
+- Filled triangles
+- Text shadow and outline
+
+When converting values to strings, the `∞` value becomes the string `"Infinity"` and the `∅` value
+becomes `"undefined"`.
+
+<!-- Nano cannot execute `flip` or `wait` from within a function because of the way that threading
+is handled in the implementation. Technically, user-defined functions aren't supported yet, so
+this is not actually a limitation. -->
+
+
+<!--
+Aspirations
+------------------------------------------------------------------------------------
+
+These are features that I'd like to add, but some of which I'm not sure are possible to
+implement in the current compiler:
+
+- `for` `x` in data structure
+- `for` loops that decrement
+- rational (non-integer) `for` loops
+- `⌊⌉` as the round function
+- `\` as integer division
+- `\=`  as mutating integer division
+- Function declarations
+- Overloaded `+` as array append
+- `≈` as fuzzy equality test
+- Use downsized unifont http://unifoundry.com/pub/unifont-10.0.06/font-builds/unifont-10.0.06.hex.gz (needs base16-2 conversion) for approximating unicode print
+-->
+
+# Credits
+
+The nano's influences include Atari 2600, Commodore VIC-20, PICO-8, APL, Python, and Arduboy.
+The 3x5 nano font is original, but was informed by by Yuji Oshimoto's 04B-24 freeware font
+http://www.04.jp.org/ and Joseph White's PICO-8 font.
+
+The <span style="font-size:118%">nano</span> <span style="font-size:90%">JAMMER</span> IDE,
+compiler, font, palette, and artwork are copyright 2018 Morgan McGuire. They were created as a
+one-week vacation "game" jam challenge, which should set your expectation level for support and
+acceptance of patches at zero. The nano package and implementation, including:
+
+- [`index.html`](../index.html)
+- [`nano.css`](../nano.css)
+- [`nano-compiler.js`](../nano-compiler.js)
+- [`nano-runtime.js`](../nano-runtime.js)
+- [`nano-ide.js`](../nano-ide.js)
+- [`color.js`](../color.js)
+
+and excluding the content described below, are licensed under the
+[GPL 3.0](https://opensource.org/licenses/GPL-3.0), but may be relicensed in the future.
+
+The cherry, apple, and chicken sprites are by Justin Cyr ([@JUSTIN_CYR](https://twitter.com/JUSTIN_CYR)). 
+3D PAC-MAN Ghost and Mario character based on sprites by Johan Vinet ([@johanvinet](https://twitter.com/johanvinet)).
+
+GIF support via [gif.js](https://github.com/jnordberg/gif.js/) (c) 2013 Johan Nordberg,
+used under the MIT license. It includes code by Kevin Weiner, Thibault Imbert, and Anthony
+Dekker.
+
+The random number generator is derived from [an implementation](https://github.com/AndreasMadsen/xorshift/blob/master/xorshift.js) 
+of xorshift (c) 2014 Andreas Madsen and Emil Bay used under the MIT license.
+
+The code editor for the nano IDE is [ace.js](https://ace.c9.io/) used under the BSD license.
+
+
+<style class="fallback">body{color:#FFF}</style>
+<script>markdeepOptions = {tocStyle:'medium'};</script>
+<link rel="stylesheet" href="https://casual-effects.com/markdeep/latest/apidoc.css?">
+<style>
+.md div.title {font-family:Helvetica; line-height:14px;font-size:30px;margin-top:50px;}
+.md div.title, .md div.subtitle {text-align: center}
+</style>
+<!-- Markdeep: --><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js"></script>
+
