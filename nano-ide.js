@@ -9,6 +9,8 @@ function afterImageLoad(url, callback) {
     image.src = url;
 }
 
+var deployed = (location.href.substring(0, 8) !== 'file:///');
+
 // The gif recording object, if in a recording
 var gifRecording = null;
 
@@ -171,12 +173,14 @@ var src =
     //tests.nanoReset;
     //tests.rgb;
     //tests.text;
-    tests.spacedash;
+    //tests.spacedash;
     //tests.variables;
     //tests.runner;
     //tests.hash;
-    //tests.plasma;
+    tests.plasma;
     //tests.colorgrid;
+
+if (deployed) { src = tests.spacedash; }
 
 function getImageData(image) {
     var tempCanvas = document.createElement('canvas');
@@ -720,7 +724,7 @@ function onPlayButton() {
     if (! coroutine) {
         // Compile as needed
         var jsoutput = compile(editor.getValue());
-        if (location.href.substring(0, 8) === 'file:///') { console.log(jsoutput); }
+        if (! deployed) { console.log(jsoutput); }
         if (jsoutput === null) {
             programNumLines = 0;
             onStopButton();
