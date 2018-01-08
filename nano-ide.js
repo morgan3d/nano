@@ -1092,7 +1092,9 @@ function submitFrame() {
         }
 
         // Update old state
-        prevRealGamepadState[player] = realGamepad;
+        if (realGamePad) {
+            prevRealGamepadState[player] = realGamepad;
+        }
     }
 
     // Reset the just-pressed state
