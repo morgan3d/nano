@@ -1092,7 +1092,7 @@ function submitFrame() {
         }
 
         // Update old state
-        if (realGamePad) {
+        if (realGamepad) {
             prevRealGamepadState[player] = realGamepad;
         }
     }
