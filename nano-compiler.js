@@ -306,30 +306,33 @@ function nanoToJS(src, noWrapper) {
     // they handle the parentheses correctly
     src = processAbsoluteValue(src);
 
-    // Implicit multiplication. Must be before operations that may put parentheses after
-    // numbers, making the product unclear.
-    src = src.replace(/([επτξ∞½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒\d⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾])[ \t]*([\(A-Za-zαβδθλμρσφψωΔΩτ])/g, '$1 * $2');
-
-    // Fix any instances of or that got accentially turned
-    // into implicit multiplication. If there are other text
-    // operators in the future, they can be added to this pattern.
-    src = src.replace(/\*[\t ]*(or)(\b|\d|$)/g, ' $1$2');
-
-    // These are a weird case; we can write 2π or πr, so the π acts as both a number and a
-    // variable for the purpose of implicit products.
-    src = src.replace(/([½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒\d⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾])[ \t]*([επτξ∞])/g, '$1 * $2');
-
-    // Replace fractions
-    src = src.replace(/[½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒]/g, function (match) { return fraction[match]; });
+    // Process implicit multiplication twice, so that it can happen within exponents and subscripts
+    for (var i = 0; i < 2; ++i) {
+        // Implicit multiplication. Must be before operations that may put parentheses after
+        // numbers, making the product unclear.
+        src = src.replace(/([επτξ∞½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒\d⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾])[ \t]*([\(A-Za-zαβδθλμρσφψωΔΩτ])/g, '$1 * $2');
+        
+        // Fix any instances of "or" that got accentially turned
+        // into implicit multiplication. If there are other text
+        // operators in the future, they can be added to this pattern.
+        src = src.replace(/\*[\t ]*(or)(\b|\d|$)/g, ' $1$2');
+        
+        // These are a weird case; we can write 2π or πr, so the π acts as both a number and a
+        // variable for the purpose of implicit products.
+        src = src.replace(/([½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒\d⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾])[ \t]*([επτξ∞])/g, '$1 * $2');
+        
+        // Replace fractions
+        src = src.replace(/[½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒]/g, function (match) { return fraction[match]; });
+        
+        // Replace exponents
+        src = src.replace(/([⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁽⁾][⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁽⁾ ]*)/g, '^($1)');
+        src = src.replace(/[⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁽⁾]/g, function (match) { return superscriptToNormal[match]; });
+        
+        // Replace subscripts
+        src = src.replace(/([₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₍₎][₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₍₎ ]*)/g, '[($1)]');
+        src = src.replace(/[₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₍₎]/g, function (match) { return subscriptToNormal[match]; });
+    }
     
-    // Replace exponents
-    src = src.replace(/([⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁽⁾][⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁽⁾ ]*)/g, '^($1)');
-    src = src.replace(/[⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁽⁾]/g, function (match) { return superscriptToNormal[match]; });
-
-    // Replace subscripts
-    src = src.replace(/([₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₍₎][₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₍₎ ]*)/g, '[($1)]');
-    src = src.replace(/[₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₍₎]/g, function (match) { return subscriptToNormal[match]; });
-
     src = processBlocks(src);
 
     src = src.replace(/cont/g, 'continue');

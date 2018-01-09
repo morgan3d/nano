@@ -813,7 +813,10 @@ function setSaved(s) {
 editor.session.on('change', function () {
     var str = editor.getValue();
     var noComments = str.replace(/\/\/.*$|\/\*[\s\S]*\*\//gm, '').replace(/\n[ \t]*$/gm, '').replace(/^[ \t]*\n/gm, '');
-    editorStatusBar.innerHTML = '' + str.length + ' chars | ' + noComments.length + ' min';
+
+    // https://developer.twitter.com/en/docs/developer-utilities/twitter-text.html
+    var twitter = str.replace(/[^\u0000-\u10FF\u2000-\u200D\u2010-\u201F\u2032-\u2037]/g, 'xx');
+    editorStatusBar.innerHTML = '' + str.length + ' chars | ' + noComments.length + ' min | ' + twitter.length + " Twitter";
     setSaved(false);
 });
 
