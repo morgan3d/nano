@@ -49,10 +49,16 @@ for(j<3)for(i<15)pset(38-i,30+j,gray(v*([8738,21845,21330]ⱼ▻i∩1)))
   
 // hold black and then erase variables and end
 if(τ>31)cls(clr=0);i=j=x=v=∅
-τ=τ%40`;
+τ%=40`;
 
 
 var tests = {
+    sort: `#nanojam Sort,1
+a=[1,10,3,5,2]
+a.sort()
+for i<a.len
+ text(a[i],32,6i+2,1)`,
+    
     hash: `for(i<64)line(i,64hash(⅒(i+τ)),i,64,1)`,
 
     variables: `a={β:6}
@@ -177,7 +183,8 @@ var src =
     //tests.variables;
     //tests.runner;
     //tests.hash;
-    tests.plasma;
+    //tests.plasma;
+    tests.sort;
     //tests.colorgrid;
 
 if (deployed) { src = tests.spacedash; }

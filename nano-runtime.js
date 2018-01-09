@@ -39,6 +39,31 @@ function _arrayAdd(x) {
     this.push(x);
 }
 
+
+function _greaterThan(a, b) {
+    return a > b;
+}
+
+function _arraySort(k) {
+    var compare = undefined;
+    if (k === undefined) {
+        if (typeof this[0] === 'object') {
+            // find the first property, alphabetically
+            var entries = Object.entries(this[0]);
+            entries.sort(function(a, b) { return a[0] > b[0]; });
+            k = entries[0][0];
+            compare = function (a, b) { return a[k] > b[k]; };
+        } else {
+            compare = _greaterThan;
+        }
+    } else {
+        compare = function (a, b) { return a[k] > b[k]; };
+    }
+
+    this.sort(compare);
+}
+
+
 Object.defineProperty(Array.prototype, 'rem',
                       { configurable: true,
                         get: function () {  return _arrayRem;  }});
@@ -58,6 +83,10 @@ Object.defineProperty(Array.prototype, 'find',
 Object.defineProperty(Array.prototype, 'add',
                       { configurable: true,
                         get: function () {  return _arrayAdd;  }});
+
+Object.defineProperty(Array.prototype, '_sort',
+                      { configurable: true,
+                        get: function () {  return _arraySort;  }});
 
 /////////////////////////////////////////////////////////////////////
 //

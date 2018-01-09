@@ -149,9 +149,9 @@ function processBlocks(src) {
             throw makeError('Numbers with a trailing decimal point are not permitted', i);
         }
 
-        var illegal = lineArray[i].match(/(print|location|window|_|undefined|continue)/g);
+        var illegal = lineArray[i].match(/print|location|window|_|undefined|continue/g);
         if (illegal) {
-            throw makeError('Illegal identifier "' + illegal[1] + '"', i);
+            throw makeError('Illegal identifier "' + illegal[0] + '"', i);
         }
         
         if (indent >= 0) {
@@ -333,6 +333,9 @@ function nanoToJS(src, noWrapper) {
     src = processBlocks(src);
 
     src = src.replace(/cont/g, 'continue');
+
+    // Array sort (avoid conflicting with the built-in Array.sort for JavaScript)
+    src = src.replace(/\bsort\b/g, '_sort');
 
     // rnd shorthand
     src = src.replace(/ξ/g, ' rnd() ');

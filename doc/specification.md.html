@@ -202,7 +202,7 @@ a₁+=2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Negative indices are permitted on arrays but will not be reported in the length. Reading an
-out-of-bounds value from an Array returns the `undefined` value.
+out-of-bounds value from an Array returns `∅`.
 
 
 Tables
@@ -498,6 +498,14 @@ Array
 
 `array.len`
 : Set or get the length of the array. O(1) time to read, O(n) amortized time to write.
+
+`array.sort(k)`
+: Sort the array from least to greatest. If `k` is a string, then elements of the array are
+  assumed to be objects and are sorted by that key. If `k` is a number, then elements of the
+  array are assumed to be other arrays and are sorted by that index. If `k` is not specified
+  and the array contains objects, then elements are sorted by their alphabetically-first
+  key. If `k` is not specified and the array contains numbers or strings, then they are sorted
+  by natural order.
 
 `array.rem(x)`
 : Delete the first instance of `x` in the array, maintaining order. O(n) time in the length of the array.
