@@ -625,7 +625,7 @@ function pget(x, y) {
     var j = Math.round(y) | 0;
 
     if (((i >>> 0) < 64) && ((j >>> 0) < 64)) {
-        return _screen[i + (j >> 6)];
+        return _screen[i + (j << 6)];
     } else {
         return undefined;
     }
