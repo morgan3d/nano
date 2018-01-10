@@ -1,3 +1,4 @@
+/* By Morgan McGuire @CasualEffects http://casual-effects.com GPL 3.0 License */
 
 ////////////////////////////////////////////////////////////////////
 // Array

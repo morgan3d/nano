@@ -1,6 +1,4 @@
-// python3 -m http.server
-// open http://localhost:8000/index.html
-
+/* By Morgan McGuire @CasualEffects http://casual-effects.com GPL 3.0 License*/
 function clamp(x, lo, hi) { return Math.min(Math.max(x, lo), hi); }
 
 function afterImageLoad(url, callback) {
@@ -102,7 +100,7 @@ for i<2
     spacedash: `#nanojam SPACE DASH
 if(¬τ)x=32
 // Game-over explosion
-if(τ<0)pal(⌊8+3ξ⌋);circ(x,50,99+τ,19);cont
+if(τ<0)pal(8+3ξ);circ(x,50,99+τ,19);cont
 
 srand(5)
 x=mid(9,x+2joy.x,54)
@@ -112,11 +110,8 @@ for u≤64
  // Enemy ships
  k=⌊2ξ+1⌋;v=τk-3⁸ξ;draw(5+14k,u,v,324,4);if(|x-u|+|v-50|<6)τ=-99
 
-// Player ship
-draw(3,x,50,641)
-
-// End planet
-circ(32,τ-9³,28)
+draw(3,x,50,641) // Player ship
+circ(32,τ-9³,28) // End planet
 
 // Victory screen
 if(τ≥9³)text("YOU WIN");wait;τ=0`,
@@ -676,16 +671,22 @@ function download(url, name) {
     }, 0);
 }
 
-
-function onExportFile(event) {
-    // Get the name
+function getFilename(src) {
     var match = src.match(/^#nanojam[ \t]+(..+?)((?:,)([ \t]*\d+[ \t]*))?\n/);
     if (match) {
         // Clean up the title to be a reasonable filename
-        var filename = match[1].trim().replace(/ /g, '_').replace(/[:?"'&<>*|]/g, '') + '.nano';
-        
+        return match[1].trim().replace(/ /g, '_').replace(/[:?"'&<>*|]/g, '') + '.nano';
+    } else {
+        return null;
+    }
+}
+
+function onExportFile(event) {
+    var src = editor.getValue();
+    var filename = getFilename(src);
+    if (filename) {
         // Convert unicode to a downloadable binary data URL
-        download(window.URL.createObjectURL(new Blob(['\ufeff', editor.getValue()])), filename);
+        download(window.URL.createObjectURL(new Blob(['\ufeff', src])), filename);
     } else {
         alert('The program must begin with #nanojam and a title before it can be exported');
     }
@@ -750,7 +751,7 @@ function onPlayButton() {
                     emulatorKeyboardInput.focus();
                 } catch (e) {
                     onStopButton();
-                    setErrorStatus('line ' + clamp(1, e.lineNumber, programNumLines) + ': ' + e.message);
+                    setErrorStatus('line ' + (e.lineNumber ? clamp(1, e.lineNumber, programNumLines) : '?') + ': ' + e.message);
                     console.log(e);
                 }
             });
@@ -793,7 +794,7 @@ document.addEventListener('keydown', onDocumentKeyDown);
 
 
 var jsCode = document.getElementById('jsCode') && ace.edit(document.getElementById('jsCode'));
-var editorStatusBar = document.getElementById('status');
+var editorStatusBar = document.getElementById('editorStatusBar');
 var editor = ace.edit('editor');
 editor.setTheme('ace/theme/tomorrow_night_bright');
 
@@ -810,13 +811,64 @@ function setSaved(s) {
     // TODO;
 }
 
-editor.session.on('change', function () {
+/** Makes automated replacements to minimize the length of the program */
+function minify(nanoSource, aggressive) {
+    // Simple optimizations that don't affect
+    // readability tremendously
+    var s = nanoSource.
+        replace(/\/\/.*$|\/\*[\s\S]*\*\//gm, ''). // Comments
+        replace(/\n[ \t]*$/gm, '').               // Blank lines
+        replace(/[ \t]+$/gm, '').                 // Trailing spaces
+        replace(/([,;.\[\]()])[ \t]*/g, '$1');    // Extra spaces after separators
+
+    // More aggressive optimizations that hurt readability
+    if (aggressive) {
+        // If two lines have the same indentation and the first does not contain
+        // a conditional flow control, then they can be merged to save the indentation.
+        // Don't bother unless there is indentation.
+        s = s.replace(/(\n +)([^ \n]+)\1(?=[^ \n])/g, function (match, indent1, line1) {
+            if (line1.match(/\b(if|while|for|fcn|loop|until|else|elif)\b/)) {
+                // Can't merge
+                return match;
+            } else {
+                // Mergable
+                return indent1 + line1 + ';';
+            }
+        });
+
+        // Pull up single-line loops
+        s = s.replace(/(\n *)(for|while|until)[ \t]+([^(].*)\1 ([^ \n].*)(\n *?)/g, function(match, indent1, loop, test, line2, indent3) {
+            if (indent3.length <= indent1.length) {
+                return indent1 + loop + '(' + test + ')' + line2 + indent3;
+            } else {
+                return match;
+            }
+        });
+    }
+
+    
+
+    return s;
+}
+
+
+var aggressiveCheckbox = document.getElementById('aggressiveMinify');
+
+function countCharacters() {
     var str = editor.getValue();
-    var noComments = str.replace(/\/\/.*$|\/\*[\s\S]*\*\//gm, '').replace(/\n[ \t]*$/gm, '').replace(/^[ \t]*\n/gm, '');
+
+    // Count characters
+    var minStr = minify(str, aggressiveCheckbox.checked);
 
     // https://developer.twitter.com/en/docs/developer-utilities/twitter-text.html
-    var twitter = str.replace(/[^\u0000-\u10FF\u2000-\u200D\u2010-\u201F\u2032-\u2037]/g, 'xx');
-    editorStatusBar.innerHTML = '' + str.length + ' chars | ' + noComments.length + ' min | ' + twitter.length + " Twitter";
+    // Twitter double-counts certain unicode charactesr
+    var twitter = minStr.replace(/([^\u0000-\u10FF\u2000-\u200D\u2010-\u201F\u2032-\u2037])/g, '$1X');
+
+    editorStatusBar.innerHTML = '' + str.length + ' chars | <a target="_blank" href="' + window.URL.createObjectURL(new Blob(['\ufeff', minStr])) + '">' + minStr.length + ' min</a> | ' + twitter.length + " Twitter";
+}
+
+editor.session.on('change', function () {
+    countCharacters();
     setSaved(false);
 });
 
@@ -1116,6 +1168,192 @@ setTimeout(function () {
     reloadRuntime();
 }, 0);
 
-// Force redraw on the first press, some time after the runtime and sprite image
-// have been loaded.
-//document.getElementById('spritesButton').mousedown = redrawSelectedSprite;
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+//
+// Google Drive / OAuth 2.0 API Wrapper
+//
+// This implementation uses the Drive client API v2 because I couldn't get v3 to work.  It is
+// intentionally restricted to the hidden appDataFolder for nano JAMMER so that it requires
+// reduced permissions AND because that was the only way I could find to efficiently find only
+// nano carts.
+//
+
+function onSaveToGoogleDrive() {
+    var src = editor.getValue();
+    var filename = getFilename(src);
+    if (filename) {
+        googleDriveSaveTextFile(filename, src);
+    } else {
+        alert('The program must begin with #nanojam and a title before it can be saved to Google Drive');
+    }
+}
+
+
+function onListGoogleDrive() {
+    googleDriveRetrieveAllFiles(function(files) {
+        console.log(files);
+        
+        googleDriveGetTextFile(files[0].id, function(contents) {
+            console.log(contents);
+        });
+    });
+}
+
+/**
+  Retrieve a list of File resources.
+
+ Based on https://developers.google.com/drive/v2/reference/files/list
+ */
+function googleDriveRetrieveAllFiles(callback) {
+   gapi.client.drive.files.list({
+       spaces: 'appDataFolder', // set this to 'drive' if you don't want to be restricted to the appDataFolder
+       fields: 'nextPageToken, items(id, title)',
+       pageSize: 100
+   }).then(function(data) {
+       callback(data.result.items);
+   });
+}
+
+/**
+   Invokes the callback with the text file's contents, or null if
+   there was an error.
+
+   You can get the ID from googleDriveRetrieveAllFiles.
+   https://developers.google.com/drive/v2/reference/files/get
+ */
+function googleDriveGetTextFile(fileId, callback) {
+    var request = gapi.client.drive.files.get({
+        'fileId': fileId,
+    });
+    
+    request.execute(function (file) {
+        if (file.downloadUrl) {
+            var accessToken = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', file.downloadUrl);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+            xhr.onload = function() {
+                callback(xhr.responseText);
+            };
+            
+            xhr.onerror = function() {
+                callback(null);
+            };
+            
+            xhr.send();
+        } else {
+            callback(null);
+        }
+    });
+}
+
+
+/** https://developers.google.com/drive/v2/reference/files/trash */
+function googleDriveDeleteFile(fileId) {
+    var request = gapi.client.drive.files.trash({
+        'fileId': fileId
+    });
+    request.execute(function(resp) { });
+}
+
+
+/** Save to Google Drive.
+    Based on https://developers.google.com/drive/v2/reference/files/insert  */
+function googleDriveSaveTextFile(fileName, fileContents, callback) {
+    const boundary = '-------X314159265358979323846';
+    const delimiter = "\r\n--" + boundary + "\r\n";
+    const close_delim = "\r\n--" + boundary + "--";
+
+    if (fileContents.indexOf(boundary) !== -1) {
+        // The source is trying to hack the transfer protocol
+        throw "File contains boundary!";
+    }
+    
+    var contentType = 'text/plain';
+    var metadata = {
+        'title': fileName,
+        'mimeType': contentType,
+        'parents': [{id:'appDataFolder'}]
+    };
+
+    var multipartRequestBody =
+        delimiter +
+        'Content-Type: application/json\r\n\r\n' +
+        JSON.stringify(metadata) +
+        delimiter +
+        'Content-Type: ' + contentType + '\r\n' +
+        '\r\n' +
+        fileContents +
+        close_delim;
+
+    var request = gapi.client.request({
+        'path': '/upload/drive/v2/files',
+        'method': 'POST',
+        'params': {'uploadType': 'multipart'},
+        'headers': {
+          'Content-Type': 'multipart/mixed; boundary="' + boundary + '"'
+        },
+        'body': multipartRequestBody});
+
+    if (! callback) {
+        // Create a dummy callback
+        callback = function(file) { console.log(file)  };
+    }
+    
+    request.execute(callback);
+}
+
+
+
+// The following are based on:
+// https://github.com/google/google-api-javascript-client/blob/master/samples/authSample.html
+
+var authorizeButton = document.getElementById('authorize-button');
+var signoutButton = document.getElementById('signout-button');
+
+function updateSigninStatus(isSignedIn) {
+    if (isSignedIn) {
+        authorizeButton.style.display = 'none';
+        signoutButton.style.display = 'block';
+    } else {
+        authorizeButton.style.display = 'block';
+        signoutButton.style.display = 'none';
+    }
+}
+
+function handleAuthClick(event) {
+    gapi.auth2.getAuthInstance().signIn();
+}
+
+function handleSignoutClick(event) {
+    gapi.auth2.getAuthInstance().signOut();
+}
+
+
+function handleClientLoad() {
+    // Load the API client and auth2 library
+    gapi.load('client:auth2', initClient);
+}
+
+function initClient() {
+    gapi.load('client', function() {
+        // Initialize the JavaScript client library.
+        gapi.client.init({
+            'apiKey': 'AIzaSyAlRiTht5T9CLtYAQhFnZGdgtqmSvD_Js0',
+            'clientId': '442588265355-cv3vd67iv8c79ckfsm3m8vbgfl6pr104.apps.googleusercontent.com',
+            'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/drive/v2/rest'],
+            //'scope': 'https://www.googleapis.com/auth/drive.file',
+            'scope': 'https://www.googleapis.com/auth/drive.appfolder'
+        }).then(function () {
+            // Listen for sign-in state changes.
+            gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+            // Handle the initial sign-in state.
+            updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+            authorizeButton.onclick = handleAuthClick;
+            signoutButton.onclick = handleSignoutClick;
+        });
+    });
+}

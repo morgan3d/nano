@@ -1,13 +1,14 @@
 <!DOCTYPE html>
+<!-- By Morgan McGuire @CasualEffects http://casual-effects.com GPL 3.0 License -->
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="nano.css">
     <link rel="shortcut icon" href="favicon.ico">
     <link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>nano ᴊᴀᴍᴍᴇʀ</title>
   </head>
-
   <script>
     function makeButton(label, title, onclick) {
       document.write('<div class="button" onclick="' + (onclick || '') + '(event)" title="' + (title || label) + '"><label><span class="label">' + label + '</span></label></div>');
@@ -22,9 +23,17 @@
        document.write('<div class="button" title="' + title + '" style="' + (style ? style : '') + '" onmousedown="event.stopPropagation()"><label><input id="' + id + 'Button" autocomplete="off" type="checkbox" onclick="onToggle(this)"><span class="label">' + labelHTML + '</span></label></div>');
     }
   </script>
+ 
   <body>
+    <div style="position:fixed; bottom:0px; visibility:hidden">
+      <button id="authorize-button" style="display: none;">Authorize</button>
+      <button id="signout-button" style="display: none;">Sign Out</button>
+      <button onclick="onSaveToGoogleDrive()">Save to Google Drive</button>
+      <button onclick="onListGoogleDrive()">List from Google Drive</button>
+    </div>
+
     <div id="header">
-      <a href="http://casual-effects.com">CasualEffects</a> &nbsp;&nbsp; &middot; &nbsp;&nbsp; <a href="doc/specification.md.html"><span style="font-size:110%">nano</span> Manual</a> &nbsp;&nbsp; &middot; &nbsp;&nbsp; <a href="https://twitter.com/search?l=&q=%23nanojam%20since%3A2018-01-01&src=typd">#nanojam</a>
+      <a href="http://casual-effects.com">CasualEffects</a> &nbsp;&nbsp; &middot; &nbsp;&nbsp; <a href="doc/specification.md.html" target="_blank"><span style="font-size:110%">nano</span> Manual</a> &nbsp;&nbsp; &middot; &nbsp;&nbsp; <a href="https://twitter.com/search?l=&q=%23nanojam%20since%3A2018-01-01&src=typd" target="_blank">#nanojam</a>
       &nbsp;&nbsp; &middot; &nbsp;&nbsp;
       F6 screenshot
       &nbsp;&nbsp; &middot; &nbsp;&nbsp;
@@ -38,6 +47,8 @@
     <div style="position: absolute; left: 103px; top: 580px; color:#666; font-size: 80%">
       &nbsp;&nbsp;New:
       <ul style="margin-top:0px">
+        <li>Export minified code</li>
+        <li>Aggressive character minification</li>
         <li>Twitter character counts</li>
         <li>implicit multiplication in exponents and subscripts</li>
         <li><code>array.sort()</code></li>
@@ -95,7 +106,8 @@
             <div id="error"> </div>
           </div>
         </div>
-        <div id="status" style="">STATUS </div>
+        <div id="editorStatusBar"></div>
+        <div style="position: absolute; bottom: 1px; right:20px; color: #666"><input type="checkbox" id="aggressiveMinify" onclick="countCharacters()">Aggressive Minify</div>
       </div>
     </div>
     <div style="position:absolute; right:0; top:0;" class="emulator" id="emulator" onclick="document.getElementById('emulatorKeyboardInput').focus()">
@@ -190,4 +202,8 @@
   <script src="nano-compiler.js" charset="utf-8"></script>
   <script src="nano-ide.js" charset="utf-8"> </script>
   <script src="gif.js" async="async"> </script>
+  <script async defer src="https://apis.google.com/js/api.js" 
+          onload="this.onload=function(){};handleClientLoad()" 
+          onreadystatechange="if (this.readyState === 'complete') this.onload()">
+  </script>
 </html>

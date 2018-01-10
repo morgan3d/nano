@@ -1,3 +1,5 @@
+/* By Morgan McGuire @CasualEffects http://casual-effects.com GPL 3.0 License*/
+
 function makeError(msg, srcLine) {
     return 'Line ' + (srcLine + 1) + ': ' + msg;
 }
@@ -255,7 +257,7 @@ function nanoToJS(src, noWrapper) {
 
     // Title line
     var title = undefined, flags = 0;
-    src = src.replace(/^#nanojam[ \t]+(..+?)((?:,)([ \t]*\d+[ \t]*))?\n/, function (match, specTitle, ignore, specFlags) {
+    src = src.replace(/^#nanojam[ \t]+(..+?)((?:,)([ \t]*\d+[ \t]*))?(?:$|\n)/, function (match, specTitle, ignore, specFlags) {
         specTitle = specTitle.trim();
         title = specTitle;
         flags = parseInt(specFlags || 0);
@@ -264,7 +266,7 @@ function nanoToJS(src, noWrapper) {
     });
 
     if (! title) {
-        throw makeError('The first line must be "#nanojam <gametitle>"', 1);
+        throw makeError('The first line must be "#nanojam &lt;gametitle&gt;"', 0);
     }
     
     // Hide escaped quotes
