@@ -1,3 +1,5 @@
+/* By Morgan McGuire @CasualEffects http://casual-effects.com GPL 3.0 License*/
+
 canvas {
     image-rendering: optimizeSpeed;
     image-rendering: crisp-edges;
@@ -19,14 +21,35 @@ body {
 }
 
 div#header {
+    position: absolute;
+    top:0;
+    right:0;
+    left:0;
     font-size: 11px;
-    background: #ddd; color:#000; width:100%; text-align: center; padding-top: 1px
+    background: #ddd; color:#000;
+    width:100%;
+    text-align: center; padding-top: 1px
+    z-index: 19;
 }
 
-div#header a {
-    text-decoration:none;
-    color:#595090 !important;
+a {
+    color:#5950c0 !important;
 }
+
+#adblockWarning {
+    position: absolute;
+    top: 0px;
+    padding-top: 1px;
+    right: 8px;
+    color:#000;
+    font-size:11px;
+    z-index: 20;
+}
+
+#adblockDetector {
+    width: 1px !important; height: 1px !important; position: absolute !important; left: -10000px !important; top: -1000px !important;
+}
+
 
 /*****************************************************/
 
@@ -102,50 +125,51 @@ div.disabled span.label, div.disabled:active span.label {
 div.ide {
     position:         absolute;
     min-width:        385px;
-    border: 1px solid #999;
-    background: #ddd;
-    border-radius: 13px;
-    margin-left: 20px;
-    margin-top: 20px;
-    margin-right: 15px;
-    overflow: hidden;
-    box-shadow: 0px 4px 13px 0px rgba(0, 0, 0, 0.3);
+    border:           1px solid #999;
+    background:       #ddd;
+    border-radius:    13px;
+    margin-left:      20px;
+    margin-top:       20px;
+    margin-right:     15px;
+    overflow:         hidden;
+    box-shadow:       0px 4px 13px 0px rgba(0, 0, 0, 0.3);
 }
 
 
 div.ide .case {
-    border: 4px solid #ddd;
-    border-image: linear-gradient(to bottom, rgba(226,226,226,1) 0%,rgba(229,229,229,1) 17%,rgba(221,221,221,1) 89%,rgba(204,204,204,1) 100%);
+    border:           4px solid #ddd;
+    border-image:     linear-gradient(to bottom, rgba(226,226,226,1) 0%,rgba(229,229,229,1) 17%,rgba(221,221,221,1) 89%,rgba(204,204,204,1) 100%);
     -moz-border-image: -moz-linear-gradient(to bottom, rgba(226,226,226,1) 0%,rgba(229,229,229,1) 17%,rgba(221,221,221,1) 89%,rgba(204,204,204,1) 100%);
-    border-radius: 13px;
-    overflow: hidden;
+    border-radius:    13px;
+    overflow:         hidden;
 }
 
+
 div.ide .title {
-    height: 22px;
-    background: #595090;
-    border-radius: 10px 10px 0 0;
+    height:           22px;
+    background:       #595090;
+    border-radius:    10px 10px 0 0;
     background-image: url('editor-title.png');
-    background-size: contain;
+    background-size:  contain;
     background-repeat: no-repeat;
     background-position: center;
-    overflow: hidden;
+    overflow:         hidden;
 }
 
 div.ide #menu {
-    width: 100%;
-    background: #DDD;
-    padding-top:5px;
-    padding-bottom:1px;
-    color:#222;
-    text-align: center;
-    overflow:hidden;
+    width:            100%;
+    background:       #DDD;
+    padding-top:      5px;
+    padding-bottom:   1px;
+    color:            #222;
+    text-align:       center;
+    overflow:         hidden;
 }
 
 #menu td {
-    padding: 0px;
-    margin: 0px;
-    white-space: nowrap;
+    padding:          0px;
+    margin:           0px;
+    white-space:      nowrap;
 }
 
 div.ide .innerCase {
@@ -176,23 +200,23 @@ div.ide #error {
 }
 
 div.ide #editor {
-    height:395px;
-    font-size:14px;
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;
+    height:           395px;
+    font-size:        14px;
+    box-sizing:       border-box;
+    -moz-box-sizing:  border-box;
     -webkit-box-sizing: border-box;
 }
 
-div.ide #status {
-    width: 110%;
-    padding-left: 20px;
-    padding-top: 4px;
-    color: #666;
-    padding-bottom:0px;
-    height: 16px;
-    background:#ddd;
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;
+div.ide #editorStatusBar {
+    width:            110%;
+    padding-left:     12px;
+    padding-top:      4px;
+    color:            #666;
+    padding-bottom:   0px;
+    height:           16px;
+    background:       #ddd;
+    box-sizing:       border-box;
+    -moz-box-sizing:  border-box;
     -webkit-box-sizing: border-box;
 }
 
