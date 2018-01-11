@@ -837,7 +837,7 @@ function minify(nanoSource, aggressive) {
         });
 
         // Pull up single-line loops
-        s = s.replace(/(\n *)(for|while|until)[ \t]+([^(].*)\1 ([^ \n].*)(\n *?)/g, function(match, indent1, loop, test, line2, indent3) {
+        s = s.replace(/(\n *)(for|while|until)[ \t]+([^(].*)\1 ([^ \n].*)(\n *?|$)/g, function(match, indent1, loop, test, line2, indent3) {
             if (indent3.length <= indent1.length) {
                 return indent1 + loop + '(' + test + ')' + line2 + indent3;
             } else {
@@ -845,8 +845,6 @@ function minify(nanoSource, aggressive) {
             }
         });
     }
-
-    
 
     return s;
 }
@@ -868,6 +866,16 @@ function countCharacters() {
 }
 
 editor.session.on('change', function () {
+    // Strip any \r inserted by pasting on windows, replace any \t that
+    // likewise snuck in. This is rare, so don't invoke setValue on every
+    // keystroke.
+    var src = editor.getValue();
+    if (src.match(/\r|\t/)) {
+        src = src.replace(/\r/g, '').replace(/\t/g, '    ');
+        editor.setValue(src);
+    }
+    src = null;
+    
     countCharacters();
     setSaved(false);
 });
