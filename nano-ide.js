@@ -396,7 +396,7 @@ function redrawSelectedSprite() {
 
     var cmd = 'draw(' + selectedSpriteIndex + ',32,32';
 
-    cmd += ',' + swizzle;
+    cmd += ',' + swizzle.replace(/^0+([^0])/, '$1');
 
     if (rotStr !== '0' || xform !== 0) {
         cmd += ',' + xform;
@@ -585,6 +585,7 @@ function updatePaletteToolCmd() {
             s = '0' + s;
         }
     }
+    s = s.replace(/^0+([^0])/, '$1');
     s = 'pal(' + s;
     document.getElementById('palCmd').value = s;
 }
@@ -871,7 +872,7 @@ editor.session.on('change', function () {
     // keystroke.
     var src = editor.getValue();
     if (src.match(/\r|\t/)) {
-        src = src.replace(/\r/g, '').replace(/\t/g, '    ');
+        src = src.replace(/\r\n|\n\r/g, '\n').replace(/\r/g, '\n').replace(/\t/g, '    ');
         editor.setValue(src);
     }
     src = null;

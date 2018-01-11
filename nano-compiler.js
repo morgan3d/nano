@@ -151,6 +151,10 @@ function processBlocks(src) {
             throw makeError('Numbers with a trailing decimal point are not permitted', i);
         }
 
+        if (/[^.\d]0\d/g.test(lineArray[i])) {
+            throw makeError('Numbers may not begin with a leading zero', i);
+        }
+
         var illegal = lineArray[i].match(/print|location|window|_|undefined|continue/g);
         if (illegal) {
             throw makeError('Illegal identifier "' + illegal[0] + '"', i);
