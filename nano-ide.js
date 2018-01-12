@@ -60,14 +60,14 @@ for x≤1
 if(¬τ)p=32;f=2⁷
 cls(12)
 srand(4)
-c=40916071415
-pal(c)
-p=mid(3,p+=¼joy.x,59)
+pal(c=40916071415)
+J=joy.x
+p=mid(3,p+¼J,59)
 for x≤4⁵
  draw(91,8x,60,6655)
- k=⌊4ξ+1⌋;u=32x-k*τ⅒+32;v=27+sin(¼τ⅕)*22
+ k=⌊4ξ+1⌋;u=32x-τ⅒k+32;v=27+22sin(¼τ⅕)
  circ(u,v,8,21);circ(u+2,v-4,2,3)
- pal(c+202k);draw(48+p%2,p,52,5365)
+ pal(c+202k);draw(48+p%2,p,52,5365,2(J<0))
  if(|u-p|+|v-52|<9)f--;if(¬f)wait;τ=0
 text(f)`,
     
@@ -210,6 +210,7 @@ function getQueryString(field) {
     var string = reg.exec(location.href);
     return string ? string[1] : null;
 }
+
 
 function getImageData(image) {
     var tempCanvas = document.createElement('canvas');
@@ -866,6 +867,7 @@ function minify(nanoSource, aggressive) {
             }
         });
 
+        /*
         // Pull up single-line loops
         s = s.replace(/(\n *)(for|while|until)[ \t]+([^(].*)\1 ([^ \n].*)(\n *?|$)/g, function(match, indent1, loop, test, line2, indent3) {
             if (indent3.length <= indent1.length) {
@@ -874,6 +876,7 @@ function minify(nanoSource, aggressive) {
                 return match;
             }
         });
+        */
     }
 
     return s;
