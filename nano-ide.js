@@ -169,7 +169,7 @@ i=j=a=y=∅;clr=0
 `
 };
 
-var src =
+var initialSource =
     //tests.nanoBoot;
     //tests.nanoReset;
     //tests.rgb;
@@ -182,7 +182,12 @@ var src =
     tests.sort;
     //tests.colorgrid;
 
-if (deployed) { src = tests.spacedash; }
+
+function getQueryString(field) {
+    var reg = new RegExp( '[?&]' + field + '=([^&#]*)', 'i' );
+    var string = reg.exec(location.href);
+    return string ? string[1] : null;
+}
 
 function getImageData(image) {
     var tempCanvas = document.createElement('canvas');
@@ -672,6 +677,7 @@ function download(url, name) {
     }, 0);
 }
 
+
 function getFilename(src) {
     var match = src.match(/^#nanojam[ \t]+(..+?)((?:,)([ \t]*\d+[ \t]*))?\n/);
     if (match) {
@@ -681,6 +687,7 @@ function getFilename(src) {
         return null;
     }
 }
+
 
 function onExportFile(event) {
     var src = editor.getValue();
@@ -851,19 +858,27 @@ function minify(nanoSource, aggressive) {
 }
 
 
-var aggressiveCheckbox = document.getElementById('aggressiveMinify');
+var minifyCheckbox = document.getElementById('minify');
+var aggressiveCheckbox = document.getElementById('aggressive');
 
 function countCharacters() {
     var str = editor.getValue();
 
     // Count characters
-    var minStr = minify(str, aggressiveCheckbox.checked);
+    var minStr = minifyCheckbox.checked ? minify(str, aggressiveCheckbox.checked) : str;
 
     // https://developer.twitter.com/en/docs/developer-utilities/twitter-text.html
     // Twitter double-counts certain unicode charactesr
     var twitter = minStr.replace(/([^\u0000-\u10FF\u2000-\u200D\u2010-\u201F\u2032-\u2037])/g, '$1X');
 
-    editorStatusBar.innerHTML = '' + str.length + ' chars | <a target="_blank" href="' + window.URL.createObjectURL(new Blob(['\ufeff', minStr])) + '">' + minStr.length + ' min</a> | ' + twitter.length + " Twitter";
+    var url = 'https://morgan3d.github.io/nano/index.html?code=' + LZString.compressToEncodedURIComponent(minStr);
+
+    editorStatusBar.innerHTML = '<a target="_blank" href="' + window.URL.createObjectURL(new Blob(['\ufeff', minStr])) + '">' +
+        minStr.length + ' chars</a> | ' +
+        (twitter.length > 280 ? '<span style="color:#c00">' : '<span>') +
+        twitter.length +
+        '</span>/280 Twitter | ' +
+        '<a target="_blank" href="' + url + '">' + (url.length > 2048 ? '<span style="color:#c00">' : '<span>') + url.length + '</span>/2048 url</a>';
 }
 
 editor.session.on('change', function () {
@@ -881,8 +896,6 @@ editor.session.on('change', function () {
     setSaved(false);
 });
 
-editor.setValue(src);
-editor.gotoLine(1);
 
 if (jsCode) {
     jsCode.getSession().setUseWorker(false);
@@ -1177,8 +1190,19 @@ setTimeout(function () {
     reloadRuntime();
 }, 0);
 
+(function() {
+    if (deployed) { initialSource = tests.spacedash; }
 
-
+    // Code has been specified to the emulator; start with it and push the start button
+    var code = getQueryString('code');
+    if (code) {
+        initialSource = LZString.decompressFromEncodedURIComponent(code);
+        setTimeout(onPlayButton, 750);
+    }
+    
+    editor.setValue(initialSource);
+    editor.gotoLine(1);
+})();
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //

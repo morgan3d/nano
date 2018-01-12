@@ -47,6 +47,7 @@
     <div style="position: absolute; left: 103px; top: 580px; color:#666; font-size: 80%">
       &nbsp;&nbsp;New:
       <ul style="margin-top:0px">
+        <li>URL encoding</li>
         <li>Made octal constants illegal</li>
         <li>fixed Chrome + Windows pasting</li>
         <li>Export minified code</li>
@@ -110,7 +111,9 @@
           </div>
         </div>
         <div id="editorStatusBar"></div>
-        <div style="position: absolute; bottom: 1px; right:20px; color: #666"><input type="checkbox" id="aggressiveMinify" onclick="countCharacters()">Aggressive Minify</div>
+        <div style="position: absolute; bottom: 1px; right:18px; color: #666; font-size: 90%">
+          <input type="checkbox" id="minify" onclick="countCharacters()">Minify
+          <input type="checkbox" id="aggressive" onclick="countCharacters()">Aggressive</div>
       </div>
     </div>
     <div style="position:absolute; right:0; top:0;" class="emulator" id="emulator" onclick="document.getElementById('emulatorKeyboardInput').focus()">
@@ -214,6 +217,7 @@
   <script src="ace/ace.js"></script>
   <script src="color.js" charset="utf-8"> </script>
   <script src="nano-compiler.js" charset="utf-8"></script>
+  <script src="lz-string/lz-string.min.js"> </script>
   <script src="nano-ide.js" charset="utf-8"> </script>
   <script src="gif.js" async="async"> </script>
   <script async defer src="https://apis.google.com/js/api.js" 

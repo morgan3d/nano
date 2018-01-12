@@ -209,12 +209,14 @@ div.ide #editor {
 
 div.ide #editorStatusBar {
     width:            110%;
-    padding-left:     12px;
+    padding-left:     11px;
     padding-top:      4px;
     color:            #666;
+    padding-top:      5px;
     padding-bottom:   0px;
     height:           16px;
     background:       #ddd;
+    font-size:        90%;
     box-sizing:       border-box;
     -moz-box-sizing:  border-box;
     -webkit-box-sizing: border-box;
