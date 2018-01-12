@@ -51,6 +51,26 @@ if(τ>31)cls(clr=0);i=j=x=v=∅
 
 
 var tests = {
+    // Multiple single-line statements stacked up
+    IF: `#nanojam IF,1
+for x≤1
+ if(0)1;if(2)3`,
+    
+    ping: `#nanojam PING
+if(¬τ)p=32;f=2⁷
+cls(12)
+srand(4)
+c=40916071415
+pal(c)
+p=mid(3,p+=¼joy.x,59)
+for x≤4⁵
+ draw(91,8x,60,6655)
+ k=⌊4ξ+1⌋;u=32x-k*τ⅒+32;v=27+sin(¼τ⅕)*22
+ circ(u,v,8,21);circ(u+2,v-4,2,3)
+ pal(c+202k);draw(48+p%2,p,52,5365)
+ if(|u-p|+|v-52|<9)f--;if(¬f)wait;τ=0
+text(f)`,
+    
     sort: `#nanojam Sort,1
 a=[1,10,3,5,2]
 a.sort()
@@ -179,7 +199,9 @@ var initialSource =
     //tests.runner;
     //tests.hash;
     //tests.plasma;
-    tests.sort;
+    //tests.sort;
+    tests.ping;
+    //tests.IF;
     //tests.colorgrid;
 
 

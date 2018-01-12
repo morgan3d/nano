@@ -68,7 +68,7 @@ var maybeYield = ' {if (!(__yieldCounter = (__yieldCounter + 1) & 511)) { yield;
 /** Converts a single-line IF, FOR, WHILE, or UNTIL to JavaScript, preserving indenting.
     Returns the entire string if none of those appear. */
 function processSingleLineControl(str) {
-    var match = str.match(/(^|.*\b)(for|if|while|until)(\b.*)/);
+    var match = str.match(/(^|.*?\b)(for|if|while|until)(\b.*)/);
     if (! match) { return str; }
     var before = match[1];
     var type   = match[2];
