@@ -877,9 +877,10 @@ function countCharacters() {
         minStr.length + ' chars</a> | ' +
         (twitter.length > 280 ? '<span style="color:#c00">' : '<span>') +
         twitter.length +
-        '</span>/280 Twitter | ' +
-        '<a target="_blank" href="' + url + '">' + (url.length > 2048 ? '<span style="color:#c00">' : '<span>') + url.length + '</span>/2048 url</a>';
+        '</span> / 280 Twitter | ' +
+        '<a target="_blank" href="' + url + '">' + (url.length > 2048 ? '<span style="color:#c00">' : '<span>') + url.length + '</span> / 2048 url</a>';
 }
+
 
 editor.session.on('change', function () {
     // Strip any \r inserted by pasting on windows, replace any \t that

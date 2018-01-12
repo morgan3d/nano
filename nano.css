@@ -222,6 +222,12 @@ div.ide #editorStatusBar {
     -webkit-box-sizing: border-box;
 }
 
+/* Detect Chrome & Safari */
+@media screen and (-webkit-min-device-pixel-ratio:0) and (min-resolution:.001dpcm) {
+    div.ide #editorStatusBar {
+        padding-top: 3px;
+    }
+}
 /**************************************************/
 
 .toolWindow {
