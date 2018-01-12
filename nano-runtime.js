@@ -772,7 +772,7 @@ function draw(spr, x, y, colormap, xform, rot) {
     
     // Out of bounds sprite indices, off screen (including worst-case rotation)
     spr |= 0;
-    if ((spr < 0) || (spr >= 95) || (x < -8) || (y < -8) || (x > 71) || (y > 71)) {
+    if ((spr < 0) || (spr > 95) || (x < -8) || (y < -8) || (x > 71) || (y > 71)) {
         return;
     }
 
