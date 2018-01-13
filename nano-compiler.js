@@ -253,6 +253,22 @@ function processAbsoluteValue(src) {
 }
 
 
+/** Returns one line of Javascript (not nano) code. */
+function makeTitleAnimation(title) {
+    title = title.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    var src = `#nanojam title,1
+text("` + title + `",31,31,1)
+if(⅛τ%8<4)cont
+for j<3
+ b=[3903080538885870,5990782578476654,6131554409934498]ⱼ
+ for(x<52)b*=½;if(b∩1)pset(x+6,j+50,5);if(⅛τ%8<4)cont
+x=j=b=∅
+for(j<2)if(padⱼ.aa∪padⱼ.bb∪padⱼ.cc∪padⱼ.dd∪padⱼ.ss)j=∅;τ=0`;
+
+    return nanoToJS(src, true).replace(/\n/g, ';');
+}
+
+
 /** Compiles nano -> JavaScript. If noWrapper is true then no outer exception handler and
     infinite loop are injected. */
 function nanoToJS(src, noWrapper) {
@@ -262,11 +278,11 @@ function nanoToJS(src, noWrapper) {
     // Title line
     var title = undefined, flags = 0;
     src = src.replace(/^#nanojam[ \t]+(..+?)((?:,)([ \t]*\d+[ \t]*))?(?:$|\n)/, function (match, specTitle, ignore, specFlags) {
-        specTitle = specTitle.trim();
+        // remove comments
+        specTitle = specTitle.replace(/\/\/.*$|\/\*.*\*\//g, '').trim();
         title = specTitle;
         flags = parseInt(specFlags || 0);
-        // This comment will be stripped by later processing
-        return '// ' + specTitle + '\n';
+        return '\n';
     });
 
     if (! title) {
@@ -366,18 +382,18 @@ function nanoToJS(src, noWrapper) {
     src = src.replace(/π/g, ' (Math.PI+0) ');
     src = src.replace(/ε/g, ' (1e-4+0) ');
 
-    // must come after exponentiation
+    // Must come after exponentiation
     src = src.replace(/⊕/g, ' ^ ');
 
     src = src.replace(/(flip)/g, '$1(); yield; ');
 
-    var waitString = ' do{flip();yield;}while(!(pad[0].aa || pad[0].bb || pad[0].cc || pad[0].dd || pad[0].ss || pad[1].aa || pad[1].bb || pad[1].cc || pad[1].dd || pad[1].ss)) ';
-    // must come after loop processing; not considered a loop
-    src = src.replace(/wait/g, waitString);
+    // Must come after loop processing; not considered a loop
+    src = src.replace(/wait/g, 'do { flip(); yield; } while (!(pad[0].aa || pad[0].bb || pad[0].cc || pad[0].dd || pad[0].ss || pad[1].aa || pad[1].bb || pad[1].cc || pad[1].dd || pad[1].ss));');
 
     var titleScreen = '';
     if ((flags & 1) === 0) {
-        titleScreen = 'cls(clr); text("' + title.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"); ' + waitString;
+        // Generate a title screen
+        titleScreen = makeTitleAnimation(title);
     }
 
     // Add the outer loop, restoring tau if destroyed by assignment to a non-number and

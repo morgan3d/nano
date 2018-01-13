@@ -105,17 +105,19 @@ y+=v+=⅒
 // on ground
 if(y≥h)y=h;v=-2joy.aa`,
     
-    rgb: `#nanojam rgb
+    rgb: `#nanojam rgb,1
 clr=∅
 for x<64
  for y<64
   pset(x,y,hsv(x/63,y/63,1,x,y))`,
     
-    input:`clr=6
+    input:`#nanojam input,1
+clr=6
 for i<2
  y=30i;j=padᵢ
  circ(44,22+y,4,14+j.a);circ(50,14+y,4,14+j.b)
- line(20,10+y,20+8j.x,10+8j.y+y,1)`,
+ circ(30,16+y,2.7,14+j.s)
+ line(15,16+y,15+6j.x,16+6j.y+y,1)`,
     
     spacedash: `#nanojam SPACE DASH
 if(¬τ)x=32
@@ -200,8 +202,9 @@ var initialSource =
     //tests.hash;
     //tests.plasma;
     //tests.sort;
-    tests.ping;
+    //tests.ping;
     //tests.IF;
+    tests.input;
     //tests.colorgrid;
 
 
@@ -844,8 +847,9 @@ function setSaved(s) {
 
 /** Makes automated replacements to minimize the length of the program */
 function minify(nanoSource, aggressive) {
-    // Simple optimizations that don't affect
-    // readability tremendously
+    // TODO: protect strings
+    
+    // Simple optimizations that don't affect readability tremendously
     var s = nanoSource.
         replace(/\/\/.*$|\/\*[\s\S]*\*\//gm, ''). // Comments
         replace(/\n[ \t]*$/gm, '').               // Blank lines
@@ -867,17 +871,20 @@ function minify(nanoSource, aggressive) {
             }
         });
 
-        /*
-        // Pull up single-line loops
-        s = s.replace(/(\n *)(for|while|until)[ \t]+([^(].*)\1 ([^ \n].*)(\n *?|$)/g, function(match, indent1, loop, test, line2, indent3) {
-            if (indent3.length <= indent1.length) {
-                return indent1 + loop + '(' + test + ')' + line2 + indent3;
-            } else {
-                return match;
-            }
-        });
-        */
-    }
+        if (false) { // buggy!
+            // For some reason this is pulling up cases where the third line is not in fact at
+            // the level of indent 1
+            
+            // Pull up single-line loops
+            s = s.replace(/(\n *)(for|while|until)[ \t]+([^(][^\n]*)\1 (\S.*)(\n *?|$)/g, function(match, indent1, loop, test, line2, indent3) {
+                if (indent3.length <= indent1.length) {
+                    return indent1 + loop + '(' + test + ')' + line2 + indent3;
+                } else {
+                    return match;
+                }
+            });
+        }
+    } // if aggressive
 
     return s;
 }
@@ -941,7 +948,7 @@ var error = document.getElementById('error');
 /** Returns javascript source or throws an exception */
 function compile(src) {
     try {
-        // Insert theo nano reset sequence as a single line, so that line numbers are preserved
+        // Insert the nano reset sequence as a single line, so that line numbers are preserved
         var resetAnimation = nanoToJS(resetAnimationNanoSource, true).replace(/\n/g, ';');
         var code = resetAnimation + nanoToJS(src);
         if (jsCode) {
@@ -1110,8 +1117,8 @@ emulatorKeyboardInput.addEventListener('keyup', onEmulatorKeyUp, true);
 function ascii(x) { return x.charCodeAt(0); }
 
 /** Used by submitFrame() to map axes and buttons to event key codes when sampling the keyboard controller */
-var keyMap = [{'-x':[ascii('A'), 37],         '+x':[ascii('D'), 39],          '-y':[ascii('W'), 38], '+y':[ascii('S'), 40],          a:[ascii('Z'), 32],   b:[ascii('X'), 13]},
-              {'-x':[ascii('J'), ascii('J')], '+x':[ascii('L'), ascii('L')],  '-y':[ascii('I')],     '+y':[ascii('K'), ascii('K')],  a:[ascii('G'), 186],  b:[ascii('H'), ascii('.')]}];
+var keyMap = [{'-x':[ascii('A'), 37],         '+x':[ascii('D'), 39],          '-y':[ascii('W'), 38], '+y':[ascii('S'), 40],          a:[ascii('Z'), 32],   b:[ascii('X'), 13], s:[ascii('1'), ascii('1')]},
+              {'-x':[ascii('J'), ascii('J')], '+x':[ascii('L'), ascii('L')],  '-y':[ascii('I')],     '+y':[ascii('K'), ascii('K')],  a:[ascii('G'), 186],  b:[ascii('H'), ascii('.')], s:[ascii('7'), ascii('7')]}];
 
 var prevRealGamepadState = [];
 
@@ -1129,22 +1136,32 @@ function getIdealGamepads() {
             for (var a = 0; a < 2; ++a) {
                 mypad.axes[a] = (Math.abs(pad.axes[a]) > deadZone) ? Math.sign(pad.axes[a]) : 0;
             }
-            
+
+            // A and B
             for (var b = 0; b < 2; ++b) {
                 var but = pad.buttons[b];
                 mypad.buttons[b] = (typeof(but) === "object") ? but.pressed : (but > 0.5);
             }
 
+            // Start
+            var but = pad.buttons[9];
+            mypad.buttons[9] = (typeof(but) === "object") ? but.pressed : (but > 0.5);
+
             gamepadArray.push(mypad);
             
             if (gamepadArray.length > prevRealGamepadState.length) {
-                prevRealGamepadState.push({axes:[0, 0], buttons:[false, false]});
+                prevRealGamepadState.push({axes:[0, 0], buttons:[false, false, //0-2
+                                                                 undefined, undefined, undefined, undefined, undefined, undefined, // 3-8
+                                                                 false // 9
+                                                                ]});
             }
         }
     }
+    
     return gamepadArray;
 }
-        
+
+
 function submitFrame() {
     // Update the image
     updateImage.getContext('2d').putImageData(updateImageData, 0, 0);
@@ -1165,8 +1182,11 @@ function submitFrame() {
     
     refreshPending = true;
 
-    var axes = 'xy', buttons = 'ab';
+    var axes = 'xy', buttons = 'abs';
 
+    // HTML gamepad indices of corresponding elements of the buttons array
+    var buttonIndex = [0, 1, 9];
+    
     var gamepadArray = getIdealGamepads();
     
     // Sample the keys
@@ -1197,8 +1217,9 @@ function submitFrame() {
             pad[button] = (emulatorKeyState[b0] || emulatorKeyState[b1]) ? 1 : 0;
             pad[button + button] = (emulatorKeyJustPressed[b0] || emulatorKeyJustPressed[b1]) ? 1 : 0;
 
-            if (realGamepad && realGamepad.buttons[b]) { pad[button] = true; }
-            if (realGamepad && realGamepad.buttons[b] && ! prevRealGamepad.buttons[b]) { pad[button + button] = true; }
+            var i = buttonIndex[b];
+            if (realGamepad && realGamepad.buttons[i]) { pad[button] = true; }
+            if (realGamepad && realGamepad.buttons[i] && ! prevRealGamepad.buttons[i]) { pad[button + button] = true; }
         }
 
         // Update old state
@@ -1216,6 +1237,8 @@ setTimeout(function () {
     reloadRuntime();
 }, 0);
 
+var emulatorButtonState = {};
+    
 (function() {
     if (deployed) { initialSource = tests.spacedash; }
 
@@ -1228,6 +1251,46 @@ setTimeout(function () {
     
     editor.setValue(initialSource);
     editor.gotoLine(1);
+
+    var buttons = 'WASD1ZX';
+    for (var i = 0; i < buttons.length; ++i) {
+        var b = buttons[i];
+        var buttonElement = document.getElementById(b + 'button');
+        buttonElement.onmousedown = buttonElement.ontouchstart = (function(b) {
+            return function (event) {
+                if (! emulatorButtonState[b]) {
+                    // fake an event
+                    onEmulatorKeyDown({keyCode:ascii(b), stopPropagation:Math.abs, preventDefault:Math.abs});
+                }
+                emulatorButtonState[b] = 1;
+                event.preventDefault();
+            };
+        })(b);
+
+        buttonElement.onmouseenter = buttonElement.onmousemove = (function(b) {
+            return function (event) {
+                if (event.buttons !== 0) {
+                    if (! emulatorButtonState[b]) {
+                        // fake an event
+                        onEmulatorKeyDown({keyCode:ascii(b), stopPropagation:Math.abs, preventDefault:Math.abs});
+                    }
+                    emulatorButtonState[b] = 1;
+                }
+            };
+        })(b);
+
+        buttonElement.onmouseup = buttonElement.onmouseleave = buttonElement.ontouchend = (function(b) {
+            return function (event) {
+                if (emulatorButtonState[b]) {
+                    // fake an event
+                    onEmulatorKeyUp({keyCode:ascii(b), stopPropagation:Math.abs, preventDefault:Math.abs});
+                }
+                emulatorButtonState[b] = 0;
+                event.preventDefault();
+            };
+        })(b);
+}
+    
 })();
 
 ///////////////////////////////////////////////////////////////////////////////////////
