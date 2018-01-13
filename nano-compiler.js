@@ -250,10 +250,10 @@ function makeTitleAnimation(title) {
     title = title.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
     var src = `#nanojam title,1
 text("` + title + `",31,31,1)
-if(⅛τ%8<4)cont
-for j<3
- b=[3903080538885870,5990782578476654,6131554409934498]ⱼ
- for(x<52)b*=½;if(b∩1)pset(x+6,j+50,5);if(⅛τ%8<4)cont
+if(⅛τ%8≥4)
+ for j<3
+  b=[3903080538885870,5990782578476654,6131554409934498]ⱼ
+  for(x<52)b*=½;if(b∩1)pset(x+6,j+50,5);if(⅛τ%8<4)cont
 x=j=b=∅
 for(j<2)if(padⱼ.aa∪padⱼ.bb∪padⱼ.cc∪padⱼ.dd∪padⱼ.ss)j=∅;τ=0`;
 
