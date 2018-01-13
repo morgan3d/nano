@@ -1264,6 +1264,7 @@ var emulatorButtonState = {};
                 }
                 emulatorButtonState[b] = 1;
                 event.preventDefault();
+                event.stopPropagation();
             };
         })(b);
 
@@ -1287,6 +1288,7 @@ var emulatorButtonState = {};
                 }
                 emulatorButtonState[b] = 0;
                 event.preventDefault();
+                event.stopPropagation();
             };
         })(b);
 }

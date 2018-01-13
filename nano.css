@@ -50,7 +50,8 @@ a {
     width: 1px !important; height: 1px !important; position: absolute !important; left: -10000px !important; top: -1000px !important;
 }
 
-.emulatorButton {
+.emulator .case, .emulator .case .emulatorButton {
+    touch-action: none;
     /* Disable text selection */
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -61,6 +62,11 @@ a {
     /* Stop iOS from making the entire canvas gray when tapped */
     -webkit-tap-highlight-color: transparent;
 
+    /* Prevent magnifying glass */
+    -webkit-touch-callout: none;
+}
+
+.emulatorButton {
     /* border: 1px solid #f00; */
     position: absolute;
 }
