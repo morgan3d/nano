@@ -55,6 +55,15 @@ var tests = {
     IF: `#nanojam IF,1
 for x≤1
  if(0)1;if(2)3`,
+
+    rain: `#nanojam Rain,1
+pal(j=2423221107)
+K="εψNπqτ∞∅ξRw0∩∪⌉⊕αβδM5ΔθλμρσφωΩ{1"
+for x<13
+ h=hash(x+9)
+ i=((¼³τ(7h+3)+70h)∩15)-11
+ for y<11
+  text(K[++j∩31],5x,62-6y,min(i+=½+½h,6))`,
     
     ping: `#nanojam PING
 if(¬τ)p=32;f=2⁷
