@@ -10,14 +10,6 @@ String.prototype.rtrim = function() {
 
 var protectionBlockStart = 0xE001;
 var doubleQuoteProtection = String.fromCharCode(protectionBlockStart - 1);
-var numProtected, protectionMap;
-
-/** Given a string, returns a unique reserved unicode character that can be 
-    used to replace it temporarily to hide it from the rest of the renaming. */
-function protect(str) {
-    protectionMap.push(str);
-    return '' +  String.fromCharCode(numProtected++ + protectionBlockStart);
-}
 
 
 /** Assumes that str[i]=='('. Returns the index of the
@@ -272,8 +264,14 @@ for(j<2)if(padⱼ.aa∪padⱼ.bb∪padⱼ.cc∪padⱼ.dd∪padⱼ.ss)j=∅;τ=0`
 /** Compiles nano -> JavaScript. If noWrapper is true then no outer exception handler and
     infinite loop are injected. */
 function nanoToJS(src, noWrapper) {
-    numProtected = 0;
-    protectionMap = [];
+    /** Given a string, returns a unique reserved unicode character that can be 
+        used to replace it temporarily to hide it from the rest of the renaming. */
+    function protect(str) {
+        protectionMap.push(str);
+        return '' +  String.fromCharCode(numProtected++ + protectionBlockStart);
+    }
+    
+    var numProtected = 0, protectionMap = [];
 
     // Title line
     var title = undefined, flags = 0;
@@ -395,12 +393,13 @@ function nanoToJS(src, noWrapper) {
         // Generate a title screen
         titleScreen = makeTitleAnimation(title);
     }
-
+    
     // Add the outer loop, restoring tau if destroyed by assignment to a non-number and
     // catching RESET to allow jumping back to an interation of the outer loop.
     src = 'var __yieldCounter = 0; ' + (noWrapper ? '' : 'while(true) { try { ') + (
         '_drawPalette[0] = _initialPalette[0]; pal(); clr = 0; srand(); ' +
             titleScreen +
+            '_drawPalette[0] = _initialPalette[0]; pal(); clr = 0; srand(); ' +
             'for (var τ = 0, __count = 0; (τ !== 1) || (__count === 1); ++τ, ++__count) { if (isNaN(τ)) { τ=0; } flip(); yield; cls(clr); ' +
             src +
             ' } '
