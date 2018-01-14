@@ -650,7 +650,6 @@ function text(str, x, y, colormap) {
 
     var borderColor = colormapToColor(colormap);
     
-
     // Spaces between letters
     var width = str.length - 1;
     // Variable-width letters

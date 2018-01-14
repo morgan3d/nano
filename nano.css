@@ -67,7 +67,8 @@ a {
 }
 
 .emulatorButton {
-    /*border: 1px solid #f00; */
+    /* show bounds for debugging */
+    /*border: 1px solid #f00;*/
     position: absolute;
 }
 

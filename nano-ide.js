@@ -170,8 +170,8 @@ for u≤64
  // Enemy ships
  k=⌊2ξ+1⌋;v=τk-3⁸ξ;draw(5+14k,u,v,324,4);if(|x-u|+|v-50|<6)τ=-99
 
-draw(3,x,50,641) // Player ship
 circ(32,τ-9³,28) // End planet
+draw(3,x,50,641) // Player ship
 
 // Victory screen
 if(τ≥9³)text("YOU WIN");wait;τ=0`,
@@ -234,7 +234,7 @@ var initialSource =
     //tests.nanoReset;
     //tests.rgb;
     //tests.text;
-    //tests.spacedash;
+    tests.spacedash;
     //tests.variables;
     //tests.runner;
     //tests.hash;
@@ -244,7 +244,7 @@ var initialSource =
     //tests.IF;
     //tests.FOR;
     //tests.input;
-    tests.agent;
+    //tests.agent;
     //tests.rect;
     //tests.colorgrid;
 
