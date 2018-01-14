@@ -1104,9 +1104,11 @@ function onEmulatorKeyDown(event) {
     } else if (key == gifCaptureKey) {
         if (gifRecording) {
             // Save
+            document.getElementById('recording').classList.add('hidden');
             gifRecording.render();
             gifRecording = null;
         } else {
+            document.getElementById('recording').classList.remove('hidden');
             gifRecording = new GIF({workers:3, quality:30, width:screen.width, height:screen.height});
             gifRecording.frameNum = 0;
             gifRecording.on('finished', function (blob) {
@@ -1189,6 +1191,7 @@ function submitFrame() {
         ++gifRecording.frameNum;
         if (gifRecording.frameNum > 60*8) {
             // Stop after 8 seconds
+            document.getElementById('recording').classList.add('hidden');
             gifRecording.render();
             gifRecording = null;
         }
