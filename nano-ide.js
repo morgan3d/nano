@@ -60,25 +60,26 @@ for x≤1
 rect(10,10,20,30,12)`,
 
     agent:`#nanojam agent
-clr=∅
-
 // initialize
 if ¬τ
- agents=[];rect(0,0,62,62,13)
- for i<4
-  agents.add({x:2⌊32ξ⌋,y:2⌊32ξ⌋,θ:½π⌊4ξ⌋})
+ agents=[];cls(7);rect(-1,-1,63,63,31);clr=∅
+ for i<30
+  agents.add({x:1+2⌊30ξ⌋,y:1+2⌊30ξ⌋,θ:½π⌊4ξ⌋})
   
 for i<agents.len
  a=agentsᵢ
 
- // turn while blocked
- j=0;while(pget(a.x+2cos(a.θ),a.y+2sin(a.θ)) & ++j<4)a.θ+=½π
+ // try turning in each direction while blocked
+ for k<2
+  j=0
+  while ¬pget(a.x+2cos(a.θ),a.y+2sin(a.θ)) & ++j<4
+   a.θ+=½π(2k-1)
 
  // remove stuck agents
- if(++j≟4)agents.del(i--);cont
+ if(j≟4)pset(a.x,a.y,0);agents.del(i--);cont
  
  // advance
- for(j<2)pset(a.x,a.y);a.x+=cos(a.θ),a.y+=sin(a.θ)`,
+ for(j<2)pset(a.x,a.y,0);a.x+=cos(a.θ);a.y+=sin(a.θ)`,
 
     FOR: `#nanojam test,1
 for 10<x<32
