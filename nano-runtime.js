@@ -532,7 +532,7 @@ function _vline(x, y1, y2, color) {
     if ((y2 >= 0) && (y1 <= 63) && (x >= 0) && (x <= 63)) {
         y1 = Math.max(0, y1);
         y2 = Math.min(63, y2);
-        for (var y = y1, i = y1 * 63 + x; y <= y2; ++y, ++i) {
+        for (var y = y1, i = y1 * 64 + x; y <= y2; ++y, i += 64) {
             _screen[i] = color;
         }
     }

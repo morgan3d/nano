@@ -56,6 +56,30 @@ var tests = {
 for x≤1
  if(0)1;if(2)3`,
 
+    rect:`#nanojam rect,1
+rect(10,10,20,30,12)`,
+
+    agent:`#nanojam agent
+clr=∅
+
+// initialize
+if ¬τ
+ agents=[];rect(0,0,62,62,13)
+ for i<4
+  agents.add({x:2⌊32ξ⌋,y:2⌊32ξ⌋,θ:½π⌊4ξ⌋})
+  
+for i<agents.len
+ a=agentsᵢ
+
+ // turn while blocked
+ j=0;while(pget(a.x+2cos(a.θ),a.y+2sin(a.θ)) & ++j<4)a.θ+=½π
+
+ // remove stuck agents
+ if(++j≟4)agents.del(i--);cont
+ 
+ // advance
+ for(j<2)pset(a.x,a.y);a.x+=cos(a.θ),a.y+=sin(a.θ)`,
+
     FOR: `#nanojam test,1
 for 10<x<32
  pset(2x,32)`,
@@ -218,7 +242,9 @@ var initialSource =
     //tests.ping;
     //tests.IF;
     //tests.FOR;
-    tests.input;
+    //tests.input;
+    tests.agent;
+    //tests.rect;
     //tests.colorgrid;
 
 
