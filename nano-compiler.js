@@ -30,9 +30,23 @@ function findClosingParen(str, i) {
     return i;
 }
 
-/** Returns the index of the next character c in str after j, or -1 if none.
+/** Returns the index of c or d within str after j, or -1 if none.
     Skips over balanced parens. */
-function nextInstance(str, c, j) {
+function nextInstance(str, c, j, d) {
+    if (d !== undefined) {
+        var i0 = nextInstance(str, c, j);
+        var i1 = nextInstance(str, d, j);
+        if (i0 > -1) {
+            if (i1 > -1) {
+                return Math.min(i0, i1);
+            } else {
+                return i0;
+            }
+        } else {
+            return i1;
+        }
+    }
+    
     var start = j + 1;
 
     while (true) {
@@ -93,35 +107,38 @@ function processSingleLineControl(str) {
 }
 
 
-/** Given a nano FOR-loop tet not surrounded in extra (), returns the JavaScript equivalent */
+/** Given a nano FOR-loop test not surrounded in extra (), returns the JavaScript equivalent */
 function processForTest(test) {
-    // Look for <=, < expressions, but skip over pairs of parens
-    var j = nextInstance(test, '<', -1);
-    if (j === -1) { throw 'No < found in FOR loop declaration'; }
-    var op = (test[j + 1] === '=') ? '<=' : '<';
+    // Look for ≤ or < expressions, but skip over pairs of parens
+    var j = nextInstance(test, '<', -1, '≤');
+    if (j === -1) { throw 'No < or ≤ found in FOR loop declaration'; }
+    var op = (test[j] === '≤') ? '<=' : '<';
     
-    var k = nextInstance(test, '<', j);
+    var k = nextInstance(test, '<', j, '≤');
     var identifier, initExpr = '0';
-    var endExpr = test.substring(j + op.length);
+    var endExpr = test.substring(j + 1);
+
     if (k === -1) {
-        // has the form "variable <= expr"
+        // has the form "variable < expr"
         identifier = test.substring(0, j);
     } else {
-        // has the form "expr <= variable <= expr"
-        initExpr   = test.substring(0, k);
-        if (test[k + 1] === '=') {
-            // <=
-            identifier = test.substring(k + 2, j);
-        } else {
-            // <
-            initExpr += ' + 1';
-            identifier = test.substring(k + 1, j);
+        // has the form "expr < variable < expr"
+        // j is the location of the first operator
+        // k is the location of the second operator
+        
+        initExpr   = test.substring(0, j);
+        if (op === '<') {
+            initExpr = 'Math.floor(' + initExpr + ') + 1';
         }
+
+        op = (test[k] === '≤') ? '<=' : '<';
+        identifier = test.substring(j + 1, k);
+        endExpr = test.substring(k + 1);
     }
     
-    initExpr = initExpr.trim();
+    initExpr   = initExpr.trim();
     identifier = identifier.trim();
-    endExpr = endExpr.trim();
+    endExpr    = endExpr.trim();
 
     if (! legalIdentifier(identifier)) { throw 'Illegal FOR-loop variable syntax'; }
                 
@@ -307,8 +324,6 @@ function nanoToJS(src, noWrapper) {
     
     src = src.replace(/≟/g, ' === ');
     src = src.replace(/≠/g, ' !== ');
-    src = src.replace(/≤/g, ' <= ');
-    src = src.replace(/≥/g, ' >= ');
     src = src.replace(/¬/g, ' ! ');
 
     // Temporary rename to hide from absolute value
@@ -355,6 +370,10 @@ function nanoToJS(src, noWrapper) {
     
     src = processBlocks(src);
 
+    // Process after FOR-loops so that they are easier to parse
+    src = src.replace(/≤/g, ' <= ');
+    src = src.replace(/≥/g, ' >= ');
+    
     src = src.replace(/cont/g, 'continue');
 
     // Array sort (avoid conflicting with the built-in Array.sort for JavaScript)

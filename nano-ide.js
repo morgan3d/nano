@@ -7,7 +7,7 @@ function afterImageLoad(url, callback) {
     image.src = url;
 }
 
-var deployed = (location.href.substring(0, 8) !== 'file:///');
+var deployed = (location.href.substring(0, 8) !== 'file:///') && (location.href.indexOf('://localhost') === -1);
 
 // The gif recording object, if in a recording
 var gifRecording = null;
@@ -55,6 +55,10 @@ var tests = {
     IF: `#nanojam IF,1
 for x≤1
  if(0)1;if(2)3`,
+
+    FOR: `#nanojam test,1
+for 10<x<32
+ pset(2x,32)`,
 
     rain: `#nanojam Rain,1
 pal(j=2423221107)
@@ -213,6 +217,7 @@ var initialSource =
     //tests.sort;
     //tests.ping;
     //tests.IF;
+    //tests.FOR;
     tests.input;
     //tests.colorgrid;
 
