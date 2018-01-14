@@ -635,7 +635,7 @@ function pget(x, y) {
 
 function text(str, x, y, colormap) {
     if (x === undefined) { x = 31; }
-    if (y === undefined) { y = 31; }
+    if (y === undefined) { y = 3; }
     str = '' + str;
     
     colormap |= 0;
