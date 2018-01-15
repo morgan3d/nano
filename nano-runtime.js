@@ -658,10 +658,13 @@ function text(str, x, y, colormap) {
     }
 
     // Center and round
-    x = Math.round(x - width / 2) | 0;
+    x = Math.round(x - width * 0.5) | 0;
     y = Math.round(y - 2.5) | 0;
 
-    // TODO: cull when off-screen
+    if ((x - 1 > 63) || (y - 1 > 63) || (y + 6 < 0) || (x + width + 4 < 0)) {
+        // Cull when off-screen
+        return;
+    }
     
     if (borderColor !== TRANSPARENT) {
         // TODO: Draw border
@@ -696,6 +699,17 @@ function text(str, x, y, colormap) {
     } // not transparent
 }
 
+
+/* Returns a shallow copy */
+function _clone(a) {
+    if (a instanceof Array) {
+        return a.slice();
+    } else if (typeof a === 'Object') {
+        return Object.assign({}, a);
+    } else {
+        return a;
+    }
+}
 
 function _clamp(x, L, H) {
     return Math.max(Math.min(x, H), L);

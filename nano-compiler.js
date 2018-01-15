@@ -107,8 +107,22 @@ function processSingleLineControl(str) {
 }
 
 
-/** Given a nano FOR-loop test not surrounded in extra (), returns the JavaScript equivalent */
+/** Given a nano FOR-loop test not surrounded in extra (), returns the JavaScript equivalent test */
 function processForTest(test) {
+    var match = test.match(/^[ \t]*([δΔ]?(?:[A-Za-z]{1,3}|[αβδθλμξρσφψωΔΩ]))[ \t]*∈(.*)$/);
+    if (match) {
+        // Generate variables
+        var container = gensym('cntnr'), keys = gensym('keys'), index = gensym('index'), cur = match[1], containerExpr = match[2];
+        
+        // Container iteration FOR loop. Clone the container if it is an object
+        // or array. Iterates over elements of arrays, keys of table, chars of string.
+        return '(var ' + container + ' = _clone(' + containerExpr + '), ' + keys + ' = Object.keys(' + container + '), ' + 
+            index + ' = 0, ' + cur + ' = ' + container + '[' + keys + '[0]]; ' +
+            index + ' < ' + keys + '.length; ' + cur + ' = ' + container + '[' + keys + '[++' + index + ']])';
+    }
+
+    // Range FOR loop
+    
     // Look for ≤ or < expressions, but skip over pairs of parens
     var j = nextInstance(test, '<', -1, '≤');
     if (j === -1) { throw 'No < or ≤ found in FOR loop declaration'; }
@@ -277,6 +291,11 @@ for(j<2)if(padⱼ.aa∪padⱼ.bb∪padⱼ.cc∪padⱼ.dd∪padⱼ.ss)j=∅;τ=0`
     return nanoToJS(src, true).replace(/\n/g, ';');
 }
 
+var gensymNum = 0;
+/** Returns a new identifier */
+function gensym(base) {
+    return '__' + (base || '') + (++gensymNum) + '__';
+}
 
 /** Compiles nano -> JavaScript. If noWrapper is true then no outer exception handler and
     infinite loop are injected. */
@@ -344,18 +363,14 @@ function nanoToJS(src, noWrapper) {
     // Process implicit multiplication twice, so that it can happen within exponents and subscripts
     for (var i = 0; i < 2; ++i) {
         // Implicit multiplication. Must be before operations that may put parentheses after
-        // numbers, making the product unclear.
-        src = src.replace(/([επτξ∞½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒\d⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾])[ \t]*([\(A-Za-zαβδθλμρσφψωΔΩτ])/g, '$1 * $2');
+        // numbers, making the product unclear. 
+        src = src.replace(/([επτξ∞½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒\d⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₎])[ \t]*([\(A-Za-zαβδθλμρσφψωΔΩτεπτξ∞])/g, '$1 * $2');
         
         // Fix any instances of "or" that got accentially turned
         // into implicit multiplication. If there are other text
         // operators in the future, they can be added to this pattern.
         src = src.replace(/\*[\t ]*(or)(\b|\d|$)/g, ' $1$2');
-        
-        // These are a weird case; we can write 2π or πr, so the π acts as both a number and a
-        // variable for the purpose of implicit products.
-        src = src.replace(/([½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒\d⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾])[ \t]*([επτξ∞])/g, '$1 * $2');
-        
+
         // Replace fractions
         src = src.replace(/[½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒]/g, function (match) { return fraction[match]; });
         

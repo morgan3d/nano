@@ -142,6 +142,30 @@ y+=v+=⅒
 
 // on ground
 if(y≥h)y=h;v=-2joy.aa`,
+
+    stars:`#nanojam stars,1
+if ¬τ
+ S=[]
+ for i<120
+  θ=2πξ;v=⅛+ξ⁸
+  S.add([60ξ,⅒v,cos(θ),sin(θ),gray(2v)])
+
+for s∈S
+ for j<2
+  pset(31+s₀s₂,31+s₀s₃,s₄)
+  if((s₀+=s₁s₀^⅗)>60)s₀=2;s₄=hsv(⅛-½ξ,ξ¹⁵,¼ξ+12s₁)`,
+    
+    textbots:`#nanojam textbots,1
+if ¬τ
+ A=[];clr=2
+ for i≤20
+  θ=2πξ
+  A.add([63ξ,63ξ,cos(θ),sin(θ)])
+
+for a∈A
+ text(i,a₀,a₁,i%7)
+ a₀=mid(a₀+a₂,-10,74);a₁=mid(a₁+a₃,-10,74)
+ if(ξ<⅕²)θ=2πξ;a₂=cos(θ);a₃=sin(θ)`,
     
     rgb: `#nanojam rgb,1
 clr=∅
@@ -234,7 +258,9 @@ var initialSource =
     //tests.nanoReset;
     //tests.rgb;
     //tests.text;
-    tests.spacedash;
+    //tests.spacedash;
+    //tests.textbots;
+    tests.stars;
     //tests.variables;
     //tests.runner;
     //tests.hash;
@@ -264,6 +290,7 @@ function getImageData(image) {
     tempCtx.drawImage(image, 0, 0, image.width, image.height);
     return tempCtx.getImageData(0, 0, image.width, image.height);
 }
+
 
 /** Returns a 5-level grayscale Uint8Array of this data */
 function getPixelData5(image) {
@@ -491,7 +518,7 @@ function makeSymbolsWindow() {
     var chars =
 `½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒ %^*/-+ ;
 επτ∞∅ξ αβδΔθλμρσφψωΩ {}
-∩∪⊕~◅▻ ¬&X ⌊⌋|⌈⌉ ≟≠=≤≥<>
+∩∪⊕~◅▻¬&X⌊⌋|⌈⌉≟≠=∈≤≥<>
 ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻ᵃᵝⁱʲˣᵏᵘⁿ⁽⁾
 ₀₁₂₃₄₅₆₇₈₉₊₋ₐᵦᵢⱼₓₖᵤₙ₍₎`;
 
@@ -526,6 +553,7 @@ function makeSymbolsWindow() {
         '⌈': 'ceiling',
         '≟': 'equals',
         '≠': 'not equal/logical xor',
+        '∈': 'in (FOR loop)',
         '=': 'assignment',
         '≤': 'compare',
         '⁰': 'exponent',
@@ -541,7 +569,7 @@ function makeSymbolsWindow() {
         
         switch (c) {
         case '\n': s += '<br>'; ++line; break;
-        case ' ': s += '<span style="display:inline-block;width:' + (line === 2 ? 8 : 12) + 'px"> </span>'; break;
+        case ' ': s += '<span style="display:inline-block;width:' + (12) + 'px"> </span>'; break;
         default:
             if (c === 'X') c = 'or';
             s += '<div onmousedown="event.stopPropagation()" class="button" title="' + tooltip + '" onclick="insertSymbol(\'' + c + '\')"><label><span class="label">' + c + '</span></label></div>';

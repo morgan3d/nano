@@ -309,27 +309,31 @@ div#symbolsWindow {
 .cartridge {
     background-image: url('cartridge.png');
     background-size:  cover;
-    width:            310px;
-    height:           130px;
+    width:            214px;
+    height:           90px;
 }
 
 .cartridge .label {
     color:            rgba(255,255,255,0.9);
     position:         relative;
     filter:           blur(0.09px);
-    top:              8px;
-    left:             19px;
-    width:            207px;
-    height:           37px;
-    border-radius:    1px 1px 8px 8px;
-    padding-top:      10px;
-    background:       linear-gradient(135deg, #feccb1 0%,#f17432 50%,#ea5507 51%,#fb955e 100%);
-    font-size:        20px;
+    top:              5px;
+    left:             13px;
+    width:            144px;
+    height:           29px;
+    border-radius:    1px 1px 5px 5px;
+    padding-top:      5px;
+    /* background:       linear-gradient(135deg, #feccb1 0%,#f17432 50%,#ea5507 51%,#fb955e 100%);*/
+    background:       url('cart-back00.png');
+    background-size:  cover;
+    font-size:        18px;
     font-style:       italic;
     font-weight:      bold;
     font-family:      Tahoma, Monaco, Arial;
     -webkit-text-stroke: 1px rgba(0,0,0,0.7); 
     text-stroke:      1px rgba(0,0,0,0.7);
+    text-shadow:      rgba(0,0,0,0.7) 0 0 4px;
+    -webkit-text-shadow:rgba(0,0,0,0.7) 0 0 4px;
 }
 
 

@@ -346,6 +346,7 @@ Symbol | Meaning
 `≤`    | less-than or equal to
 `>`    | greater-than
 `≥`    | greater-than or equal to
+`∈`    | `for` loop container element-of
 `^`    | exponentiation
 `*`    | multiplication (see also implicit multiplication)
 `*=`   | mutating multiplication
@@ -483,25 +484,33 @@ top level will restart the entire program at `τ=0` with the default palette and
 Multi-line `if` statements may be followed by `else` and `elif` clauses. These must always be
 multi-line.
 
-`for` loops increment by 1 each iteration and always count up. The loop variable must be on the
-left-side of a single comparison loop expression or the center of a multi-comparison
+Numeric `for` loops increment by 1 each iteration and always count up. The loop variable must
+be on the left-side of a single comparison loop expression or the center of a multi-comparison
 expression.
 
-Single-line `for`, `if`, `while`, and `until` are permitted. In each case, the test must be
-enclosed in parentheses and the body runs to the end of the line. There can be multiple
-single-line expressions on the same line. No `else` is permitted with single-line `if`.
+Container iteration `for` loops iterate over the keys of a table, the characters of a string,
+or the elements of an array _as of the beginning of the loop_. If the container is modified
+during iteration, the original is still used. The Java/C++ equivalents of nano `for`-loop conditions
+are:
 
-nano            | JavaScript
-----------------|------------------------
-`for i≤k`       | `for (i = 0; i <= k; ++i)`
-`for i&lt;k`    | `for (i = 0; i &lt; k; ++i)`
-`for 4≤i&lt;k`  | `for (i = 4; i &lt; k; ++i)`
+nano              | Java/C++
+------------------|------------------------
+`for i≤k`         | `for (i = 0; i <= k; ++i)`
+`for i&lt;k`      | `for (i = 0; i &lt; k; ++i)`
+`for 4≤i&lt;k`    | `for (i = 4; i &lt; k; ++i)`
+`for 4&lt;i&lt;k` | `for (i = 5; i &lt; k; ++i)`
+`for x∈S`         | `for (x : S)`
 
 The comparison operators in a `for` loop declaration are an overloaded syntax for comparison
 operators (just as many languages overload the `=` operator for `for` loops).  They have
 the lowest precedence. For example, `for i&lt;a||b` is equivalent to `for i&lt;(a||b)`.
 To use regular comparison operators within `for` loop preamble, you *must* use parentheses to
 make the parsing unambiguous, for example, `for i&lt;(a&lt;b)`.
+
+Single-line `for`, `if`, `while`, and `until` are permitted. In each case, the test must be
+enclosed in parentheses and the body runs to the end of the line. There can be multiple
+single-line expressions on the same line. No `else` is permitted with single-line `if`.
+
 
 
 Special
@@ -910,6 +919,34 @@ The code editor for the nano IDE is [ace.js](https://ace.c9.io/) used under the 
 
 URL encoding uses [lz-string.js](https://github.com/pieroxy/lz-string) (c) 2014 Pieroxy under
 its license that permits any use.
+
+
+# Changes
+
+
+2018 Jan 7-14:
+ - Container iteration (`for x ∈ S`) loops
+ - Text culling optimization
+ - `text` now defaults to `y=3` (top of screen)
+ - Fixed `rect` and vertical `line`
+ - GIF recording indicator
+ - Fixed lower-bound `for` loops
+ - Start button
+ - Buttons on emulator work
+ - Comments allowed on line 1
+ - Title screen button prompt
+ - Fixed multiple `if` statements on one line
+ - Fixed sprite 95
+ - URL encoding
+ - Made octal constants illegal
+ - fixed Chrome + Windows pasting
+ - Export minified code
+ - Aggressive character minification
+ - AdBlock warning
+ - Twitter character counts
+ - implicit multiplication in exponents and subscripts
+ - `array.sort()`
+ - fixed `pget()`
 
 
 <style class="fallback">body{color:#FFF}</style>

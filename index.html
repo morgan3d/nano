@@ -25,7 +25,9 @@
   </script>
  
   <body>
-    <div style="position:fixed; bottom:0px; visibility:hidden">
+    <div style="position:fixed; bottom:0px" class="hidden">
+      <script>makeToggle('Carts', undefined, 'Cartridges');
+        </script>
       <button id="authorize-button" style="display: none;">Authorize</button>
       <button id="signout-button" style="display: none;">Sign Out</button>
       <button onclick="onSaveToGoogleDrive()">Save to Google Drive</button>
@@ -39,37 +41,24 @@
       &nbsp;&nbsp; &middot; &nbsp;&nbsp;
       F8 GIF
       <span id="recording" class="blink hidden" style="color:#F00">(RECORDING)</span>
-      <script>
-        //makeToggle('Carts', undefined, 'Cartridges');
-      </script>     
     </div>
     <div id="adblockWarning"></div>
     <div style="position:absolute; left:103px; top:580px; color:#666; font-size: 80%">
       &nbsp;&nbsp;New:
       <ul style="margin-top:0px">
-        <li>Changed <code>text</code> to vertically default to the top of the screen</li>
+        <li><code>for x ∈ S<code> loops</li>
+        <li>Text culling optimization</li>
+        <li>Changed <code>text</code> default to the top of screen</li>
         <li>Fixed <code>rect</code> and vertical <code>line</code></li>
         <li>GIF recording indicator</li>
         <li>Fixed lower-bound <code>for</code> loops</li>
         <li>Start button</li>
-        <li>Buttons on emulator work</li>
-        <li>Comments allowed on line 1</li>
-        <li>Title screen button prompt</li>
-        <li>Fixed multiple <code>if</code> statements on one line</li>
-        <li>Fixed sprite 95</li>
-        <li>URL encoding</li>
-        <li>Made octal constants illegal</li>
-        <li>fixed Chrome + Windows pasting</li>
-        <li>Export minified code</li>
-        <li>Aggressive character minification</li>
-        <li>AdBlock warning</li>
-        <li>Twitter character counts</li>
-        <li>implicit multiplication in exponents and subscripts</li>
-        <li><code>array.sort()</code></li>
-        <li>fixed <code>pget()</code></li>
+        <li>Buttons on emulator now work
+          <br/>
+        <a href="doc/specification.md.html#changes">more...</a></li>
       </ul>
     </div>
-    <div style="position: absolute; right: 65px; top: 580px; color:#666; font-size: 80%">
+    <div style="position: absolute; right: 24px; top: 580px; color:#666; font-size: 80%">
       <center>
       <table style="text-align: center; border-collapse: collapse">
         <tr style="border-bottom: 1px solid"><th>Control</th><th>Player 1</th><th>Player 2</th></tr>
@@ -94,7 +83,7 @@
                 makeButton('<img src="reload-icon.png" width=12>', 'Start/Restart (F5)', 'onRestartButton');
                 makeRadio('<span style="top:-2px;position:relative">▶</span>', 'playButton', false, 'title="Run (Ctrl+F5)"');
                 makeRadio('<b style="font-size:80%">||</b>', 'pauseButton', false, 'title="Pause (Ctrl+Break)"');
-                makeRadio('<span style="font-size:120%;top:-5px;position:relative">■<span>', 'stopButton', true, 'title="Stop (Shift+F5)"');
+                makeRadio('<span style="font-size:120%;top:-2px;position:relative">■<span>', 'stopButton', true, 'title="Stop (Shift+F5)"');
               </script>
             </td>
             <td style="text-align:center">
@@ -157,13 +146,13 @@
              draggable="true" 
              onmousedown="event.stopPropagation()"
              ondragstart="cartridgeDragStart(event)"
-             style="position:absolute; top:30px; right: 10px"><div class="label">Space Dash</div></div>
+             style="position:absolute; top:30px; right: 40px"><div class="label">Space Dash</div></div>
 
         <div class="cartridge"
              draggable="true" 
              onmousedown="event.stopPropagation()"
              ondragstart="cartridgeDragStart(event)"
-             style="position:absolute; top:65px; right: 5px"><div class="label" style="background:linear-gradient(135deg, #00ccb1 0%,#007432 50%,#005507 51%,#00955e 100%)">Racecar</div></div>
+             style="position:absolute; top:65px; right: 20px"><div class="label">Racecar</div></div>
 
       </div>
     </div>
