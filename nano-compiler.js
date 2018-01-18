@@ -364,7 +364,7 @@ function nanoToJS(src, noWrapper) {
     for (var i = 0; i < 2; ++i) {
         // Implicit multiplication. Must be before operations that may put parentheses after
         // numbers, making the product unclear. 
-        src = src.replace(/([επτξ∞½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒\d⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₎])[ \t]*([\(A-Za-zαβδθλμρσφψωΔΩτεπτξ∞])/g, '$1 * $2');
+        src = src.replace(/([επτξ∞½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒\d⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₎])[ \t]*([\(\[A-Za-zαβδθλμρσφψωΔΩτεπτξ∞])/g, '$1 * $2');
         
         // Fix any instances of "or" that got accentially turned
         // into implicit multiplication. If there are other text
@@ -402,7 +402,7 @@ function nanoToJS(src, noWrapper) {
     src = src.replace(/◅/g, ' << ');
     src = src.replace(/▻/g, ' >> ');
 
-    src = src.replace(/(\b)or([\b\d])/g, '$1 || $2');
+    src = src.replace(/(\b|\d)or(\b|\d)/g, '$1 || $2');
     src = src.replace(/∩\b/g, ' & ');
     src = src.replace(/∪\b/g, ' | ');
 
@@ -419,7 +419,7 @@ function nanoToJS(src, noWrapper) {
 
     src = src.replace(/(flip)/g, '$1(); yield; ');
 
-    // Must come after loop processing; not considered a loop
+    // 'wait' must come after loop processing; not considered a loop
     src = src.replace(/wait/g, 'do { flip(); yield; } while (!(pad[0].aa || pad[0].bb || pad[0].cc || pad[0].dd || pad[0].ss || pad[1].aa || pad[1].bb || pad[1].cc || pad[1].dd || pad[1].ss));');
 
     var titleScreen = '';
@@ -431,7 +431,7 @@ function nanoToJS(src, noWrapper) {
     // Add the outer loop, restoring tau if destroyed by assignment to a non-number and
     // catching RESET to allow jumping back to an interation of the outer loop.
     src = 'var __yieldCounter = 0; ' + (noWrapper ? '' : 'while(true) { try { ') + (
-        '_drawPalette[0] = _initialPalette[0]; pal(); clr = 0; srand(); ' +
+        '_drawPalette[0] = _initialPalette[0]; pal(); cls(0); clr = 0; srand(); ' +
             titleScreen +
             '_drawPalette[0] = _initialPalette[0]; pal(); clr = 0; srand(); ' +
             'for (var τ = 0, __count = 0; (τ !== 1) || (__count === 1); ++τ, ++__count) { if (isNaN(τ)) { τ=0; } flip(); yield; cls(clr); ' +

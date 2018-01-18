@@ -161,6 +161,12 @@ div.disabled span.label, div.disabled:active span.label {
     margin:           2px;
 }
 
+#symbolsWindow .button span.label span {
+    position:relative;
+    top: -1px;
+}
+
+
 /*****************************************************/
 
 div.ide {
@@ -305,6 +311,7 @@ div#symbolsWindow {
     padding-top: 7px;
     padding-left: 3px;
 }
+
 
 .cartridge {
     background-image: url('cartridge.png');

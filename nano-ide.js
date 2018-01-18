@@ -93,6 +93,35 @@ for x<13
  i=((¼³τ(7h+3)+70h)∩15)-11
  for y<11
   text(K[++j∩31],5x,62-6y,min(i+=½+½h,6))`,
+
+    adventure:`#nanojam Adventure,1
+if ¬τ
+ // Initialize
+ pal(121024232221)
+ P={x:32,y:32,f:0,θ:0}
+ J=joy
+
+// Grass
+cls(22)
+for i<64
+ draw(93,8(i%8)+3,8⌊⅛i⌋+3,3999/10^⌊2hash(i)⌋)
+
+// Wall
+for i<6
+ draw(91,8i+3,12,3111)
+draw(91,51-8,20,3111)
+ 
+// Snake
+draw(69+⌊¼²τ⌋%2,40,34,431,2)
+
+if J.x or J.y
+ P.θ = atan(J.y, J.x)
+ P.x += ½cos(P.θ)
+ P.y += ½sin(P.θ)
+ ++P.f
+
+h = ⌊2P.θ/π⌋∩3
+draw(35+⌊⅛P.f⌋%2+16[0,1,0,2][h],P.x,P.y,4321,2(h≟2))`,
     
     ping: `#nanojam PING
 if(¬τ)p=32;f=2⁷
@@ -259,8 +288,9 @@ var initialSource =
     //tests.rgb;
     //tests.text;
     //tests.spacedash;
+    tests.adventure
     //tests.textbots;
-    tests.stars;
+    //tests.stars;
     //tests.variables;
     //tests.runner;
     //tests.hash;
@@ -519,8 +549,8 @@ function makeSymbolsWindow() {
 `½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒ %^*/-+ ;
 επτ∞∅ξ αβδΔθλμρσφψωΩ {}
 ∩∪⊕~◅▻¬&X⌊⌋|⌈⌉≟≠=∈≤≥<>
-⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻ᵃᵝⁱʲˣᵏᵘⁿ⁽⁾
-₀₁₂₃₄₅₆₇₈₉₊₋ₐᵦᵢⱼₓₖᵤₙ₍₎`;
+⁰¹²³⁴⁵⁶⁷⁸⁹⁽⁾⁻⁺ᵃᵝⁱʲˣᵏᵘⁿ
+₀₁₂₃₄₅₆₇₈₉₍₎₋₊ₐᵦᵢⱼₓₖᵤₙ`;
 
     var tooltipTable = {
         '%': 'modulo',
@@ -572,7 +602,7 @@ function makeSymbolsWindow() {
         case ' ': s += '<span style="display:inline-block;width:' + (12) + 'px"> </span>'; break;
         default:
             if (c === 'X') c = 'or';
-            s += '<div onmousedown="event.stopPropagation()" class="button" title="' + tooltip + '" onclick="insertSymbol(\'' + c + '\')"><label><span class="label">' + c + '</span></label></div>';
+            s += '<div onmousedown="event.stopPropagation()" class="button" title="' + tooltip + '" onclick="insertSymbol(\'' + c + '\')"><label><span class="label"><span>' + c + '</span></span></label></div>';
         }
     }
     document.getElementById('keys').innerHTML = s ;
@@ -876,19 +906,29 @@ function onPauseButton() {
 
 
 function onDocumentKeyDown(event) {
-    if ((event.which || event.keyCode) === 116) {
+    switch (event.which || event.keyCode) {
+    case 116: F5
         // F5
         event.preventDefault();
-        if (event.ctrlKey) {
+        if (event.ctrlKey || event.metaKey) {
             onPlayButton();
         } else if (! event.shiftKey) {
             onRestartButton();
         } else {
             onStopButton();
         }
-    } else if ((event.which || event.keyCode) === 19) {
-        // Ctrl+Break
+        break;
+        
+    case 82: // R
+        if (event.ctrlKey || event.metaKey) {
+            // Intercept from browser
+            event.preventDefault();
+            onRestartButton();
+        }
+        break;
+    case 19: // [Ctrl+] Break
         onPauseButton();
+        break;
     }
 }
 
@@ -910,9 +950,7 @@ editor.session.setUseWorker(false);
 aceSession.setMode('ace/mode/nano');
 aceSession.setUseWrapMode(true);
 
-function setSaved(s) {
-    // TODO;
-}
+var isSaved = true;
 
 /** Makes automated replacements to minimize the length of the program */
 function minify(nanoSource, aggressive) {
@@ -967,18 +1005,20 @@ function countCharacters() {
 
     // Count characters
     var minStr = minifyCheckbox.checked ? minify(str, aggressiveCheckbox.checked) : str;
-
+    var twitter = minStr;
+        
     // https://developer.twitter.com/en/docs/developer-utilities/twitter-text.html
-    // Twitter double-counts certain unicode charactesr
-    var twitter = minStr.replace(/([^\u0000-\u10FF\u2000-\u200D\u2010-\u201F\u2032-\u2037])/g, '$1X');
+    // Twitter double-counts certain unicode characters
+    var twitterProxy = twitter.replace(/([^\u0000-\u10FF\u2000-\u200D\u2010-\u201F\u2032-\u2037])/g, '$1X');
 
     var url = 'https://morgan3d.github.io/nano/index.html?code=' + LZString.compressToEncodedURIComponent(minStr);
 
     editorStatusBar.innerHTML = '<a target="_blank" href="' + window.URL.createObjectURL(new Blob(['\ufeff', minStr])) + '">' +
         minStr.length + ' chars</a> | ' +
-        (twitter.length > 280 ? '<span style="color:#c00">' : '<span>') +
-        twitter.length +
-        '</span> / 280 Twitter | ' +
+        (twitter !== minStr ? '<a target="_blank" href="' + window.URL.createObjectURL(new Blob(['\ufeff', twitter])) + '">' : '') +
+        (twitterProxy.length > 280 ? '<span style="color:#c00">' : '<span>') +
+        twitterProxy.length +
+        '</span> / 280 Twitter' + (twitter != minStr ? '</a>' : '') + ' | ' +
         '<a target="_blank" href="' + url + '">' + (url.length > 2048 ? '<span style="color:#c00">' : '<span>') + url.length + '</span> / 2048 url</a>';
 }
 
@@ -988,14 +1028,15 @@ editor.session.on('change', function () {
     // likewise snuck in. This is rare, so don't invoke setValue on every
     // keystroke.
     var src = editor.getValue();
-    if (src.match(/\r|\t/)) {
-        src = src.replace(/\r\n|\n\r/g, '\n').replace(/\r/g, '\n').replace(/\t/g, '    ');
+    if (src.match(/\r|\t|[\u2000-\u200B]/)) {
+        src = src.replace(/\r\n|\n\r/g, '\n').replace(/\r/g, '\n');
+        src = src.replace(/\t/g, '    ').replace(/\u2003|\u2001/g, '   ').replace(/\u2007/g, '  ');
         editor.setValue(src);
     }
     src = null;
     
     countCharacters();
-    setSaved(false);
+    isSaved = false;
 });
 
 
@@ -1391,7 +1432,6 @@ function onSaveToGoogleDrive() {
 function onListGoogleDrive() {
     googleDriveRetrieveAllFiles(function(files) {
         console.log(files);
-        
         googleDriveGetTextFile(files[0].id, function(contents) {
             console.log(contents);
         });
@@ -1404,10 +1444,12 @@ function onListGoogleDrive() {
  Based on https://developers.google.com/drive/v2/reference/files/list
  */
 function googleDriveRetrieveAllFiles(callback) {
-   gapi.client.drive.files.list({
-       spaces: 'appDataFolder', // set this to 'drive' if you don't want to be restricted to the appDataFolder
-       fields: 'nextPageToken, items(id, title)',
-       pageSize: 100
+    gapi.client.drive.files.list({
+        // The spaces should be 'drive' for the whole drive or 'appDataFolder' to just
+        // see in this app's hidden, private space
+        spaces: 'appDataFolder', 
+        fields: 'nextPageToken, items(id, title)',
+        pageSize: 100
    }).then(function(data) {
        callback(data.result.items);
    });
@@ -1456,9 +1498,11 @@ function googleDriveDeleteFile(fileId) {
 }
 
 
-/** Save to Google Drive.
+/** Save a text file to Google Drive. If fileId is specified, then the existing file
+    is renamed and overwritten, otherwise a new file is created.
+
     Based on https://developers.google.com/drive/v2/reference/files/insert  */
-function googleDriveSaveTextFile(fileName, fileContents, callback) {
+function googleDriveSaveTextFile(fileName, fileContents, callback, fileId) {
     const boundary = '-------X314159265358979323846';
     const delimiter = "\r\n--" + boundary + "\r\n";
     const close_delim = "\r\n--" + boundary + "--";
@@ -1486,7 +1530,7 @@ function googleDriveSaveTextFile(fileName, fileContents, callback) {
         close_delim;
 
     var request = gapi.client.request({
-        'path': '/upload/drive/v2/files',
+        'path': '/upload/drive/v2/files' + (fileID !== undefined ? '/' + fileId : ''),
         'method': 'POST',
         'params': {'uploadType': 'multipart'},
         'headers': {
@@ -1541,6 +1585,7 @@ function initClient() {
             'apiKey': 'AIzaSyAlRiTht5T9CLtYAQhFnZGdgtqmSvD_Js0',
             'clientId': '442588265355-cv3vd67iv8c79ckfsm3m8vbgfl6pr104.apps.googleusercontent.com',
             'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/drive/v2/rest'],
+            
             //'scope': 'https://www.googleapis.com/auth/drive.file',
             'scope': 'https://www.googleapis.com/auth/drive.appfolder'
         }).then(function () {
