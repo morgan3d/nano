@@ -383,47 +383,58 @@ function tri(Ax, Ay, Bx, By, Cx, Cy, colormap) {
         return;
     }
 
+    var width = 64, height = 64, logWidth = 6;
+    
     // Fill
     if (fill !== TRANSPARENT) {
-        // Non-horizontal edges
-        var edgeArray = [];
-        // For each edge, store: startX, startY, deltaX, 1/deltaY
-        // These are the values needed for the edge-intersection test.
-        if (Ay !== By) { edgeArray.push([Ax, Ay, Bx - Ax, 1 / (By - Ay)]); }
-        if (By !== Cy) { edgeArray.push([Bx, By, Cx - Bx, 1 / (Cy - By)]); }
-        if (Cy !== Ay) { edgeArray.push([Cx, Cy, Ax - Cx, 1 / (Ay - Cy)]); }
+        var shift = ((border !== TRANSPARENT) && (border !== fill)) ? 0.5 : 0;
         
-        var y0 = Math.max(0, Math.round(Math.min(Ay, By, Cy))) | 0;
-        var y1 = Math.min(63, Math.round(Math.max(Ay, By, Cy))) | 0;
+        // For each non-horizontal edge, store:
+        //
+        //    [startX, startY, dx/dy slope, vertical height].
+        //
+        // These are the values needed for the edge-intersection test.  Add edges so that the
+        // start Y coordinate is less than the end one.
+        var edgeArray = [];        
+        var y0 = height, y1 = -1;
+        function addEdge(Sx, Sy, Ex, Ey) {
+            if (Sy < Ey) {
+                // Update bounding box
+                if (Sy < y0) { y0 = Sy; }
+                if (Ey > y1) { y1 = Ey; }
+                edgeArray.push([Sx, Sy, (Ex - Sx) / (Ey - Sy), Ey - Sy]);
+            } else if (Sy > Ey) {
+                addEdge(Ex, Ey, Sx, Sy);
+            }
+        }
+        
+        addEdge(Ax, Ay, Bx, By);
+        addEdge(Bx, By, Cx, Cy);
+        addEdge(Cx, Cy, Ax, Ay);
+
+        // Intentionally left as a float to avoid float to int conversion for the inner loop
+        y0 = Math.max(0,  Math.floor(y0));
+        y1 = Math.min(height - 1, Math.floor(y1));
         for (var y = y0; y <= y1; ++y) {
             // For this scanline, intersect the edge lines of the triangle.
             // As a convex polygon, we can simply intersect ALL edges and then
             // take the min and max intersections.
             var x0 = Infinity, x1 = -Infinity;
-            for (var i = 0; i < edgeArray.length; ++i) {
+            for (var i = edgeArray.length - 1; i >= 0; --i) {
                 var seg = edgeArray[i];
-
-                // Solve y(t) = Sy + (Ey - Sy) * t; y(t) = y for t
-                //
-                // t = (y - Sy) / (Ey - Sy)
-                //
-                // We know that Ey !== Sy because of the test for horizontal edges above, so
-                // this always has a solution. Now see if the solution lies between 0 and 1,
-                // meaning it is actually on the segment.
-
-                var t = (y - seg[1]) * seg[3];
-                if ((t >= 0) && (t <= 1)) {
-                    // The x coordinate is given by the original equation
-                    var x = seg[0] + seg[2] * t;
+                
+                var ry = y - seg[1];
+                if ((ry >= 0) && (ry < seg[3])) {
+                    x = seg[0] + ry * seg[2];
                     if (x < x0) { x0 = x; }
                     if (x > x1) { x1 = x; }
                 }
             }
 
-            if ((x0 <= 63.5) && (x1 >= 0)) {
+            if ((x0 < width) && (x1 >= 0)) {
                 _screen.fill(fill,
-                             Math.max(Math.round(x0) | 0,  0) + (y << 6),
-                             Math.min(Math.round(x1) | 0, 63) + (y << 6) + 1);
+                             (Math.max(Math.round(x0 + shift) << 0,  0) + (y << logWidth)) | 0,
+                             (Math.min(Math.round(x1 - shift) << 0, width - 1) + (y << logWidth) + 1) | 0);
             }
         }
     }
@@ -592,37 +603,54 @@ function line(x1, y1, x2, y2, colormap) {
     var color = colormapToColor(colormap | 0);
 
     // Offscreen culling optimization
-    if ((color === undefined) ||
+    if ((color === undefined) || (color === TRANSPARENT) ||
         (Math.min(x1, x2) >= 63.5) || (Math.max(x1, x2) < -0.5) ||
         (Math.min(y1, y2) >= 63.5) || (Math.max(y1, y2) < -0.5)) {
         return;
     }
 
     if (y1 === y2) {
+        // Vertical perf optimization
         _hline(Math.min(x1, x2), y1, Math.max(x1, x2), color);
-    } else if (y1 === y2) {
+    } else if (x1 === x2) {
+        // Horizontal perf optimization/avoid divide by zero
         _vline(x1, Math.min(y1, y2), Math.max(y1, y2), color);
     } else {
         // General case via DDA
 
         // Slope:
-        var m = (y2 - y1) / (x2 - x1);
-        var moreHorizontal = abs(m) < 1;
+        var dx = x2 - x1, dy = y2 - y1;
+        var m = dy / dx;
+        var moreHorizontal = abs(dx) > abs(dy);
 
         if ((moreHorizontal && (x2 < x1)) ||
             (! moreHorizontal && (y2 < y1))) {
-            // Swap directions to go in increasing X or Y
+            // Swap endpoints to go in increasing direction on the dominant axis.
+            // Slope is unchanged because both deltas become negated.
             var temp;
             temp = y1; y1 = y2; y2 = temp;
             temp = x1; x1 = x2; x2 = temp;
         }
+
+        var width = 64, height = 64;
         
         if (moreHorizontal) {
+            // Crop horizontally:
+            var m = dy / dx;
+            var dx = Math.max(0, x1) - x1;
+            x1 += dx; y1 += m * dx;
+            x2 = Math.min(x2, width);
             for (var x = x1, y = y1; x <= x2; ++x, y += m) {
                 _pset(x, y, color);
             } // for x
-        } else { // |m| >= 1
-            for (var y = y1, x = x1, h = 1 / m; y <= y2; ++y, x += h) {
+        } else { // Vertical
+            // Compute the inverted slope
+            var m = dx / dy;
+            // Crop vertically:
+            var dy = Math.max(0, y1) - y1;
+            x1 += dy * m; y1 += dy;
+            y2 = Math.min(y2, height);
+            for (var y = y1, x = x1; y <= y2; ++y, x += m) {
                 _pset(x, y, color);
             } // for y
             
@@ -655,16 +683,16 @@ function _pset(x, y, color) {
     // nano pixels have integer centers, so we must round instead of just truncating.
     // Otherwise -0.7, which is offscreen, would become 0 and be visible.
     //
-    // The |0 casts to integer, which should allow more efficent compilation of
+    // The << 0 casts to integer, which should allow more efficent compilation of
     // the subsequent code
-    var i = Math.round(x) | 0;
-    var j = Math.round(y) | 0;
+    var i = Math.round(x) << 0;
+    var j = Math.round(y) << 0;
 
     // "i >>> 0" converts from signed to unsigned int,
     // which forces negative values to be large
     
     if (((i >>> 0) < 64) && ((j >>> 0) < 64)) {
-        _screen[i + (j << 6)] = color;
+        _screen[(i + (j << 6)) << 0] = color;
     }
 }
 

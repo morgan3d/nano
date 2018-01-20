@@ -26,10 +26,6 @@
  
   <body>
     <div style="position:fixed; bottom:0px" class="hidden">
-      <script>makeToggle('Carts', undefined, 'Cartridges');
-        </script>
-      <button id="authorize-button" style="display: none;">Authorize</button>
-      <button id="signout-button" style="display: none;">Sign Out</button>
       <button onclick="onSaveToGoogleDrive()">Save to Google Drive</button>
       <button onclick="onListGoogleDrive()">List from Google Drive</button>
     </div>
@@ -43,7 +39,7 @@
       <span id="recording" class="blink hidden" style="color:#F00">(RECORDING)</span>
     </div>
     <div id="adblockWarning"></div>
-    <div style="position:absolute; left:103px; top:580px; color:#666; font-size: 80%; z-index:-10">
+    <div style="position:absolute; left:103px; top:610px; color:#666; font-size: 80%; z-index:-10">
       &nbsp;&nbsp;New:
       <ul style="margin-top:0px">
         <li><code>tri()</code></li>
@@ -61,7 +57,7 @@
         <a href="doc/specification.md.html#changes">more...</a></li>
       </ul>
     </div>
-    <div style="position: absolute; right: 24px; top: 580px; color:#666; font-size: 80%">
+    <div style="position: absolute; right: 60px; top: 610px; color:#666; font-size: 80%">
       <center>
       <table style="text-align: center; border-collapse: collapse">
         <tr style="border-bottom: 1px solid"><th>Control</th><th>Player 1</th><th>Player 2</th></tr>
@@ -93,13 +89,15 @@
               <script>
                 makeToggle('ξ½≤', undefined, 'Symbols');
                 makeToggle('<img src="sprite-icon.png" width=14>', undefined, 'Sprites');
-                makeToggle('<div style="width:7px;height:11px;background:#000;display:inline-block"> </div><div title="Show Palette" style="width:7px;height:11px;background:#888;display:inline-block"> </div><div style="width:7px;height:11px;background:#CCC;display:inline-block"> </div>', undefined, 'Palette');
+                makeToggle('<div style="width:7px;height:11px;background:#000;display:inline-block"> </div><div title="Palette" style="width:7px;height:11px;background:#888;display:inline-block"> </div><div style="width:7px;height:11px;background:#CCC;display:inline-block"> </div>', undefined, 'Palette');
+                // makeToggle('Carts', undefined, 'Cartridges');
               </script>
             </td>
             <td style="text-align:right; padding-right: 10px; width: 30%">
               <script>
                 makeButton('<img src="undo-icon.png" width=14>', 'Undo (Ctrl-Z)', 'editor.undo();');
                 makeButton('<img src="redo-icon.png" width=14>', 'Redo (Ctrl-Y)', 'editor.redo();');
+                //TODO: makeButton('<span style="top:-2px;position:relative">&#128190;</span>', 'Save to Google Drive (Ctrl+S)', '');
               </script>
               <div class="button" style="margin-left:0; margin-right:-1px" title="Load a file from the local disk" onmousedown="event.stopPropagation()"><label><input type="file" accept="nano" onchange="onImportFile(event)"><span class="label"><img src="upload-icon.png" width=14 style="margin-top:-1px"></span></label></div>
               <script>
@@ -119,7 +117,13 @@
           <input type="checkbox" id="aggressive" onclick="countCharacters()">Aggressive</div>
       </div>
     </div>
-    <div style="position:absolute; right:0; top:0;" class="emulator" id="emulator" onclick="document.getElementById('emulatorKeyboardInput').focus()">
+
+    <div class="cartridge hidden"
+         id="loadedCartridge"
+         onmousedown="event.stopPropagation()"
+         style="position:absolute; top:15px; right: 100px"><div class="label">SPACE DASH</div></div>
+
+    <div style="position:absolute; right:0; top:30px;" class="emulator" id="emulator" onclick="document.getElementById('emulatorKeyboardInput').focus()">
       <!-- MacOS can't assign keyboard focus to a non-keyboard control, so we introduce this
            dummy object and hide it behind the screen. It can't be a textbox because those
            pop up keyboards on mobile and accent options when holding a key.-->
@@ -138,28 +142,45 @@
     </div>
 
     <div id="cartridgesWindow" class="hidden toolWindow" onmousedown='DragLib.startMoving(this,event)' onmouseup='DragLib.stopMoving(this)'>
-      <div id="load" class="tool" style="padding-top: 3px; padding-left:0px; padding-right:0px">
-        <div style="width: 100%; border-bottom: 4px solid #ddd; padding-bottom: 1px; font-weight: bold; margin-bottom:10px">Cartridges</div>
-        <div style="width: 20%">
-          <br/><div class="button" onmousedown="event.stopPropagation()"><label><span class="label">New</span></label></div>
-          <br/><div class="button" onmousedown="event.stopPropagation()"><label><span class="label">Load</span></label></div>
-          <br/><div class="button" onmousedown="event.stopPropagation()"><label><span class="label">Copy</span></label></div>
-          <br/><div class="button" onmousedown="event.stopPropagation()"><label><span class="label">Delete</span></label></div>
-        </div>
+      <div class="tool" style="padding-top: 3px; padding-left:0px; padding-right:0px">
+        <div style="color:#000; width: 98.5%; position: absolute; top: 4px; right: 4px; bottom: 4px; text-align: left; border-radius: 0 0 0 9px; overflow-y: scroll;">
+          <div style="width:240px; padding-left: 245px">
+          <script>
+             // Make slight changes in brightness so that cartridges don't look too repetitive
+             function nameBrightness(name) {
+                return (Math.cos(name.length + name.charCodeAt(name.length - 1) + name.indexOf('a')) * 0.1 + 0.95);
+             }
+             function nameHue(name) {
+                return Math.floor((Math.cos(0.2 * name.length) + 1) * 10);
+             }
 
-        <div style="background:#fff;color:#000; width: 200px; position: absolute; top: 30px; left: 100px;">
-          <ul>
-            <li>Hooha</li>
-            <li>SPACE DASH</li>
-            <li>Flappy Nano</li>
-            <li>Runner</li>
-          </ul>
+             document.write('<div style="filter: sepia(100%) saturate(300%) hue-rotate(-45deg); margin-bottom:-60px; margin-left:0px" class="cartridge" onmousedown="event.stopPropagation()"><div class="label">(NEW CART)</div></div>');
+
+             var names = ["Hooha", "SPACE DASH", "Flappy Nano", "Runner", "Hello World!", "Dolly", "Starfox", "Farstox", "Mario", "Sonic", "Foo", "Bar", "Baz", "Batman", "Spiderman"];
+              for (var i = 0; i < names.length; ++i) {
+                  var name = names[i];
+                  document.write('<div style="' + (name === 'SPACE DASH' ? 'width: 0 !important;' : '') + ' filter: sepia(' + nameHue(name) + '%) brightness(' + nameBrightness(name) + '); margin-bottom:' + Math.floor(Math.random() * 12 - 65) + 'px; margin-left:' + Math.floor((Math.sin(i * 10) + 1) * 8) + 'px" class="cartridge" onmousedown="event.stopPropagation()"><div class="label">' + name + '</div></div>');
+              }
+            </script>
+          </div>
         </div>
+        
         <div class="cartridge"
              draggable="true" 
              onmousedown="event.stopPropagation()"
              ondragstart="cartridgeDragStart(event)"
-             style="position:absolute; top:30px; right: 40px"><div class="label">Hooha</div></div>
+             style="position:absolute; top:30px; left: 15px"><div class="label">SPACE DASH</div></div>
+
+        <div style="position: absolute; bottom: 6px; left: 8px; text-align: center; width: 240px">
+          <div class="button" onmousedown="event.stopPropagation()"><label><span class="label">Load</span></label></div>
+          <div class="button" onmousedown="event.stopPropagation()"><label><span class="label">Clone</span></label></div>
+          <div class="button" onmousedown="event.stopPropagation()"><label><span class="label">Delete</span></label></div>
+        </div>
+
+        <div style="position: absolute; top:4px; right:4px">
+          <button id="authorize-button" style="display: none;"><img src="google-drive-icon.png" width=14 style="margin-top:-1px"> Authorize</button>
+          <button id="signout-button" style="display: none;">Sign Out</button>
+        </div>
       </div>
     </div>
     

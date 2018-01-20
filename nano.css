@@ -247,7 +247,7 @@ div.ide #error {
 }
 
 div.ide #editor {
-    height:           395px;
+    height:           430px;
     font-size:        14px;
     box-sizing:       border-box;
     -moz-box-sizing:  border-box;
@@ -287,19 +287,6 @@ div.ide #editorStatusBar {
     box-shadow:       0px 4px 13px 0px rgba(0, 0, 0, 0.3);
 }
 
-div#cartridgesWindow {
-    width:            450px;
-    height:           200px;
-    top:              80px;
-    left:             40px;
-}
-
-div#load .button {
-    width:            80px;
-    padding-bottom:   6px;
-    margin-left:      0;
-}
-
 div#symbolsWindow {
     width:            547px;
     height:           139px;
@@ -311,38 +298,6 @@ div#symbolsWindow {
     padding-top: 7px;
     padding-left: 3px;
 }
-
-
-.cartridge {
-    background-image: url('cartridge.png');
-    background-size:  cover;
-    width:            214px;
-    height:           90px;
-}
-
-.cartridge .label {
-    color:            rgba(255,255,255,0.9);
-    position:         relative;
-    filter:           blur(0.09px);
-    top:              5px;
-    left:             13px;
-    width:            144px;
-    height:           29px;
-    border-radius:    1px 1px 5px 5px;
-    padding-top:      5px;
-    /* background:       linear-gradient(135deg, #feccb1 0%,#f17432 50%,#ea5507 51%,#fb955e 100%);*/
-    background:       url('cart-back00.png');
-    background-size:  cover;
-    font-size:        18px;
-    font-style:       italic;
-    font-weight:      bold;
-    font-family:      Tahoma, Monaco, Arial;
-    -webkit-text-stroke: 1px rgba(0,0,0,0.7); 
-    text-stroke:      1px rgba(0,0,0,0.7);
-    text-shadow:      rgba(0,0,0,0.7) 0 0 4px;
-    -webkit-text-shadow:rgba(0,0,0,0.7) 0 0 4px;
-}
-
 
 .hidden {
     visibility:       hidden;
@@ -358,6 +313,66 @@ div.tool {
     box-sizing: border-box;
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
+}
+
+/**************************************************/
+
+div#cartridgesWindow {
+    width:            500px;
+    height:           200px;
+    top:              180px;
+    left:             140px;
+}
+
+#cartridgesWindow .button {
+    width: 60px;
+}
+
+.cartridge {
+    background-image: url('cartridge.png');
+    background-size:  cover;
+    width:            224px;
+    height:           100px;
+
+    overflow: hidden;
+    
+    touch-action: none;
+    /* Disable text selection */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+
+    /* Stop iOS from making the entire canvas gray when tapped */
+    -webkit-tap-highlight-color: transparent;
+
+    /* Prevent magnifying glass */
+    -webkit-touch-callout: none;
+
+}
+
+.cartridge .label {
+    color:            rgba(255,255,255,0.9);
+    position:         relative;
+    filter:           blur(0.09px);
+    top:              10px;
+    left:             18px;
+    width:            144px;
+    height:           29px;
+    border-radius:    1px 1px 5px 5px;
+    padding-top:      5px;
+    /* background:       linear-gradient(135deg, #feccb1 0%,#f17432 50%,#ea5507 51%,#fb955e 100%);*/
+    background:       url('cart-back00.png');
+    background-size:  cover;
+    font-size:        18px;
+    font-style:       italic;
+    font-weight:      bold;
+    font-family:      Tahoma, Monaco, Arial;
+    -webkit-text-stroke: 1px rgba(0,0,0,0.7); 
+    text-stroke:      1px rgba(0,0,0,0.7);
+    text-shadow:      rgba(0,0,0,0.7) 0 0 4px;
+    -webkit-text-shadow:rgba(0,0,0,0.7) 0 0 4px;
 }
 
 /**************************************************/
