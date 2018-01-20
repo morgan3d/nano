@@ -847,18 +847,20 @@ or as the surrounding code changes.
 Limitations
 ------------------------------------------------------------------------------------
 
-The following functionality is documented, but not implemented in the current Beta build. It
-is scheduled for upcoming releases:
+The following features are documented but not implemented in the current Beta build. They
+are scheduled for upcoming releases:
 
-- `for` loops with explicit lower bounds
-- Sound effects
 - Google Drive support for cartridges
-- Title screen animations
-- Filled triangles
+- `for` loops that count down
+- Sound effects
 - Text shadow and outline
+- Title screen animations
+- Triangle borders don't always align perfectly with triangle fill
 
-When converting values to strings, the `∞` value becomes the string `"Infinity"` and the `∅` value
-becomes `"undefined"`.
+The following are permanent limitations:
+
+- When converting values to strings, the `∞` value becomes the string `"Infinity"` and the `∅`
+value becomes `"undefined"`.
 
 <!-- Nano cannot execute `flip` or `wait` from within a function because of the way that threading
 is handled in the implementation. Technically, user-defined functions aren't supported yet, so
@@ -905,6 +907,8 @@ its license that permits any use.
 # Changes
 
 Newer:
+ - `tri()`
+ - Ctrl-R reloads the emulator (not the web page)
  - Search box for IDE (Ctrl-F)
 
 2018 Jan 7-14:

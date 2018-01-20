@@ -375,6 +375,7 @@ function tri(Ax, Ay, Bx, By, Cx, Cy, colormap) {
     colormap |= 0;
     // Extract the fill color, which is not yet used in this implementation
     var fill = colormapToColor(colormap); colormap = (colormap / 10) | 0;
+    var border = colormapToColor(colormap);
 
     // Culling optimization
     if ((Math.min(Ax, Bx, Cx) >= 63.5) || (Math.min(Ay, By, Cy) >= 63.5) ||
@@ -382,9 +383,57 @@ function tri(Ax, Ay, Bx, By, Cx, Cy, colormap) {
         return;
     }
 
-    line(Ax, Ay, Bx, By, colormap);
-    line(Bx, By, Cx, Cy, colormap);
-    line(Cx, Cy, Ax, Ay, colormap);
+    // Fill
+    if (fill !== TRANSPARENT) {
+        // Non-horizontal edges
+        var edgeArray = [];
+        // For each edge, store: startX, startY, deltaX, 1/deltaY
+        // These are the values needed for the edge-intersection test.
+        if (Ay !== By) { edgeArray.push([Ax, Ay, Bx - Ax, 1 / (By - Ay)]); }
+        if (By !== Cy) { edgeArray.push([Bx, By, Cx - Bx, 1 / (Cy - By)]); }
+        if (Cy !== Ay) { edgeArray.push([Cx, Cy, Ax - Cx, 1 / (Ay - Cy)]); }
+        
+        var y0 = Math.max(0, Math.round(Math.min(Ay, By, Cy))) | 0;
+        var y1 = Math.min(63, Math.round(Math.max(Ay, By, Cy))) | 0;
+        for (var y = y0; y <= y1; ++y) {
+            // For this scanline, intersect the edge lines of the triangle.
+            // As a convex polygon, we can simply intersect ALL edges and then
+            // take the min and max intersections.
+            var x0 = Infinity, x1 = -Infinity;
+            for (var i = 0; i < edgeArray.length; ++i) {
+                var seg = edgeArray[i];
+
+                // Solve y(t) = Sy + (Ey - Sy) * t; y(t) = y for t
+                //
+                // t = (y - Sy) / (Ey - Sy)
+                //
+                // We know that Ey !== Sy because of the test for horizontal edges above, so
+                // this always has a solution. Now see if the solution lies between 0 and 1,
+                // meaning it is actually on the segment.
+
+                var t = (y - seg[1]) * seg[3];
+                if ((t >= 0) && (t <= 1)) {
+                    // The x coordinate is given by the original equation
+                    var x = seg[0] + seg[2] * t;
+                    if (x < x0) { x0 = x; }
+                    if (x > x1) { x1 = x; }
+                }
+            }
+
+            if ((x0 <= 63.5) && (x1 >= 0)) {
+                _screen.fill(fill,
+                             Math.max(Math.round(x0) | 0,  0) + (y << 6),
+                             Math.min(Math.round(x1) | 0, 63) + (y << 6) + 1);
+            }
+        }
+    }
+    
+    if ((border !== TRANSPARENT) && (border !== fill)) {
+        line(Ax, Ay, Bx, By, colormap);
+        line(Bx, By, Cx, Cy, colormap);
+        line(Cx, Cy, Ax, Ay, colormap);
+    }
+
 }
 
 

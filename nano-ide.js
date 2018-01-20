@@ -56,6 +56,12 @@ var tests = {
 for x≤1
  if(0)1;if(2)3`,
 
+    triangle: `#nanojam triangle,1
+θ=τ/100
+c=cos(θ);s=sin(θ)
+tri(32+20c,32+20s,32-10s,32+15c,20,30, 21)
+text(τ)`,
+    
     rect:`#nanojam rect,1
 rect(10,10,20,30,12)`,
 
@@ -287,8 +293,9 @@ var initialSource =
     //tests.nanoReset;
     //tests.rgb;
     //tests.text;
-    //tests.spacedash;
-    tests.adventure
+    tests.spacedash;
+    //tests.adventure;
+    //tests.triangle;
     //tests.textbots;
     //tests.stars;
     //tests.variables;
