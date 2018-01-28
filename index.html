@@ -10,8 +10,8 @@
     <title>nano ᴊᴀᴍᴍᴇʀ</title>
   </head>
   <script>
-    function makeButton(label, title, onclick) {
-      document.write('<div class="button" onclick="' + (onclick || '') + '(event)" title="' + (title || label) + '"><label><span class="label">' + label + '</span></label></div>');
+    function makeButton(label, title, onclick, id) {
+      document.write('<div ' + (id ? 'id="' + id + 'Container" ' : '') + ' onmousedown="event.stopPropagation()" class="button" onclick="' + (onclick || '') + '(event)" title="' + (title || label) + '"><label><span class="label" ' + (id ? 'id="' + id + 'Label"' : '') + '>' + label + '</span></label></div>');
     }
     
     function makeRadio(labelHTML, id, selected, attribs) {
@@ -25,11 +25,6 @@
   </script>
  
   <body>
-    <div style="position:fixed; bottom:0px" class="hidden">
-      <button onclick="onSaveToGoogleDrive()">Save to Google Drive</button>
-      <button onclick="onListGoogleDrive()">List from Google Drive</button>
-    </div>
-
     <div id="header">
       <a href="http://casual-effects.com">CasualEffects</a> &nbsp;&nbsp; &middot; &nbsp;&nbsp; <a href="doc/specification.md.html" target="_blank"><span style="font-size:110%">nano</span> Manual</a> &nbsp;&nbsp; &middot; &nbsp;&nbsp; <a href="https://twitter.com/search?l=&q=%23nanojam%20since%3A2018-01-01&src=typd" target="_blank">#nanojam</a>
       &nbsp;&nbsp; &middot; &nbsp;&nbsp;
@@ -37,22 +32,25 @@
       &nbsp;&nbsp; &middot; &nbsp;&nbsp;
       F8 GIF
       <span id="recording" class="blink hidden" style="color:#F00">(RECORDING)</span>
+
+      <div style="position: absolute; top:-1px; right:4px">
+        <button id="signout-button" style="display: none; height:12px; font-size:80%" onclick="handleSignoutClick(event)"><img src="google-drive-icon.png" height="8px"> Sign out</button>
+      </div>
     </div>
     <div id="adblockWarning"></div>
     <div style="position:absolute; left:103px; top:610px; color:#666; font-size: 80%; z-index:-10">
       &nbsp;&nbsp;New:
       <ul style="margin-top:0px">
+        <li>Google Drive support</li>
+        <li>Optimized <code>if</code> performance</li>
+        <li>More examples in the manual</li>
+        <li><code>wrap()</code></li>
+        <li>Banana sprite</li>
+        <li>Increased GIF limit to 12s</li>
         <li><code>tri()</code></li>
         <li>Ctrl-R reloads the emulator (not the web page)</li>
         <li>Search box in IDE</li>
         <li><code>for x ∈ S</code> loops</li>
-        <li>Text culling optimization</li>
-        <li>Changed <code>text</code> default to the top of screen</li>
-        <li>Fixed <code>rect</code> and vertical <code>line</code></li>
-        <li>GIF recording indicator</li>
-        <li>Fixed lower-bound <code>for</code> loops</li>
-        <li>Start button</li>
-        <li>Buttons on emulator now work
           <br/>
         <a href="doc/specification.md.html#changes">more...</a></li>
       </ul>
@@ -90,14 +88,14 @@
                 makeToggle('ξ½≤', undefined, 'Symbols');
                 makeToggle('<img src="sprite-icon.png" width=14>', undefined, 'Sprites');
                 makeToggle('<div style="width:7px;height:11px;background:#000;display:inline-block"> </div><div title="Palette" style="width:7px;height:11px;background:#888;display:inline-block"> </div><div style="width:7px;height:11px;background:#CCC;display:inline-block"> </div>', undefined, 'Palette');
-                // makeToggle('Carts', undefined, 'Cartridges');
+                makeToggle('Carts', undefined, 'Cartridges');
               </script>
             </td>
             <td style="text-align:right; padding-right: 10px; width: 30%">
               <script>
                 makeButton('<img src="undo-icon.png" width=14>', 'Undo (Ctrl-Z)', 'editor.undo();');
                 makeButton('<img src="redo-icon.png" width=14>', 'Redo (Ctrl-Y)', 'editor.redo();');
-                //TODO: makeButton('<span style="top:-2px;position:relative">&#128190;</span>', 'Save to Google Drive (Ctrl+S)', '');
+                makeButton('<img src="save-icon.png" width=14 style="margin-top:-1px">', 'Save to Google Drive (Ctrl+S)', 'onSaveButton', 'saveButton');
               </script>
               <div class="button" style="margin-left:0; margin-right:-1px" title="Load a file from the local disk" onmousedown="event.stopPropagation()"><label><input type="file" accept="nano" onchange="onImportFile(event)"><span class="label"><img src="upload-icon.png" width=14 style="margin-top:-1px"></span></label></div>
               <script>
@@ -118,6 +116,7 @@
       </div>
     </div>
 
+    <!-- Loaded cartridge -->
     <div class="cartridge hidden"
          id="loadedCartridge"
          onmousedown="event.stopPropagation()"
@@ -143,43 +142,26 @@
 
     <div id="cartridgesWindow" class="hidden toolWindow" onmousedown='DragLib.startMoving(this,event)' onmouseup='DragLib.stopMoving(this)'>
       <div class="tool" style="padding-top: 3px; padding-left:0px; padding-right:0px">
-        <div style="color:#000; width: 98.5%; position: absolute; top: 4px; right: 4px; bottom: 4px; text-align: left; border-radius: 0 0 0 9px; overflow-y: scroll;">
-          <div style="width:240px; padding-left: 245px">
+        <div id="authorize-div" class="noselect" style="padding:60px">
           <script>
-             // Make slight changes in brightness so that cartridges don't look too repetitive
-             function nameBrightness(name) {
-                return (Math.cos(name.length + name.charCodeAt(name.length - 1) + name.indexOf('a')) * 0.1 + 0.95);
-             }
-             function nameHue(name) {
-                return Math.floor((Math.cos(0.2 * name.length) + 1) * 10);
-             }
+            makeButton('<img src="google-drive-icon.png" width=14 style="margin-bottom:-1px; margin-top:-1px"> Sign in', 'Sign in', 'handleAuthClick', 'signIn');
+          </script>
+          <p>
+            Sign in to your Google account to play built-in games and<br/>
+            load and save your own nano ᴊᴀᴍᴍᴇʀ cartridges on Google&nbsp;Drive.
+          </p>
+        </div>
 
-             document.write('<div style="filter: sepia(100%) saturate(300%) hue-rotate(-45deg); margin-bottom:-60px; margin-left:0px" class="cartridge" onmousedown="event.stopPropagation()"><div class="label">(NEW CART)</div></div>');
-
-             var names = ["Hooha", "SPACE DASH", "Flappy Nano", "Runner", "Hello World!", "Dolly", "Starfox", "Farstox", "Mario", "Sonic", "Foo", "Bar", "Baz", "Batman", "Spiderman"];
-              for (var i = 0; i < names.length; ++i) {
-                  var name = names[i];
-                  document.write('<div style="' + (name === 'SPACE DASH' ? 'width: 0 !important;' : '') + ' filter: sepia(' + nameHue(name) + '%) brightness(' + nameBrightness(name) + '); margin-bottom:' + Math.floor(Math.random() * 12 - 65) + 'px; margin-left:' + Math.floor((Math.sin(i * 10) + 1) * 8) + 'px" class="cartridge" onmousedown="event.stopPropagation()"><div class="label">' + name + '</div></div>');
-              }
-            </script>
+        <div id="cartridgeViewer" style="position: absolute; top:6px; left:5px; right:5px; bottom:6px; border-radius: 11px; overflow: hidden" class="hidden">
+          <div id="allCarts"></div>
+          <div style="position: absolute; bottom: 0px; left: 0px; text-align: center; width: 220px; margin:0px">
+            <div class="button" onmousedown="event.stopPropagation()" onclick="onLoadButton()" id="loadButtonContainer"><label><span class="label">Load</span></label></div>
+            <div class="button" onmousedown="event.stopPropagation()" onclick="onCloneButton()" id="cloneButtonContainer"><label><span class="label">Clone</span></label></div>
+            <div class="button" onmousedown="event.stopPropagation()" onclick="onDeleteButton()" id="deleteButtonContainer"><label><span class="label">Delete</span></label></div>
           </div>
-        </div>
-        
-        <div class="cartridge"
-             draggable="true" 
-             onmousedown="event.stopPropagation()"
-             ondragstart="cartridgeDragStart(event)"
-             style="position:absolute; top:30px; left: 15px"><div class="label">SPACE DASH</div></div>
-
-        <div style="position: absolute; bottom: 6px; left: 8px; text-align: center; width: 240px">
-          <div class="button" onmousedown="event.stopPropagation()"><label><span class="label">Load</span></label></div>
-          <div class="button" onmousedown="event.stopPropagation()"><label><span class="label">Clone</span></label></div>
-          <div class="button" onmousedown="event.stopPropagation()"><label><span class="label">Delete</span></label></div>
-        </div>
-
-        <div style="position: absolute; top:4px; right:4px">
-          <button id="authorize-button" style="display: none;"><img src="google-drive-icon.png" width=14 style="margin-top:-1px"> Authorize</button>
-          <button id="signout-button" style="display: none;">Sign Out</button>
+          
+          <div class="button" onmousedown="event.stopPropagation()" onclick="onCartridgeArrayScrollUp(event)" style="position:absolute; top:2px; right:0px; width: 22px"><label><span class="label">▲</span></label></div>
+          <div class="button" onmousedown="event.stopPropagation()" onclick="onCartridgeArrayScrollDown(event)" style="position:absolute; bottom:0px; right:0px; width:22px"><label><span class="label">▼</span></label></div>
         </div>
       </div>
     </div>
@@ -229,6 +211,25 @@
       </div>
     </div>
 
+    <div id="renameDialog" class="modal hidden">
+      <div class="modalDialog">
+        <p>
+          You've changed the name of this cartridge since it was last saved.
+          How would you like to save it?
+        </p><br>
+
+        <center>
+          <script>
+            makeButton('Rename \"XX\" as \"YY\"', 'Rename', '', 'saveRename');
+            makeButton('Create a new \"YY\" cartridge', 'Clone', '', 'saveClone');
+            makeButton('Cancel', 'Cancel', 'closeRenameDialog', 'saveCancel');
+          </script>
+        </center>
+      </div>
+    </div>
+    
+    <div id="waitDialog" class="modal hidden" style="z-index: 20"> </div>
+
     <!--
     <div style="position:absolute; top:580px;left:2px;right:4px;width:0px;height:0px; visibility:hidden">
       Intermediate JavaScript
@@ -253,8 +254,10 @@
   <script src="color.js" charset="utf-8"> </script>
   <script src="nano-compiler.js" charset="utf-8"></script>
   <script src="lz-string/lz-string.min.js"> </script>
-  <script src="nano-ide.js" charset="utf-8"> </script>
   <script src="gif.js" async="async"> </script>
+  <script src="nano-starter-carts.js" charset="utf-8"> </script>
+  <script src="nano-ide.js" charset="utf-8"> </script>
+  <script src="nano-google-drive.js" charset="utf-8"> </script>
   <script async defer src="https://apis.google.com/js/api.js" 
           onload="this.onload=function(){};handleClientLoad()" 
           onreadystatechange="if (this.readyState === 'complete') this.onload()">

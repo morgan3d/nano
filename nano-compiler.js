@@ -69,7 +69,7 @@ function nextInstance(str, c, j, d) {
 }
 
 /** Expression for selective yields to avoid slowing down tight loops */
-var maybeYield = ' {if (!(__yieldCounter = (__yieldCounter + 1) & 511)) { yield; }} ';
+var maybeYield = ' {if (!(__yieldCounter = (__yieldCounter + 1) & 1023)) { yield; }} ';
 
 /** Converts a single-line IF, FOR, WHILE, or UNTIL to JavaScript, preserving indenting.
     Returns the entire string if none of those appear. */
@@ -231,9 +231,12 @@ function processBlocks(src) {
 
             // Add curlies
             if (indent > prevIndent) {
-                // Add { to previous line. Yield at the FRONT of blocks so that a 'continue'
-                // can't skip the yield.
-                lineArray[i - 1] += ' { ' + maybeYield;
+                // Add { to previous line.
+                lineArray[i - 1] += ' { ';
+                // Yield on loops, and do so at the FRONT so that a 'continue' can't skip the yield.
+                if (! lineArray[i - 1].match(/^\s*(else|if)\b/)) {
+                    lineArray[i - 1] += maybeYield;
+                }
             } else if (indent < prevIndent) {
                 // Add multiple } to previous line
                 lineArray[i - 1] += ' ' + '}'.repeat(prevIndent - indent);

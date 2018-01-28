@@ -36,11 +36,15 @@ cryptic failures.
 Examples
 =============================================================================================
 
-Space Dash
+Optimized
 ---------------------------------------------------------------------------------------------
 
-*Space Dash* is a complete game in 270 characters (277 by Twitter's Unicode weighting--still
-less than one tweet!) once comments and blank lines are removed. The player flies a space ship
+### Space Dash
+
+[*Space Dash*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIDKAFAggYQKIICJqQAkAoASwDMAKAGsBHgASgA8BeAZgCZiB6LhAcXgBTALSQAboIBOCQYwAOAG0gBnUpBBkqtADwAGenLALKADgDUrQH3A9ANwBjUpLuVGAGgCsu1wE5vZ2q4AjN62duoALsTEypIQACaU7vTELHCkCd6ujGbs0JAAngB0bu4ALMnkkNIAroAmRABspcQIPMjhYJLKzcpsljZyyoLhlNWulOyAHgSW-sr0AKSTHmazza1YIIJw+QjKABakA80A1syAUMTs04GA0MQ2Ysy0R8KsUzZxsQDuiWaBpUeuo2JXBxSq5yjYKJQAD6MYTVSFmSFiYSeSHaer0WjMYS+KJrEBxBCKCBDYgOJyUDiuWjYgDNrnYJmS3F4KAUYHyUh2+zkxDeYE+rCyHi8jUCTNaADVSHZwlVtso7JJBIINBDaIBTIm8NPo4VkwwARABNADyAFUEAB1ACSADl9bZ3mBSOEbJjdMQgA) is a complete game in 270 characters (277 by Twitter's Unicode weighting--still
+less than one tweet!) once comments and blank lines are removed. 
+
+The player flies a space ship
 through enemy fighters to reach their home planet. It has a loading screen, background
 animation, controls, collision detection, and end-game scene.
 
@@ -85,10 +89,9 @@ characters to add a third type of enemy, while staying in character limit of a s
 tweet. Now you're thinking like a nano programmer.
 
 
-Plasma
-------------------------------------------------------------------------------------
+### Plasma
 
-*Plasma* is a little graphics doodle instead of a game. It shows field of animated value
+[*Plasma*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIAKAbMBnOYA0BGAUAGaQBOCAngDwBsALPgsWQB430IKATwALzkDUgEeAA3ADducAJYATABRQJ6AKYyAzNkDahACbmGzZ2wAegM0CAlHwC92AAx5TDBAAclAFxk7y2ABboRMwOqEIpbYMrgAtCKmAHr+2CLYOpympkA) is a little graphics doodle instead of a game. It shows field of animated value
 noise. The two loops iterate over each pixel, computing its value independently.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
@@ -101,8 +104,181 @@ for y<64
 
 The same setup is great for computing fractals and ray marching in 3D.
 
+
+Friendly
+-----------------------------------------------------------------------------------
+
+Are you just getting started with nano and mystified by the apparent sorcery of 
+the optimized examples? No problem. Here are some friendlier examples to get you
+going without trying to squeeze the whole program into a few characters.
+
+### Rainbow
+
+[*Rainbow*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIBKYCWIBGkDuAoAxgDYBOAvAIwBMuuA9LQgCLFjYJgJGQCuAJgtwDO6AOYIALgAsApnQa9pAMzDdC4hAAcwhaePHSA5IITZJqfbi2EAFAEoCqYvmvkADABpyAVncAWT-b4js7k-uQAbO5egcEuAByelH4xTtaUHt7JNPRMLGz6IAjEooK4ipDECKgAPG64CDkAyrqckIQVCMDkCBhggtL8kIVS0giS3LKa2taSggBu1qi0bp4B9g0MzKzsCLyoggDWVcNmxvhtFfVBqb4+4QkAzK4AtKgB9XIIAMLc6iOc0hA+kqPHUQlEEhkCEOAE9Wu1iJZplQUs5bu57u5KOQAkA)
+is a simple scene of a sky after a summer shower.
+ 
+~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+#nanojam Rainbow
+clr=12
+
+// Draw a cloud using the
+// default palette's white
+pal()
+circ(10,15,4,1)
+circ(14,16,5)
+circ(18,12,4)
+circ(20,15,4)
+
+// Draw ten rings
+for i<10
+ // Set color #1 based on the hue
+ pal(hsv(i/10,1,1))
+ // Draw a disk in this color
+ circ(45,68,30-i,1)
+ 
+// Cut the center out using the sky color
+pal(12)
+circ(45,68,21,1)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+### Colors
+
+[*Colors*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIDCkA2kBOBnANARgCgAzTBATwB4A2AFgIRIwQA9q6EEALAVwFMBeZgHpa9BFjAAXfmSEBmAExiAbmFT8FAWlmKxAByy9JACmY4yOTlmXGevHBMk5VqHGbIBKD0A) loops
+over every pixel `(x,y)` on the screen and computes a hue, saturation, and value for it. It then uses the `hsv` command
+to find the closest nano color to those and sets the pixel value.
+
+The nano hues vary from 0 to 1, so to create a rainbow I used the horizontal pixel position divided by 64. I scaled
+`y` by 32 so that the top half of the screen would fade in from white (zero saturation)
+and the bottom half would fade out to black (zero value).
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+#nanojam Colors,1
+for y<64
+ for x<64
+  hue=x/64
+  sat=y/32
+  val=2-y/32
+  pset(x,y,hsv(hue,sat,val,x,y))
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+### Driver
+
+[*Driver*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIAiAnAlgNwKYoFBoDMFAR4EH0iABlwQHpqEBJENAFzTABs0AvLBDMdGABG7LAGcEYZlVoJmAC15CsAczQgmIFQgAUrOLwC8CcgEoqMugGEBVAB6GAzACYLNOgDF2kAO44qHg4AjJQIHgCehqGWCADKAA5YWAAmVGLxyYaAyoQWsgDiKGBiYrgAxuwoTrjxHDpB9eTkAByN5ACs5ADs5riyXr44JcmFPjqdTQA0gVPhE20AbAAs5rIAspDYcooIBN5+KBLJviBbvGKlKEkguBGGEQDU6amEYeEAfC0xAEoQR4jxkDELDQkGuYQcS0AfcABSIAWkWuF6dC+kDAqUupWYOmc5AmuMWiwmSwmzh6sliF0g7E4WgQyUwaGSOAQNKwuAIkBQCHCAB4AJwxWLyQjMBBCcKSHaFTEgk6QIgKXilACuKEuIFF+jZCDEhieACpiABSJrwqjDMCjPlBCYuCZNcKPCZ860TIJkugAVQyUl4ioQ8XYYHCzNKAgDgOBoKRUsgiH90Eg4TErFKAGtcA47PdE+EAHR2RGyJCggDkopUkAQ8qIKFRqQccDAdh0dhJZkzhjg6lbE0Wjg9CG9yV9px2e2ZAKBrGjMYACkGQ1yw3gauw6s4Qs1GpuuuYLaN5hM24tcY55m1SUA) 
+is a peaceful drive down an empty highway with flowers on both sides. Can you figure out how to add oncoming traffic to make it more
+challenging?
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+#nanojam Driver
+if τ≟0
+ // Initialize variables at
+ // the beginning (time = 0)
+ 
+ // Car
+ x=32
+ 
+ // Flower
+ Fx=10
+ Fy=0
+ 
+ // Speed
+ spd=⅓
+ 
+// Grass
+clr=3
+pal(111008000507)
+
+// Flowers
+draw(78,Fx,Fy,564)
+// Move the flowers down the screen
+Fy=Fy+spd
+if Fy>80
+ // Random position
+ Fx=64ξ
+ Fy=-4
+
+// Road
+rect(20,0,44,64,2)
+
+// Scrolling divider line
+for y<9
+ // Shift by a fraction of the current time
+ s=spd*τ%8-4
+ draw(91,32,8y+s,991,1)
+
+// Update the player car position
+// from the joystick
+x=x+joy.x
+
+// Don't go off road
+x=max(x,20)
+x=min(x,43)
+
+// Update the flower position
+
+// Player car
+pal(121008002107)
+draw(6,x,40,3652)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+### Star Attack
+
+[*Star Attack*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIDKAXMAnBBBFaDGA1gFACWAZgoCPAg+kQAMRCAngLwDMATAwPRfYA2JAKYgAzgzB8QzANoBvAB4AuAIy1aAGkYqNIxQBYAvuoUq9GrWfW72tIyeUAOc4oBsO-QYC6RIj2Rp0MTJITBEAHhc9bl4AYUg4AAcAVxRBBDAEACJ0CAATeMyEPEg+JLgQBEgKwTA8AAsEdEgAd2iEYMwMkQD1dJBchBQ64SLGPD40khQECbIUBjrmOrAROoAKEQBKBgSRQRQ1yIBaNcO9AGpAZUJKTYAqOoBSSM2rdQBzHMY1y7rN7aIWIxztBIIwAHSMAHMOBgeRrPSabYsOAkECHcz-PwABT4YEYglCdRICSIuRyzTWrAc6lUmnUkWUmN4ElS6HAqT6JBhKBIVXaOTggjEBGYgChiQDahJQHuxANDEPj8WAEwiCIXSgAgiCQgBhksAUsBgkTnAjqfXyE0Q+l6ACs2wQ5AQa1NR1UmwATedHRCjow3WFlC4GAg-AAJKaDYYIVbEgCEgdS8gOmQAQgB5FMAWWjmXUHBz7HUelt7QEJIQCGaYCmgfQQv2gfEYPkR2YygY9tNYSOUTL2JIhHSCBAgmaCASkBEU15FWawwqkDIFBEeBrwkDppbNnOVtogD7gNcQ5gXK0uPdAA) is
+a side-scrolling space game where you have to dodge aliens...until you lose. There's no way to win in this version. Maybe
+you can fix that...
+
+This program uses an array of aliens. Each alien is represented by a table of its `x` position,
+`y` position, and sprite index `s`. This lets the game use a loop to avoid repeating the
+code for each alien. You could have any number of aliens using this basic structure.
+
+I got a little fancy with the star field. So, don't worry if you don't understand that
+part. But you can copy it to use in your own games anyway.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+#nanojam Star Attack
+if τ≟0
+ y=32
+ // Aliens
+ aln=[{x:100,y:10,s:4},{x:140,y:40,s:20},{x:180,y:60,s:4}]
+
+// Stars
+for s<64
+ // Compute a "random" column on each row
+ // for a star, and then cycle it left
+ h=hash(s)
+ pset(64-((64+⅓τ)*h%64),s,gray(⅓h))
+
+y=y+joy.y
+y=max(4,y)
+y=min(60,y)
+
+// Player ship
+draw(38,10,y,641)
+
+// alternate animation frames
+k=⌊⅛τ%2⌋
+
+// Aliens
+for a∈aln
+ draw(a.s+k,a.x,a.y,645)
+ if (a.x-10)²+(a.y-y)²<16
+  // Hit the ship!
+  text("BOOM!",32,32,4)
+  flip
+  wait
+  reset
+  
+ a.x-=1
+ if a.x<-4
+  // Pick a new position when off screen
+  a.x=120+50ξ
+  a.y=4+56ξ
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
 Twitter
-------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------
 
 Search Twitter for <a href="https://twitter.com/search?l=&q=%23nanojam%20since%3A2018-01-01&src=typd">#nanojam</a>
 to see the latest games others have posted, such as:
@@ -118,6 +294,7 @@ to see the latest games others have posted, such as:
 - [TRON](https://twitter.com/Jackson_T_Allen/status/951962772061020165) by [@Jackson_T_Allen](https://twitter.com/Jackson_T_Allen) ([Permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIAqAlA8gOQFAEsBmAFADWAjwAJQAeAvANoAMANAGwDMAugNwCetLAjAxYAmTgBNajQAPAbLAHpZ+AiQCkQsgGNIIAC5Z1AGwBOVQKBEWPJEMIcAHiFYEeKmE0BnAgAcwowEa4AOgoyBwBzZ1ccEE9vfy4g60IvXwCAMl9AAyIAWjwAakkyXyo8B0VEmNSfTOD8nypghw9XAFNtAgofBi52gA5sgBYcOLbsqjcCXzjO4fDI8eKE4ObW9s6yNLoybUaKFqEMnGyAIgAFBAB1AEkMA8EhG4Y+Mg4AdzAcbQ4SKjogA))
 - [Rain](https://twitter.com/CasualEffects/status/952049699569139713) by [@CasualEffects](https://twitter.com/CasualEffects) ([Tweaked permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIBKYCWIA0BGAUABzABsAKaAXgCYAWCgZgoqywAYB2AShwDNIAnBAB4AeLLRwIAFmQlgAzhOICA1AE5OCVGWLEAPQGbAI8DFWEpbXZLWzCe0CURFgCs7ALRNxPfgE8RuBAgAuAKYC-sQARICtwIATwABygAPAAI4GgHhEgKBEgH3ASADuzLaAVESAkMSAqUSAjcCATcCALcAAsg6AKcCAHcCA3cCAPcCAg8CAw8CAY8CAk8CAlcAA3lhhANpKStC2tFgAuhgOAhgAbBTOi54YcOjEqEpkAL1KexJL7OxAA))
 - [Boot Sequence](https://twitter.com/CasualEffects/status/950048407942516736) by [@CasualEffects](https://twitter.com/CasualEffects) ([Permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIBClIBcA0BGAUAejwQCcwBLEAI0gHccAzSIhMAHgCZB3AhwQE8BeOGAAeACgAMGQCPAAWgDMACzABneSLABKaZ3XcADkoCmaEQGNISteoBUPANSy2GJeUs37j+UoBuIwNqEPdR18QgAbSABzSHpGBGgWWW4GJlIWLABWbgR9IxFZAA5pUgxZMVtoDBEAbTyAdnyMNiw8gBY0hqxZEoBdQB8aQG7SUkBKIixrcJIeEThSABMRLGlJPDZADwIMCRGrEUW2MTkAH2hpLD3A9SA))
+
 
 
 Saving
@@ -315,7 +492,7 @@ are reserved. All JavaScript and C++ reserved words are also reserved in nano.
 `#`, `$`, `then`, `else`, `elif`, `begin`, `while`, `until`, `loop`, `?`, `:`, `break`, `cont`,
 `flip`, `reset`, `main`, `catch`, `finally`, `enum`, `class`, `throw`, `return`, `yield`,
 `await`, `auto`, `template`, `public`, `private`, `protected`, `const`, `static` `async`,
-`goto`, `print`, `window`, `location`
+`goto`, `print`, `window`, `with`, `location`
 
 Comments
 ==========================================================================================
@@ -642,6 +819,9 @@ Math
 `tan(x)`
 : Tangent of `x` radians.
 
+`wrap(x,hi)`
+: Real-number modulus. Wraps `x` to the range [0, `hi`). `hi` defaults to `1.0` if not specified.
+
 <!--
 Memory
 ---------------------------------------------------------
@@ -906,7 +1086,14 @@ its license that permits any use.
 
 # Changes
 
-Newer:
+2018 Jan 28:
+ - Google Drive support
+ - Optimized `if` performance
+ - More examples in the manual
+ - Increased GIF limit to 12s
+ - Banana sprite
+
+2018 Jan 15-21:
  - `tri()`
  - Ctrl-R reloads the emulator (not the web page)
  - Search box for IDE (Ctrl-F)

@@ -31,7 +31,7 @@ var screenPalette = new Uint32Array(
 
 /** The source code for the reset animation. This must compile to something where newlines can
     be replaced with semi-colons so that it can become a single JavaScript line after
-    compilation. That is--do not split expressions across newlines in this nano source. */
+    compilation. So, do not split expressions across newlines in this nano source. */
 var resetAnimationNanoSource = `#nanojam Reset,1
 // flash at start
 if(¬τ)clr=∅;for(i<7)cls(gray(⅗-⅙i));flip
@@ -122,10 +122,11 @@ draw(69+⌊¼²τ⌋%2,40,34,431,2)
 
 if J.x or J.y
  P.θ = atan(J.y, J.x)
- P.x += ½cos(P.θ)
- P.y += ½sin(P.θ)
+ P.x = wrap(P.x + ½cos(P.θ), 64)
+ P.y = wrap(P.y + ½sin(P.θ), 64)
  ++P.f
 
+// Player
 h = ⌊2P.θ/π⌋∩3
 draw(35+⌊⅛P.f⌋%2+16[0,1,0,2][h],P.x,P.y,4321,2(h≟2))`,
     
@@ -294,8 +295,8 @@ var initialSource =
     //tests.rgb;
     //tests.text;
     //tests.spacedash;
-    //tests.adventure;
-    tests.triangle;
+    tests.adventure;
+    //tests.triangle;
     //tests.textbots;
     //tests.stars;
     //tests.variables;
@@ -809,21 +810,69 @@ function download(url, name) {
     }, 0);
 }
 
-
-function getFilename(src) {
+function getTitle(src) {
     var match = src.match(/^#nanojam[ \t]+(..+?)((?:,)([ \t]*\d+[ \t]*))?\n/);
     if (match) {
-        // Clean up the title to be a reasonable filename
-        return match[1].trim().replace(/ /g, '_').replace(/[:?"'&<>*|]/g, '') + '.nano';
-    } else {
-        return null;
+        return match[1].trim();
     }
+}
+
+
+function replaceTitle(code, newTitle) {
+    var match = code.match(/^#nanojam[ \t]+(..+?)(,([ \t]*\d+[ \t]*))?/);
+    if (match) {
+        return '#nanojam ' + newTitle + (match[2] || '').trim() + '\n' + code.replace(/^.*\n/, '');
+    } else {
+        return code;
+    }
+}
+
+
+function getFilename(title) {
+    return title.trim().replace(/ /g, '_').replace(/[:?"'&<>*|]/g, '') + '.nano';
+}
+
+
+function cartridgeArrayContainsFilename(filename) {
+    for (var i = 0; i < cartridgeArray.length; ++i) {
+        if (cartridgeArray[i].filename === filename) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+/** Generate a new title that is like oldTitle but does not collide with any filename
+    already in the Google Drive. */
+function generateNewTitle(oldTitle) {
+    if (oldTitle === '(NEW CART)') {
+        if (! cartridgeArrayContainsFilename(getFilename('Untitled'))) {
+            return 'Untitled';
+        }
+        oldTitle = 'Untitled';
+    } else if (oldTitle.indexOf('(clone)') === -1) {
+        var newTitle = oldTitle + ' (clone)';
+        if (! cartridgeArrayContainsFilename(getFilename(newTitle))) {
+            return newTitle;
+        }
+    }
+
+    var i = 2;
+   
+    var newTitle;
+    do {
+        newTitle = oldTitle + ' ' + i;
+        ++i;
+    } while (cartridgeArrayContainsFilename(getFilename(newTitle)));
+
+    return newTitle;
 }
 
 
 function onExportFile(event) {
     var src = editor.getValue();
-    var filename = getFilename(src);
+    var filename = getFilename(getTitle(src));
     if (filename) {
         // Convert unicode to a downloadable binary data URL
         download(window.URL.createObjectURL(new Blob(['\ufeff', src])), filename);
@@ -839,6 +888,10 @@ function onImportFile(event) {
     var reader = new FileReader();
     reader.onload = function () {
 	editor.setValue(reader.result);
+        activeCartridge.filename = getFilename(getTitle(reader.result));
+        activeCartridge.readOnly = true;
+        activeCartridge.googleDriveFileID = undefined;
+        setChanged(true);
         editor.gotoLine(1);
     };
     reader.readAsText(file);	
@@ -903,6 +956,333 @@ function onPlayButton() {
     }
 }
 
+/** Generated when logging in*/
+var cartridgeArray;
+var cartridgeArrayScrollIndex = 0;
+var cartridgeArrayScrollIncrement = 30;
+
+function onCartridgeArrayScrollDown() {
+    cartridgeArrayScrollIndex = Math.min(cartridgeArrayScrollIndex + 1, cartridgeArray.length - 1);
+    updateCartridgeArrayPositions();
+}
+
+
+function onCartridgeArrayScrollUp() {
+    cartridgeArrayScrollIndex = Math.max(cartridgeArrayScrollIndex - 1, 0);
+    updateCartridgeArrayPositions();
+}
+
+
+function updateCartridgeArrayPositions() {
+    var scrollOffset = -cartridgeArrayScrollIndex * cartridgeArrayScrollIncrement;
+    
+    for (var i = 0; i < cartridgeArray.length; ++i) {
+        var c = cartridgeArray[i];
+        if (! c.element) {
+            c.element = document.getElementById('cartridge' + i);
+        }            
+        
+        c.element.style.left = Math.round((i === cartridgeArrayScrollIndex) ? 0 : c.x) + 'px';
+        c.element.style.top = Math.round(c.y + scrollOffset) + 'px';
+    }
+
+    setControlEnable('delete', !cartridgeArray[cartridgeArrayScrollIndex].readOnly);
+    setControlEnable('load', cartridgeArrayScrollIndex !== 0);
+}
+
+
+function addToCartridgeArray(title, filename, fileID, code, readOnly) {
+    cartridgeArray.push({
+        filename: filename,
+        
+        // On Google Drive, 0 if built-in
+        fileID: fileID,
+        
+        readOnly: readOnly,
+        
+        code: code,
+        
+        title: title,
+    });
+}
+
+/** If the current document is unsaved, prompt with message and allow the user to cancel the
+    action. Otherwise, run the callback. */
+function executeWithSaveCheck(message, callback) {
+    if (! activeCartridge.changedSinceSaved || confirm(message)) {
+        callback();
+    }
+}
+
+
+/** Pulls cartridges from Google Drive */
+function computeCartridgeArray() {
+    cartridgeArray = [];
+    
+    addToCartridgeArray("(NEW CART)", '', 0, '', true);
+    for (var i = 0; i < starterCartArray.length; ++i) {
+        var code = starterCartArray[i];
+        var title = getTitle(code);
+        var filename = getFilename(title);
+        addToCartridgeArray(title, filename, 0, code, true);
+    }
+    
+    cartridgeArrayScrollIndex = Math.min(cartridgeArray.length, cartridgeArrayScrollIndex);
+
+    googleDriveRetrieveAllFiles(function(files) {
+        var remaining = files.length;
+
+        if (remaining === 0) {
+            // Nothing to load
+            makeCartridgeWindowContents();
+        } else {
+            for (var i = 0; i < files.length; ++i) {
+                googleDriveGetTextFile(files[i].id, function(fileID, contents, filename) {
+                    --remaining;
+                    if (contents) {
+                        var title = getTitle(contents);
+                        var filename = getFilename(title);
+                        addToCartridgeArray(title, filename, fileID, contents, false);
+                    } else {
+                        console.log('Could not load Google Drive file "' + filename + '" with fileID ' + fileID);
+                    }
+                    
+                    if (remaining <= 0) {
+                        makeCartridgeWindowContents();
+                    }
+                }, files[i].name);
+            } // for i
+        } // if
+    });
+}
+
+
+function onSignIn() {
+    authorizeDiv.classList.add('hidden');
+    cartridgeViewer.classList.remove('hidden');
+    signoutButton.style.display = 'block';
+    computeCartridgeArray();
+}
+
+
+function onSignOut() {
+    cartridgeViewer.classList.add('hidden');
+    authorizeDiv.classList.remove('hidden');
+    signoutButton.style.display = 'none';
+}
+
+
+function onLoadButton() {
+    onStopButton();
+    if (document.getElementById('loadButtonContainer').classList.contains('disabled')) { return; }
+
+    executeWithSaveCheck('You will lose your unsaved changes if you load a new cartridge without saving first. Load it anyway?', function () {
+        setActiveCartridge(cartridgeArray[cartridgeArrayScrollIndex]);
+    });
+}
+
+
+function onDeleteButton() {
+    if (document.getElementById('deleteButtonContainer').classList.contains('disabled')) { return; }
+
+    var c = cartridgeArray[cartridgeArrayScrollIndex];
+    if (! c.fileID) { console.log('tried to delete a file with no ID'); return; }
+
+    if (confirm('Permanently delete "' + c.title + '" from your Google Drive?')) {
+        showWaitDialog();
+        googleDriveSaveTextFile(c.filename, c.code, function () {
+            setTimeout(function () {
+                hideWaitDialog();
+                computeCartridgeArray();
+            }, 2000);
+        }, c.fileID, true);
+    }
+}
+
+
+function onCloneButton() {
+    onStopButton();
+    if (document.getElementById('cloneButtonContainer').classList.contains('disabled')) { return; }
+
+    executeWithSaveCheck('You will lose your unsaved changes if you load a new cartridge without saving first. Load it anyway?', function () {
+        // Create a new cartridge with a new title
+        var src = cartridgeArray[cartridgeArrayScrollIndex];
+
+        // Generate a new title
+        var newTitle = generateNewTitle(getTitle(src.code));
+
+        var newFilename = getFilename(newTitle);
+
+        // Replace the title in the code
+        var dst = {
+            code:     replaceTitle(src.code, newTitle),
+            title:    newTitle,
+            filename: newFilename
+        };
+            
+        // Load the new cartridge
+        setActiveCartridge(dst);
+        updateAndSaveCartridge(newTitle, newFilename, dst, function () {
+            // Update the cartridge list
+            computeCartridgeArray();
+
+            // Scroll the cartrige window to the currently loaded one
+            // TODO
+        });
+    });
+    
+}
+
+
+/** Called when the last Google Drive cartridge is found */
+function makeCartridgeWindowContents() {
+    cartridgeArray.sort(function (a, b) {
+        if (a.title === '(NEW CART)') {
+            return -1;
+        } else {
+            a = a.filename.toLowerCase();
+            b = b.filename.toLowerCase();
+            if (a < b) {
+                return -1;
+            } else if (a > b) {
+                return +1;
+            } else {
+                return 0;
+            }
+        }
+    });
+
+        // Make slight changes in brightness so that cartridges don't look too repetitive
+    function nameBrightness(name) {
+        return (Math.cos(name.length + name.charCodeAt(name.length - 1) + name.indexOf('a')) * 0.1 + 0.95);
+    }
+    
+    function nameHue(name) {
+        return Math.floor((Math.cos(0.2 * name.length) + 1) * 10);
+    }
+
+    for (var i = 0; i < cartridgeArray.length; ++i) {
+        var c = cartridgeArray[i];
+        c.hue = nameHue(c.title);
+        c.brightness = nameBrightness(c.title);
+        c.x = 225 + Math.floor((Math.sin(i * 10) + 1) * 8);
+        c.y = (i + 1) * cartridgeArrayScrollIncrement + Math.floor(Math.random() * 12);
+    }
+    
+    var c = cartridgeArray[0];
+    var s = '<div id="cartridge0" style="filter: sepia(100%) saturate(300%) hue-rotate(-45deg); position: absolute; top: ' + c.y + 'px; left:' + c.x + 'px" class="cartridge" onmousedown="event.stopPropagation()"><div class="label">(NEW CART)</div></div>';
+
+    var foundActive = false;
+    for (var i = 1; i < cartridgeArray.length; ++i) {
+        var c = cartridgeArray[i];
+        s += '<div id="cartridge' + i + '" style="filter: sepia(' + c.hue + '%) brightness(' + c.brightness + '); position: absolute; top: ' + c.y + 'px; left:' + c.x + 'px" class="cartridge" onmousedown="event.stopPropagation()"><div class="label">' + c.title + '</div></div>';
+        foundActive = foundActive || (c.fileID === activeCartridge.fileID);
+    }
+    document.getElementById('allCarts').innerHTML = s;
+
+    if (! foundActive) {
+        // The active cartridge's file ID does not seem to exist any more on Google Drive.
+        activeCartridge.fileID = undefined;
+    }
+    setTimeout(updateCartridgeArrayPositions, 0);
+}
+
+
+function onSaveButton() {
+    if (document.getElementById('saveButtonContainer').classList.contains('disabled')) { return; }
+
+    activeCartridge.code = editor.getValue();
+    var newTitle = getTitle(activeCartridge.code);
+    var newFilename = getFilename(newTitle);
+
+    if (! newFilename) {
+        alert('The program must begin with #nanojam and a title before it can be saved to Google Drive');
+        return;
+    }
+
+    // See if there's a collision with any other cartridge
+    for (var i = 0; i < cartridgeArray.length; ++i) {
+        var c = cartridgeArray[i];
+        if ((c.filename === newFilename) && (c.fileID !== activeCartridge.fileID)) {
+            if (c.readOnly) {
+                alert('This cartridge\'s title "' + newtitle + '" is too similar to read-only cartridge "' + c.title + '". Change the title on the first line before saving.');
+                return;
+            } else {
+                if (confirm('Saving with the current title will overwrite a different cartridge "' + c.title + '" because their titles are similar.')) {
+                    // Delete the other cartridge
+                    // TODO
+                } else {
+                    return;
+                }
+            }
+        }
+    } // for each cartridge
+
+    if (activeCartridge.fileID && (newFilename !== activeCartridge.filename)) {
+        showRenameDialog(newTitle, newFilename);
+    } else {
+        updateAndSaveCartridge(newTitle, newFilename, activeCartridge);
+    }
+}
+
+
+function updateAndSaveCartridge(newTitle, newFilename, cartridge, callback) {
+    cartridge.title = newTitle;
+    cartridge.filename = newFilename;
+    googleDriveSaveTextFile(cartridge.filename, cartridge.code, function (file) {
+        cartridge.fileID = file.id;
+        cartridge.readOnly = false;
+        setChanged(false);
+        computeCartridgeArray();
+        if (callback) { callback(); }
+    }, cartridge.fileID);
+}
+
+
+function showRenameDialog(newTitle, newFilename) {
+    onPauseButton();
+    document.getElementById('saveRenameLabel').innerHTML = 'Rename "' + activeCartridge.title + '" as "' + newTitle + '"';
+    document.getElementById('saveCloneLabel').innerHTML = 'Create a new "' + newTitle + '" cartridge';
+    document.getElementById('renameDialog').classList.remove('hidden');
+
+    document.getElementById('saveRenameContainer').onclick = function () {
+        showWaitDialog();
+        updateAndSaveCartridge(newTitle, newFilename, activeCartridge, function () {
+            hideRenameDialog();
+            hideWaitDialog();
+        });    
+    };
+
+    document.getElementById('saveCloneContainer').onclick = function () {
+        // Remove the fileID, which will force it to be regenerated as a new file
+        activeCartridge.fileID = undefined;
+        showWaitDialog();
+        updateAndSaveCartridge(newTitle, newFilename, activeCartridge, function () {
+            hideRenameDialog();
+            hideWaitDialog();
+        });    
+    };
+}
+
+function showWaitDialog() {
+    document.getElementById('waitDialog').classList.remove('hidden');
+}
+
+function hideWaitDialog() {
+    document.getElementById('waitDialog').classList.add('hidden');
+}
+
+function hideRenameDialog() {
+    document.getElementById('renameDialog').classList.add('hidden');
+}
+
+
+window.onclick = function(event) {
+    // Hide modal dialogs
+    if (event.target.classList.contains('modal') && (event.target !== document.getElementById('waitDialog'))) {
+        event.target.classList.add('hidden');
+    }
+} 
 
 function onPauseButton() {
     if (mode === 'play') {
@@ -911,18 +1291,24 @@ function onPauseButton() {
     }
 }
 
+function inModal() {
+    return ! document.getElementById('renameDialog').classList.contains('hidden');
+}
+
 
 function onDocumentKeyDown(event) {
     switch (event.which || event.keyCode) {
     case 116: F5
         // F5
         event.preventDefault();
-        if (event.ctrlKey || event.metaKey) {
-            onPlayButton();
-        } else if (! event.shiftKey) {
-            onRestartButton();
-        } else {
-            onStopButton();
+        if (! inModal()) {
+            if (event.ctrlKey || event.metaKey) {
+                onPlayButton();
+            } else if (! event.shiftKey) {
+                onRestartButton();
+            } else {
+                onStopButton();
+            }
         }
         break;
         
@@ -930,18 +1316,25 @@ function onDocumentKeyDown(event) {
         if (event.ctrlKey || event.metaKey) {
             // Intercept from browser
             event.preventDefault();
-            onRestartButton();
+            if (! inModal()) { onRestartButton(); }
         }
         break;
+
+    case 83: // S
+        if (event.ctrlKey || event.metaKey) {
+            // Intercept from browser
+            event.preventDefault();
+            if (! inModal()) { onSaveButton(); }
+        }
+        break;
+        
     case 19: // [Ctrl+] Break
         onPauseButton();
         break;
     }
 }
 
-
 document.addEventListener('keydown', onDocumentKeyDown);
-
 
 var jsCode = document.getElementById('jsCode') && ace.edit(document.getElementById('jsCode'));
 var editorStatusBar = document.getElementById('editorStatusBar');
@@ -957,7 +1350,30 @@ editor.session.setUseWorker(false);
 aceSession.setMode('ace/mode/nano');
 aceSession.setUseWrapMode(true);
 
-var isSaved = true;
+/** Used for tracking */
+var activeCartridge = {
+    filename:          undefined,
+    fileID:            undefined,
+    readOnly:          undefined,
+    changedSinceSaved: undefined,
+};
+
+
+function setActiveCartridge(cartridge) {
+    activeCartridge = cartridge;
+    editor.setValue(activeCartridge.code);
+    editor.gotoLine(1);
+    setChanged(false);
+}
+
+
+function setChanged(s) {
+    if (s !== activeCartridge.changedSinceSaved) {
+        setControlEnable('save', s);
+        activeCartridge.changedSinceSaved = s;
+    }
+}
+
 
 /** Makes automated replacements to minimize the length of the program */
 function minify(nanoSource, aggressive) {
@@ -1043,7 +1459,7 @@ editor.session.on('change', function () {
     src = null;
     
     countCharacters();
-    isSaved = false;
+    setChanged(true);
 });
 
 
@@ -1097,7 +1513,8 @@ function pressed(ctrl) {
 
 /** Sets the visible enabled state of the button whose name starts with ctrl to e */
 function setControlEnable(ctrl, e) {
-    document.getElementById(ctrl + 'Button').disabled = ! e;
+    var b = document.getElementById(ctrl + 'Button');
+    if (b) { b.disabled = ! e; }
 
     var container = document.getElementById(ctrl + 'ButtonContainer');
     if (e) {
@@ -1292,8 +1709,8 @@ function submitFrame() {
             gifRecording.addFrame(ctx, {delay: 1000/30, copy: true});
         }
         ++gifRecording.frameNum;
-        if (gifRecording.frameNum > 60*8) {
-            // Stop after 8 seconds
+        if (gifRecording.frameNum > 60*12) {
+            // Stop after 12 seconds
             document.getElementById('recording').classList.add('hidden');
             gifRecording.render();
             gifRecording = null;
@@ -1358,19 +1775,31 @@ setTimeout(function () {
 }, 0);
 
 var emulatorButtonState = {};
-    
+
+window.onbeforeunload = function (event) {
+    if (activeCartridge.changedSinceSaved) {
+        return 'You have unsaved changes in the nano editor';
+    }
+};
+
+
+
 (function() {
     if (deployed) { initialSource = tests.spacedash; }
 
     // Code has been specified to the emulator; start with it and push the start button
     var code = getQueryString('code');
     if (code) {
-        initialSource = LZString.decompressFromEncodedURIComponent(code);
+        activeCartridge.code = LZString.decompressFromEncodedURIComponent(code);
+        activeCartridge.filename = getFilename(getTitle(initialSource));
+        activeCartridge.readOnly = true;
+        activeCartridge.googleDriveFileID = undefined;
         setTimeout(onPlayButton, 750);
+    } else {
+        activeCartridge.code = initialSource;
     }
-    
-    editor.setValue(initialSource);
-    editor.gotoLine(1);
+
+    setActiveCartridge(activeCartridge);
 
     var buttons = 'WASD1ZX';
     for (var i = 0; i < buttons.length; ++i) {
@@ -1415,193 +1844,3 @@ var emulatorButtonState = {};
     
 })();
 
-///////////////////////////////////////////////////////////////////////////////////////
-//
-// Google Drive / OAuth 2.0 API Wrapper
-//
-// This implementation uses the Drive client API v2 because I couldn't get v3 to work.  It is
-// intentionally restricted to the hidden appDataFolder for nano JAMMER so that it requires
-// reduced permissions AND because that was the only way I could find to efficiently find only
-// nano carts.
-//
-
-function onSaveToGoogleDrive() {
-    var src = editor.getValue();
-    var filename = getFilename(src);
-    if (filename) {
-        googleDriveSaveTextFile(filename, src);
-    } else {
-        alert('The program must begin with #nanojam and a title before it can be saved to Google Drive');
-    }
-}
-
-
-function onListGoogleDrive() {
-    googleDriveRetrieveAllFiles(function(files) {
-        console.log(files);
-        googleDriveGetTextFile(files[0].id, function(contents) {
-            console.log(contents);
-        });
-    });
-}
-
-/**
-  Retrieve a list of File resources.
-
- Based on https://developers.google.com/drive/v2/reference/files/list
- */
-function googleDriveRetrieveAllFiles(callback) {
-    gapi.client.drive.files.list({
-        // The spaces should be 'drive' for the whole drive or 'appDataFolder' to just
-        // see in this app's hidden, private space
-        spaces: 'appDataFolder', 
-        fields: 'nextPageToken, items(id, title)',
-        pageSize: 100
-   }).then(function(data) {
-       callback(data.result.items);
-   });
-}
-
-/**
-   Invokes the callback with the text file's contents, or null if
-   there was an error.
-
-   You can get the ID from googleDriveRetrieveAllFiles.
-   https://developers.google.com/drive/v2/reference/files/get
- */
-function googleDriveGetTextFile(fileId, callback) {
-    var request = gapi.client.drive.files.get({
-        'fileId': fileId,
-    });
-    
-    request.execute(function (file) {
-        if (file.downloadUrl) {
-            var accessToken = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', file.downloadUrl);
-            xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
-            xhr.onload = function() {
-                callback(xhr.responseText);
-            };
-            
-            xhr.onerror = function() {
-                callback(null);
-            };
-            
-            xhr.send();
-        } else {
-            callback(null);
-        }
-    });
-}
-
-
-/** https://developers.google.com/drive/v2/reference/files/trash */
-function googleDriveDeleteFile(fileId) {
-    var request = gapi.client.drive.files.trash({
-        'fileId': fileId
-    });
-    request.execute(function(resp) { });
-}
-
-
-/** Save a text file to Google Drive. If fileId is specified, then the existing file
-    is renamed and overwritten, otherwise a new file is created.
-
-    Based on https://developers.google.com/drive/v2/reference/files/insert  */
-function googleDriveSaveTextFile(fileName, fileContents, callback, fileId) {
-    const boundary = '-------X314159265358979323846';
-    const delimiter = "\r\n--" + boundary + "\r\n";
-    const close_delim = "\r\n--" + boundary + "--";
-
-    if (fileContents.indexOf(boundary) !== -1) {
-        // The source is trying to hack the transfer protocol
-        throw "File contains boundary!";
-    }
-    
-    var contentType = 'text/plain';
-    var metadata = {
-        'title': fileName,
-        'mimeType': contentType,
-        'parents': [{id:'appDataFolder'}]
-    };
-
-    var multipartRequestBody =
-        delimiter +
-        'Content-Type: application/json\r\n\r\n' +
-        JSON.stringify(metadata) +
-        delimiter +
-        'Content-Type: ' + contentType + '\r\n' +
-        '\r\n' +
-        fileContents +
-        close_delim;
-
-    var request = gapi.client.request({
-        'path': '/upload/drive/v2/files' + (fileID !== undefined ? '/' + fileId : ''),
-        'method': 'POST',
-        'params': {'uploadType': 'multipart'},
-        'headers': {
-          'Content-Type': 'multipart/mixed; boundary="' + boundary + '"'
-        },
-        'body': multipartRequestBody});
-
-    if (! callback) {
-        // Create a dummy callback
-        callback = function(file) { console.log(file)  };
-    }
-    
-    request.execute(callback);
-}
-
-
-
-// The following are based on:
-// https://github.com/google/google-api-javascript-client/blob/master/samples/authSample.html
-
-var authorizeButton = document.getElementById('authorize-button');
-var signoutButton = document.getElementById('signout-button');
-
-function updateSigninStatus(isSignedIn) {
-    if (isSignedIn) {
-        authorizeButton.style.display = 'none';
-        signoutButton.style.display = 'block';
-    } else {
-        authorizeButton.style.display = 'block';
-        signoutButton.style.display = 'none';
-    }
-}
-
-function handleAuthClick(event) {
-    gapi.auth2.getAuthInstance().signIn();
-}
-
-function handleSignoutClick(event) {
-    gapi.auth2.getAuthInstance().signOut();
-}
-
-
-function handleClientLoad() {
-    // Load the API client and auth2 library
-    gapi.load('client:auth2', initClient);
-}
-
-function initClient() {
-    gapi.load('client', function() {
-        // Initialize the JavaScript client library.
-        gapi.client.init({
-            'apiKey': 'AIzaSyAlRiTht5T9CLtYAQhFnZGdgtqmSvD_Js0',
-            'clientId': '442588265355-cv3vd67iv8c79ckfsm3m8vbgfl6pr104.apps.googleusercontent.com',
-            'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/drive/v2/rest'],
-            
-            //'scope': 'https://www.googleapis.com/auth/drive.file',
-            'scope': 'https://www.googleapis.com/auth/drive.appfolder'
-        }).then(function () {
-            // Listen for sign-in state changes.
-            gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
-            // Handle the initial sign-in state.
-            updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-            authorizeButton.onclick = handleAuthClick;
-            signoutButton.onclick = handleSignoutClick;
-        });
-    });
-}

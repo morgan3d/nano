@@ -8,6 +8,16 @@ Object.defineProperty(Array.prototype, 'len',
                         get: function () {  return this.length;  },
                         set: function (n) { this.length = n;  }});
 
+/** Used by code emitted from the `with` statement */
+Object.prototype.assignFields = function(dst, src, fields) {
+    for (var i = fields.length - 1; i >= 0; ++i) {
+        var f = fields[i];
+        dst[f] = src[f];
+    }
+    return dst;
+}
+
+
 function _arrayKill(i) {
     var L = this.length;
     this[i] = this[L - 1];
@@ -878,6 +888,12 @@ function draw(spr, x, y, colormap, xform, rot) {
     }
 
     _draw(spr, x, y, localPalette, xform, rot, _screen);    
+}
+
+
+function wrap(x, hi) {
+    hi = Math.abs(hi || 1);
+    return x - Math.floor(x / hi) * hi;
 }
 
 
