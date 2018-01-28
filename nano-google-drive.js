@@ -1,12 +1,6 @@
-///////////////////////////////////////////////////////////////////////////////////////
-//
+/* By Morgan McGuire @CasualEffects http://casual-effects.com GPL 3.0 License*/
+
 // Google Drive / OAuth 2.0 API Wrapper
-//
-// This implementation uses the Drive client API v2 because I couldn't get v3 to work.  It is
-// intentionally restricted to the hidden appDataFolder for nano JAMMER so that it requires
-// reduced permissions AND because that was the only way I could find to efficiently find only
-// nano carts.
-//
 
 
 /**
