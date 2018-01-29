@@ -50,7 +50,7 @@ for i<10
 // Cut the center out using the sky color
 pal(12)
 circ(45,68,21,1)`,
-
+/*
 `#nanojam SNAKE
 // by @Jackson_T_Allen
 if(¬τ)s=[31,31];θ=0;c=0;e=1
@@ -69,7 +69,7 @@ for a<3
  for b<3
   for(i<½s.len)circ(s[2i]+w*a-w,s[2i+1]+w*b-w,4,5)
 if(|x-s₀|+|y-s₁|<6)c++;
-τ%=3⁷`,
+τ%=3⁷`, */
 
 `#nanojam Mandelbrot
 // Based on code by @Jackson_T_Allen
