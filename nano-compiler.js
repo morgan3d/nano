@@ -385,7 +385,8 @@ function nanoToJS(src, noWrapper) {
         src = src.replace(/([₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₍₎][₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₍₎ ]*)/g, '[($1)]');
         src = src.replace(/[₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₍₎]/g, function (match) { return subscriptToNormal[match]; });
     }
-    
+
+   
     src = processBlocks(src);
 
     // Process after FOR-loops so that they are easier to parse
@@ -411,6 +412,24 @@ function nanoToJS(src, noWrapper) {
 
     // exponentiation
     src = src.replace(/\^/g, '**');
+
+    // Optimize var**(2), which is much less efficient than var*var.
+    // Note that we don't allow rnd in here!
+    src = src.replace(/(.|..)[ \t]*([δΔ]?([A-Za-z]{1,3}|[αβδθλμρσφψωΔΩ]))\*\*\((-?\d)\)/g, function (match, br, identifier, ignore, exponent) {
+        if (br.match(/\+\+|--|\.|\*\*/)) {
+            // Order of operations may be a problem; don't subsitute
+            return match;
+        } else {
+            exponent = parseInt(exponent);
+            if (exponent === 0) {
+                return br + ' identifier**(0)';
+            } else if (exponent < 0) {
+                return br + ' (1 / (' + identifier + (' * ' + identifier).repeat(-exponent - 1) + '))';
+            } else {
+                return br + ' (' + identifier + (' * ' + identifier).repeat(exponent - 1) + ')';
+            }
+        }
+    });
 
     src = src.replace(/∞/g, ' (Infinity) ');
     src = src.replace(/∅/g, ' (undefined) ');

@@ -65,6 +65,10 @@ text(τ)`,
     rect:`#nanojam rect,1
 rect(10,10,20,30,12)`,
 
+    square:`#nanojam square,1
+a=b=1
+text(a²+b²)`,
+    
     agent:`#nanojam agent
 // initialize
 if ¬τ
@@ -99,36 +103,6 @@ for x<13
  i=((¼³τ(7h+3)+70h)∩15)-11
  for y<11
   text(K[++j∩31],5x,62-6y,min(i+=½+½h,6))`,
-
-    adventure:`#nanojam Adventure,1
-if ¬τ
- // Initialize
- pal(121024232221)
- P={x:32,y:32,f:0,θ:0}
- J=joy
-
-// Grass
-cls(22)
-for i<64
- draw(93,8(i%8)+3,8⌊⅛i⌋+3,3999/10^⌊2hash(i)⌋)
-
-// Wall
-for i<6
- draw(91,8i+3,12,3111)
-draw(91,51-8,20,3111)
- 
-// Snake
-draw(69+⌊¼²τ⌋%2,40,34,431,2)
-
-if J.x or J.y
- P.θ = atan(J.y, J.x)
- P.x = wrap(P.x + ½cos(P.θ), 64)
- P.y = wrap(P.y + ½sin(P.θ), 64)
- ++P.f
-
-// Player
-h = ⌊2P.θ/π⌋∩3
-draw(35+⌊⅛P.f⌋%2+16[0,1,0,2][h],P.x,P.y,4321,2(h≟2))`,
     
     ping: `#nanojam PING
 if(¬τ)p=32;f=2⁷
@@ -295,7 +269,7 @@ var initialSource =
     //tests.rgb;
     //tests.text;
     //tests.spacedash;
-    tests.adventure;
+    tests.square;
     //tests.triangle;
     //tests.textbots;
     //tests.stars;
