@@ -803,6 +803,7 @@ function replaceTitle(code, newTitle) {
 
 
 function getFilename(title) {
+    title = title || '';
     return title.trim().replace(/ /g, '_').replace(/[:?"'&<>*|]/g, '') + '.nano';
 }
 
@@ -820,16 +821,11 @@ function cartridgeArrayContainsFilename(filename) {
 /** Generate a new title that is like oldTitle but does not collide with any filename
     already in the Google Drive. */
 function generateNewTitle(oldTitle) {
-    if (oldTitle === '(NEW CART)') {
+    if ((oldTitle === '(NEW CART)') || ! oldTitle) {
         if (! cartridgeArrayContainsFilename(getFilename('Untitled'))) {
             return 'Untitled';
         }
         oldTitle = 'Untitled';
-    } else if (oldTitle.indexOf('(clone)') === -1) {
-        var newTitle = oldTitle + ' (clone)';
-        if (! cartridgeArrayContainsFilename(getFilename(newTitle))) {
-            return newTitle;
-        }
     }
 
     var i = 2;
@@ -993,7 +989,7 @@ function executeWithSaveCheck(message, callback) {
 function computeCartridgeArray() {
     cartridgeArray = [];
     
-    addToCartridgeArray("(NEW CART)", '', 0, '', true);
+    addToCartridgeArray('(NEW CART)', '', 0, '#nanojam (NEW CART)\n', true);
     for (var i = 0; i < starterCartArray.length; ++i) {
         var code = starterCartArray[i];
         var title = getTitle(code);
@@ -1126,7 +1122,7 @@ function makeCartridgeWindowContents() {
         }
     });
 
-        // Make slight changes in brightness so that cartridges don't look too repetitive
+    // Make slight changes in brightness so that cartridges don't look too repetitive
     function nameBrightness(name) {
         return (Math.cos(name.length + name.charCodeAt(name.length - 1) + name.indexOf('a')) * 0.1 + 0.95);
     }
@@ -1136,6 +1132,7 @@ function makeCartridgeWindowContents() {
     }
 
     for (var i = 0; i < cartridgeArray.length; ++i) {
+        console.log(c);
         var c = cartridgeArray[i];
         c.hue = nameHue(c.title);
         c.brightness = nameBrightness(c.title);
