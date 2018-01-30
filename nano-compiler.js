@@ -109,7 +109,7 @@ function processSingleLineControl(str) {
 
 /** Given a nano FOR-loop test not surrounded in extra (), returns the JavaScript equivalent test */
 function processForTest(test) {
-    var match = test.match(/^[ \t]*([δΔ]?(?:[A-Za-z]{1,3}|[αβδθλμξρσφψωΔΩ]))[ \t]*∈(.*)$/);
+    var match = test.match(/^[ \t]*([δΔ]?(?:[A-Za-z]{1,3}|[αβδθλμξρσφψωΔΩ]))[ \t]*∊(.*)$/);
     if (match) {
         // Generate variables
         var container = gensym('cntnr'), keys = gensym('keys'), index = gensym('index'), cur = match[1], containerExpr = match[2];
@@ -312,6 +312,9 @@ function nanoToJS(src, noWrapper) {
     
     var numProtected = 0, protectionMap = [];
 
+    // Switch to small element-of
+    src = src.replace(/∈/g, '∊');
+    
     // Title line
     var title = undefined, flags = 0;
     src = src.replace(/^#nanojam[ \t]+(..+?)((?:,)([ \t]*\d+[ \t]*))?(?:$|\n)/, function (match, specTitle, ignore, specFlags) {

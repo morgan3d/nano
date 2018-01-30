@@ -92,12 +92,13 @@ function googleDriveGetTextFile(fileId, callback, data) {
 
 
 /** https://developers.google.com/drive/v2/reference/files/trash */
+/*
 function googleDriveDeleteFile(fileId, callback) {
     var request = gapi.client.drive.files.trash({
         'fileId': fileId
     });
     request.execute(function(resp) { callback(); });
-}
+}*/
 
 
 /** Save a text file to Google Drive. If fileId is specified, then the existing file
@@ -124,11 +125,16 @@ function googleDriveSaveTextFile(filename, fileContents, callback, fileId, trash
     var contentType = 'text/plain';
     var metadata = {
         name:      filename,
-        trashed:   trash || false,
         mimeType:  contentType,
         fields :   'id'
     };
 
+    if (trash) {
+        // Setting it to false seems to also act as true,
+        // so only set trashed when we want that
+        metadata.trashed = true;
+    }
+    
     var multipartRequestBody =
         delimiter +
         'Content-Type: application/json\r\n\r\n' +

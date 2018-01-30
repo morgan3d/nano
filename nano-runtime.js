@@ -201,7 +201,7 @@ var fontMap = (function(){
 abcdefghijklmnopqrstuvwxy
 0123456789~!@#$%^&*()_+-=
 {}[]\\/|;:\`'",.?<>Zzεπτ∞∅ξ
-βδΔθλμρσφψΩ∩∪◅▻¬⌊⌋⌈⌉≟≠≤≥∈
+βδΔθλμρσφψΩ∩∪◅▻¬⌊⌋⌈⌉≟≠≤≥∊
 ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻ᵃᵝⁱʲˣᵏᵘⁿ⁽⁾
 ₀₁₂₃₄₅₆₇₈₉₊₋ₐᵦᵢⱼₓₖᵤₙ₍₎`;
 
@@ -217,6 +217,7 @@ abcdefghijklmnopqrstuvwxy
     map['⊕'] = map['φ'];
     map['α'] = map['a'];
     map['ω'] = map['w'];
+    map['∈'] = map['∊'];
     
     return map;
 })();
