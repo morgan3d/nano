@@ -654,10 +654,28 @@ afterImageLoad('rainbow-selector.png', function (rainbowImage) {
     }
     s += '</div>';
 
-    s += '<input type="text" class="cmd" id="palCmd" onmousedown="event.stopPropagation()" readonly="true">';
+    s += '<input type="text" class="cmd" id="palCmd" onmousedown="event.stopPropagation()" onchange="onPalCmdChange(event)">';
     document.getElementById('paletteTray').innerHTML = s;
     updatePaletteToolCmd();
 });
+
+
+function onPalCmdChange(event) {
+    var m = event.target.value.trim().match(/(?:pal\()?(\d+)\)?/);
+    if (m) {
+        c = parseInt(m[1]);
+        if (! isNaN(c)) {
+            for (var i = 1; i < 7; ++i) {
+                paletteToolCurrentPalette[i] = c % 100;
+                c = Math.floor(c / 100);
+                document.getElementById('paletteSlot' + i).style.background = imageDataToHTMLColorString(screenPalette[paletteToolCurrentPalette[i]]);
+            }
+        }
+    }
+
+    updatePaletteToolCmd();
+    redrawSelectedSprite();
+}
 
 
 function colorDragStart(event) {
@@ -678,7 +696,6 @@ function colorDragDrop(event) {
 
     // Find closest nano color
     var colorIndex = rgb(color.r, color.g, color.b);
-
     event.target.style.background = 'rgb(' + (color.r * 255) + ', ' + (color.g * 255) + ', ' + (color.b * 255) + ')';
 
     var paletteSlotIndex = parseInt(event.target.innerText);
@@ -1015,7 +1032,6 @@ function computeCartridgeArray() {
                     if (contents) {
                         var title = getTitle(contents);
                         var filename = getFilename(title);
-                        console.log("discovered: " + title);
                         addToCartridgeArray(title, filename, fileID, contents, false);
                     } else {
                         console.log('Could not load Google Drive file "' + filename + '" with fileID ' + fileID);

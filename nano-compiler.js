@@ -116,7 +116,7 @@ function processForTest(test) {
         
         // Container iteration FOR loop. Clone the container if it is an object
         // or array. Iterates over elements of arrays, keys of table, chars of string.
-        return '(var ' + container + ' = _clone(' + containerExpr + '), ' + keys + ' = Object.keys(' + container + '), ' + 
+        return '(let ' + container + ' = _clone(' + containerExpr + '), ' + keys + ' = Object.keys(' + container + '), ' + 
             index + ' = 0, ' + cur + ' = ' + container + '[' + keys + '[0]]; ' +
             index + ' < ' + keys + '.length; ' + cur + ' = ' + container + '[' + keys + '[++' + index + ']])';
     }
@@ -156,7 +156,7 @@ function processForTest(test) {
 
     if (! legalIdentifier(identifier)) { throw 'Illegal FOR-loop variable syntax'; }
                 
-    return '(var ' + identifier + ' = ' + initExpr + '; ' + identifier + ' ' + op + ' ' + endExpr + '; ++' + identifier + ')';
+    return '(let ' + identifier + ' = ' + initExpr + '; ' + identifier + ' ' + op + ' ' + endExpr + '; ++' + identifier + ')';
 }
 
 

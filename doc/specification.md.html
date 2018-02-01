@@ -449,10 +449,16 @@ of the Table directly gives the number of keys.
 Variables
 =============================================================================================
 
-Variables are implicitly declared by their first assignment. Scopes are created only by
+Variables are implicitly declared by their first assignment. 
+
+All variables have global scope except for the `for` loop variable, which has the scope of the
+body of the `for` loop.
+
+<!--
+Scopes are created only by
 function definitions (specifically, loops and blocks do not create a scope the way that they do
 in C++). Because user-defined functions are not supported in the current implementation, that
-means all variables are global.
+means all variables are global. -->
 
 Variable name identifiers consist of an optional lower-case or upper case delta, plus 1-3
 Roman letters or the unambiguous-looking Greek letters `αβδθλμξρσφψωΔΩ` by
@@ -1085,6 +1091,11 @@ its license that permits any use.
 
 
 # Changes
+
+Newer:
+ - Fixed cart cloning
+ - Changed scope of `for` variable declaration
+ - Paste into the Palette tool
 
 2018 Jan 22-29:
  - Google Drive support
