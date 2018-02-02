@@ -1,7 +1,15 @@
 /* By Morgan McGuire @CasualEffects http://casual-effects.com GPL 3.0 License*/
 
-// Google Drive / OAuth 2.0 API Wrapper
+// Google Drive + OAuth 2.0 API Wrapper
 
+
+/** Invokes callback with an object containing {photoLink: displayName: emailAddress: }
+*/
+function googleDriveGetUserInfo(callback) {
+    gapi.client.drive.about.get({fields:'user'}).then(function(x) {
+        callback(JSON.parse(x.body).user);
+    });
+}
 
 /**
    Retrieve a list of File resources created by this app that have NOT been deleted.
@@ -166,10 +174,6 @@ function googleDriveSaveTextFile(filename, fileContents, callback, fileId, trash
 
 // The following are based on:
 // https://github.com/google/google-api-javascript-client/blob/master/samples/authSample.html
-
-var authorizeDiv = document.getElementById('authorize-div');
-var signoutButton = document.getElementById('signout-button');
-var cartridgeViewer = document.getElementById('cartridgeViewer');
 
 function updateSigninStatus(isSignedIn) {
     if (isSignedIn) {

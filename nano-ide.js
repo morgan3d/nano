@@ -1047,20 +1047,29 @@ function computeCartridgeArray() {
     });
 }
 
+var authorizeDiv = document.getElementById('authorize-div');
+var signoutButton = document.getElementById('signout-button');
+var cartridgeViewer = document.getElementById('cartridgeViewer');
 
 function onSignIn() {
     authorizeDiv.classList.add('hidden');
     cartridgeViewer.classList.remove('hidden');
-    signoutButton.style.display = 'block';
+    signoutButton.classList.remove('hidden');
     eraseCartridgeWindowContents();
     computeCartridgeArray();
+
+    googleDriveGetUserInfo(function (user) {
+        if (user.photoLink) { document.getElementById('user-photo').src = user.photoLink; }
+        document.getElementById('user-name').innerHTML = user.displayName;
+    });
 }
 
 
 function onSignOut() {
     cartridgeViewer.classList.add('hidden');
     authorizeDiv.classList.remove('hidden');
-    signoutButton.style.display = 'none';
+    signoutButton.classList.add('hidden');
+    document.getElementById('user-photo').src = '';
 }
 
 
