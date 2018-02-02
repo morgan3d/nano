@@ -1069,7 +1069,9 @@ function onSignOut() {
     cartridgeViewer.classList.add('hidden');
     authorizeDiv.classList.remove('hidden');
     signoutButton.classList.add('hidden');
-    document.getElementById('user-photo').src = '';
+    document.getElementById('user-name').innerHTML = '';
+    // Blank GIF
+    document.getElementById('user-photo').src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
 }
 
 
