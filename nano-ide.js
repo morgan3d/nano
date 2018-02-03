@@ -1777,6 +1777,8 @@ function submitFrame() {
             if (realGamepad && realGamepad.buttons[i] && ! prevRealGamepad.buttons[i]) { pad[button + button] = true; }
         }
 
+        pad.θ = Math.atan2(pad.y, pad.x);
+        
         // Update old state
         if (realGamepad) {
             prevRealGamepadState[player] = realGamepad;

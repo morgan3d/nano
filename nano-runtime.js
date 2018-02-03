@@ -224,8 +224,8 @@ abcdefghijklmnopqrstuvwxy
 
 
 var clr = 0;
-var joy = {x:0, y:0, a:0, b:0, aa:0, bb:0};
-var pad = [joy, {x:0, y:0, a:0, b:0, aa:0, bb:0}];
+var joy = {x:0, y:0, θ:0, a:0, b:0, aa:0, bb:0};
+var pad = [joy, {x:0, y:0, θ:0, a:0, b:0, aa:0, bb:0}];
 
 var hashview = new DataView(new ArrayBuffer(8));
 

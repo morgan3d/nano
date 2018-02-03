@@ -620,9 +620,10 @@ Name   | Value
 `joy`  | shorthand for `pad₀`
 `ξ`    | random number on [0, 1), resampled every time the expression is used
 
-Each gamepad table has direction fields `x` and `y` on [-1, 1] and `a` and `b` buttons on [0, 1] for current state.
-It also indicates which directions and buttons were pressed *in the current frame* with 
-`xx`, `yy`, `aa`, and `bb`, which have the same ranges as their current-state counterparts.
+Each gamepad table has direction fields `x` and `y` on [-1, 1] and `a` and `b` buttons on
+[0, 1] for current state.  It also indicates which directions and buttons were pressed *in the
+current frame* with `xx`, `yy`, `aa`, and `bb`, which have the same ranges as their
+current-state counterparts. There is also the dependent field `θ=atan(x,y)`.
 
 The main-loop variable `τ` is time, as integer number of frames. It may be reassigned 
 to reset time.
@@ -1092,6 +1093,7 @@ its license that permits any use.
 # Changes
 
 2018 Jan 30-Feb 4:
+ - Added `joy.θ` field
  - Added a custom Google Drive `nano` property
  - User name displayed
  - Fixed cart cloning
