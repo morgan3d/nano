@@ -21,12 +21,12 @@ function googleDriveRetrieveAllFiles(callback) {
         // The spaces should be 'drive' for the whole drive or 'appDataFolder' to just
         // see in this app's hidden, private space
         spaces: 'drive',
-        //q:      "mimeType = 'application/vnd.google-apps.folder'",
+        //q:"mimeType = 'application/vnd.google-apps.folder'",
         //q:'name="nano ᴊᴀᴍᴍᴇʀ"',
-        q: 'trashed=false',
+        q: "trashed=false and properties has { key='nano' and value='true' }",
         fields: 'nextPageToken, files(id, name)',
         pageSize: 100
-   }).then(function(data) {
+    }).then(function(data) {
        callback(data.result.files);
    });
 }
@@ -134,7 +134,8 @@ function googleDriveSaveTextFile(filename, fileContents, callback, fileId, trash
     var metadata = {
         name:      filename,
         mimeType:  contentType,
-        fields :   'id'
+        fields:    'id',
+        properties: {nano: 'true'}
     };
 
     if (trash) {
@@ -205,7 +206,10 @@ function initClient() {
             'clientId': '442588265355-cv3vd67iv8c79ckfsm3m8vbgfl6pr104.apps.googleusercontent.com',
             'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
 
-            // Whole drive:
+            // Whole drive, all apps: (needed for sharing between users?)
+            //'scope': 'https://www.googleapis.com/auth/drive',
+
+            // Whole drive, app only:
             'scope': 'https://www.googleapis.com/auth/drive.file',
 
             // Hidden app folder:

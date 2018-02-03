@@ -1071,7 +1071,7 @@ function onSignOut() {
     signoutButton.classList.add('hidden');
     document.getElementById('user-name').innerHTML = '';
     // Blank GIF
-    document.getElementById('user-photo').src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+    document.getElementById('user-photo').src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 }
 
 
