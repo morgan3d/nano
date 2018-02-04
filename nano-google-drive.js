@@ -207,6 +207,7 @@ function initClient() {
             'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
 
             // Whole drive, all apps: (needed for sharing between users?)
+            // This requires Google to approve the app.
             //'scope': 'https://www.googleapis.com/auth/drive',
 
             // Whole drive, app only:

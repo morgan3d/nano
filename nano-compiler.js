@@ -259,8 +259,11 @@ function processBlocks(src) {
 }
 
 
+var identifierPattern = '[δΔ]?([A-Za-z]{1,3}|[αβδθλμξρσφψωΔΩ])';
+var identifierRegex = RegExp(identifierPattern);
+
 function legalIdentifier(id) {
-    return id.match(/[δΔ]?([A-Za-z]{1,3}|[αβδθλμξρσφψωΔΩ])/) ? true : false;
+    return id.match(identifierRegex);
 }
 
 
@@ -337,15 +340,19 @@ function nanoToJS(src, noWrapper) {
         return '"' + protect(str) + '"';
     });
 
-    // Remove comments, which cause problems with the indentation and end-of-line metrics
+    // Remove multi-line comments, which cause problems with the indentation and end-of-line metrics
     src = src.replace(/\/\*([\s\S]*)\*\//g, function(match, contents) {
         // Extract and return just the newlines to keep line numbers unmodified
         return contents.replace(/[^\n]/g, '');
     });
 
-    src = src.replace(/\breset\b/g, '{throw new Error("RESET");}');
-    
+    // Remove single-line comments
     src = src.replace(/\/\/.*$/gm, '');
+    
+    src = src.replace(/\breset\b/g, '{throw new Error("RESET");}');
+
+    // sin, cos, tan with a single argument
+    src = src.replace(RegExp('\\b(cos|sin|tan)[ \\t]*([δΔ]?[αβδθλμξρσφψωΔΩ]|[ \t]' + identifierPattern + ')([ \t]*)(?!\\.|\\^|\\[|[⁽⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ₍₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ])', 'gi'), '$1($2)$4');
     
     src = src.replace(/≟/g, ' === ');
     src = src.replace(/≠/g, ' !== ');
@@ -410,6 +417,8 @@ function nanoToJS(src, noWrapper) {
     src = src.replace(/▻/g, ' >> ');
 
     src = src.replace(/(\b|\d)or(\b|\d)/g, '$1 || $2');
+    src = src.replace(/∩=\b/g, ' &= ');
+    src = src.replace(/∪=\b/g, ' |= ');
     src = src.replace(/∩\b/g, ' & ');
     src = src.replace(/∪\b/g, ' | ');
 

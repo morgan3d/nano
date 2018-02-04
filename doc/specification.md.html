@@ -485,11 +485,13 @@ Reserved
 These are reserved tokens that cannot be used as variable names despite meeting the other
 naming criteria:
 
-`and`, `do`, `end`, `fcn`, `for`, `go`, `if`, `len`, `let`, `NaN`, `not`, `or`, `ret`, `to`,
-`try`, `var`, `xor`, `new`, `get`, `in`, `has`, `set`
+`and`, `cos`, `do`, `end`, `fcn`, `for`, `get`, `go`, `has`, `if`, `in`, `len`, `let`, `NaN`,
+`new`, `not`, `or`, `ret`, `to`, `try`, `var`, `xor`, `sin`, `set`, `tan`.
 
-Built-in functions such as `cos` that are legal identifiers can be rebound. They are not
-reserved.
+Built-in functions such as `tri` that are legal identifiers can be rebound. They are not
+reserved. `cos`, `sin`, and `tan` by themselves are bound to first-class functions, but the special
+syntax that allows them to be invoked without parentheses on single variables is tied to their
+exact names.
 
 The words below are not legal variable names anyway because they contain illegal characters 
 or more than three letters, although the current compiler may not enforce that. They
@@ -545,11 +547,14 @@ Symbol | Meaning
 `.`    | table string-named element ("object member")
 `()`   | grouping or function call
 `∩`    | bitwise AND (bit set intersection)
+`∩=`   | mutatin bitwise AND
 `∪`    | bitwise OR (bit set union)
+`∪=`   | mutating bitwise OR
 `&`    | logical AND
 `or`   | logical OR (you can often use the shorter `∪`)
 `⊕`    | bitwise XOR
 `~`    | bitwise NOT
+`~=`   | mutating bitwise NOT
 `¬`    | logical NOT
 `◅`    | bit shift left
 `▻`    | bit shift right
@@ -563,6 +568,12 @@ Behaviour of these operators is consistent with the JavaScript definition of the
 (even though JavaScript uses different operators). For example, the <b>logical</b>-AND expression 
 `4 & 1` evaluates to `1` because `4` is non-false and the result of non-false AND another
 value is the other value.
+
+The trigonometric functions `cos`, `sin`, and `tan` may be invoked as if they were operators
+when the order of operations is unambiguous. For example, `cos a` ==> `cos(a)`, `cosβ` ==>
+`cos(β)`, and `cosθ*sinφ` ==> `cos(θ) * sin(φ)`.  To avoid confusion and reserve future syntax,
+they may not be invoked in this form when a high-precedence operator follows the argument. Those
+operators are `.`, `[`, subscript, or exponentiation.
 
 
 Exponents
@@ -1094,6 +1105,7 @@ its license that permits any use.
 
 2018 Jan 30-Feb 4:
  - Added `joy.θ` field
+ - Added `∪=` and `∩=` operators
  - Added a custom Google Drive `nano` property
  - User name displayed
  - Fixed cart cloning
