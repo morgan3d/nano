@@ -397,7 +397,8 @@ and `"\""` is the `"` character.
 The `+` operator performs string concatenation, coercing the right-hand argument if it is not a
 string. String characters are read-only substrings accessed using zero-based array syntax.
 
-The `.len` property of a string returns its length.
+The `.len` property of a string returns its length. The `|s|` syntax can also be used as a
+shorthand.
 
 
 Arrays
@@ -408,7 +409,8 @@ square brackets and separated by commas. Square brackets are also used for l-val
 dereference. Arrays also support the special indexing syntax described in the Subscripts
 section.
 
-The `len` property of an Array is its length. It is both readable and writable.
+The `len` property of an Array is its length. It is both readable and writable. The `|a|`
+syntax can be used as a shorthand to read the length.
 
 Array examples:
 
@@ -541,7 +543,7 @@ Symbol | Meaning
 `%=`   | mutating modulo
 `⌊⌋`   | floor function
 `⌈⌉`   | ceiling function
-`||`   | absolute value
+`||`   | absolute value, or length for strings and arrays
 `[]`   | table/array element or array constructor
 `{}`   | table constructor (follow JavaScript syntax)
 `.`    | table string-named element ("object member")

@@ -153,7 +153,10 @@ var _fontSheet = null;
     reloadRuntime() */
 var submitFrame = null;
 
-var abs = Math.abs;
+function abs(x) {
+    return (x.length !== undefined) ? x.length : Math.abs(x);
+}
+
 var max = Math.max;
 var min = Math.min;
 var flr = Math.floor;
