@@ -624,10 +624,10 @@ function line(x1, y1, x2, y2, colormap) {
     }
 
     if (y1 === y2) {
-        // Vertical perf optimization
+        // Horizontal perf optimization/avoid divide by zero
         _hline(Math.min(x1, x2), y1, Math.max(x1, x2), color);
     } else if (x1 === x2) {
-        // Horizontal perf optimization/avoid divide by zero
+        // Vertical perf optimization
         _vline(x1, Math.min(y1, y2), Math.max(y1, y2), color);
     } else {
         // General case via DDA
