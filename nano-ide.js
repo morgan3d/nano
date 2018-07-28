@@ -58,10 +58,11 @@ for x≤1
 
     WITH: `#nanojam WITH,1
 G = {x:1, y:2, z:0}
-with x,y∈G
- x = 100
- y = 0
- z = 4
+if 1
+ with x,y∈G
+  x = 100
+  y = 0
+  z = 4
 text(G.x)
 `,
 

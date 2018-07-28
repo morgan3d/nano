@@ -586,11 +586,14 @@ Symbol | Meaning
 `&`    | logical AND
 `or`   | logical OR (you can often use the shorter `∪`)
 `⊕`    | bitwise XOR
+`⊕=`   | mutating bitwise XOR
 `~`    | bitwise NOT
 `~=`   | mutating bitwise NOT
 `¬`    | logical NOT
 `◅`    | bit shift left
+`◅=`   | mutating bit shift left
 `▻`    | bit shift right
+`▻=`   | mutating bit shift right
 
 There is no conditional ("ternary ?:") operator in nano. 
 
@@ -1138,6 +1141,8 @@ its license that permits any use.
 
 2018 Jul 28:
  - Added `with` statements
+ - Added mutating bitwise XOR `⊕=` operator
+ - Added mutating bit shift operators `◅=` and `▻=`
 
 2018 Feb 4:
  - Added `joy.θ` field

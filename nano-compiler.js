@@ -228,13 +228,13 @@ function processBlocks(src) {
         if (illegal) {
             throw makeError('Illegal identifier "' + illegal[0] + '"', i);
         }
-        
         if (indent >= 0) {
             // Non-negligible line
             if ((i === 0) && (indent > 0)) {
                 console.log(lineArray[i]);
                 throw makeError('First line must not be indented', i);
             } else if (indent > prevIndent + 1) {
+                //console.dir(lineArray);
                 throw makeError('Indenting must not increase by more than one space per line', i);
             }
 
@@ -463,17 +463,16 @@ function nanoToJS(src, noWrapper) {
 
     // Expand shifts after blocks so that they aren't misparsed inside
     // FOR loops
-    src = src.replace(/◅/g, ' << ');
-    src = src.replace(/▻/g, ' >> ');
-
-    src = src.replace(/(\b|\d)or(\b|\d)/g, '$1 || $2');
-    src = src.replace(/∩=\b/g, ' &= ');
-    src = src.replace(/∪=\b/g, ' |= ');
-    src = src.replace(/∩\b/g, ' & ');
-    src = src.replace(/∪\b/g, ' | ');
+    src = src.replace(/◅(=?)/g, ' <<$1 ');
+    src = src.replace(/▻(=?)/g, ' >>$1 ');
 
     // exponentiation
     src = src.replace(/\^/g, '**');
+
+    src = src.replace(/(\b|\d)or(\b|\d)/g, '$1 || $2');
+    src = src.replace(/∩(=?)\b/g, ' &$1 ');
+    src = src.replace(/∪(=?)\b/g, ' |$1 ');
+
 
     // Optimize var**(int), which is much less efficient than var*var.
     // Note that we don't allow rnd in here!
@@ -499,7 +498,7 @@ function nanoToJS(src, noWrapper) {
     src = src.replace(/ε/g, ' (1e-4+0) ');
 
     // Must come after exponentiation
-    src = src.replace(/⊕/g, ' ^ ');
+    src = src.replace(/⊕/g, '^');
 
     src = src.replace(/(flip)/g, '$1(); yield; ');
 
