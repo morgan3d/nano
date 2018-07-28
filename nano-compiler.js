@@ -473,7 +473,6 @@ function nanoToJS(src, noWrapper) {
     src = src.replace(/∩(=?)\b/g, ' &$1 ');
     src = src.replace(/∪(=?)\b/g, ' |$1 ');
 
-
     // Optimize var**(int), which is much less efficient than var*var.
     // Note that we don't allow rnd in here!
     src = src.replace(/(.|..)[ \t]*([δΔ]?([A-Za-z]{1,3}|[αβδθλμρσφψωΔΩ]))\*\*\((-?\d)\)/g, function (match, br, identifier, ignore, exponent) {
@@ -498,7 +497,7 @@ function nanoToJS(src, noWrapper) {
     src = src.replace(/ε/g, ' (1e-4+0) ');
 
     // Must come after exponentiation
-    src = src.replace(/⊕/g, '^');
+    src = src.replace(/⊕(=?)/g, ' ^$1 ');
 
     src = src.replace(/(flip)/g, '$1(); yield; ');
 
