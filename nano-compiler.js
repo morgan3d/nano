@@ -74,7 +74,7 @@ var maybeYield = ' {if (!(__yieldCounter = (__yieldCounter + 1) & 1023)) { yield
 /** Converts a single-line IF, FOR, WHILE, or UNTIL to JavaScript, preserving indenting.
     Returns the entire string if none of those appear. */
 function processSingleLineControl(str) {
-    var match = str.match(/(^|.*?\b)(for|if|while|until)(\b.*)/);
+    var match = str.match(/(^|.*?\b)(for|if|while|until|with)(\b.*)/);
     if (! match) { return str; }
     var before = match[1];
     var type   = match[2];
@@ -87,6 +87,14 @@ function processSingleLineControl(str) {
 
     var test = rest.substring(begin + 1, end - 1);
     switch (type) {
+    case 'with':
+        // With blocks become a single-iteration FOR loop
+        // because that allows specifying code that runs at
+        // the end of the block up front.
+        type = 'for';
+        test = processWithHeader(test);
+        break;
+        
     case 'until':
         type = 'while';
         test = '(! (' + test + '))';
@@ -104,6 +112,44 @@ function processSingleLineControl(str) {
 
     var s = before + type + ' ' + test + ' {' + ((type === 'if') ? ' ' : maybeYield) + processSingleLineControl(rest.substring(end)).trim() + '; }';
     return s;
+}
+
+/** Given a nano WITH preamble not surrounded in extra (), returns JavaScript for a FOR-loop preamble
+    that handles the variable binding. */
+function processWithHeader(test) {
+    // Cannot create a function because that would break the coroutines used for preemptive
+    // multitasking
+    //
+    // Syntax: with var0[, var1[, ...]] ∊ expr
+    //
+    //
+    // Maps to (__ variables are gensyms):
+    //
+    // 
+    //
+    // for (let __run = true,
+    //    __obj = (expr),
+    //    /* Save old values from the current scope */ __save = {var0:var0, ... },
+    //    /* Copy fields into the current scope */     var0 = __obj.var0, ...
+    //     ; __run;                     __run = false,
+    //    /* Assign the properties back to __obj */    Object.assign(__obj, {var0:var0, ... }))
+
+    var obj = gensym('obj'), save = gensym('save'), run = gensym('run');
+    
+    var match = test.match(/^[ \t]*([δΔ]?(?:[A-Za-z]{1,3}|[αβδθλμξρσφψωΔΩ])[ \t]*)(?:,[ \t]*([δΔ]?(?:[A-Za-z]{1,3}|[αβδθλμξρσφψωΔΩ]))[ \t]*)*∊(.*)$/);
+    // match[0] = whole match
+    // match[1...n-2] = variables
+    // match[n-1] = object expression
+
+    var expr = match[match.length - 1];
+    var idArray = match.slice(1, match.length - 1);
+    
+    return '(let ' + run + ' = true, ' +
+        obj + ' = (' + expr + ')' +
+        //save + ' = ' + variableTable +
+        idArray.reduce(function (prev, id) { return prev + ', ' + id + ' = ' + obj +  '.' + id; }, '') +
+        '; ' + run + '; ' + run + ' = false, Object.assign(' + obj + ', ' +
+        idArray.reduce(function (prev, id) { return prev + id + ':' + id + ', '; }, '{ ') + ' }))';
 }
 
 
@@ -178,7 +224,7 @@ function processBlocks(src) {
             throw makeError('Numbers may not begin with a leading zero', i);
         }
 
-        var illegal = lineArray[i].match(/print|location|window|_|undefined|continue/g);
+        var illegal = lineArray[i].match(/print|location|window|_|undefined|continue|function/g);
         if (illegal) {
             throw makeError('Illegal identifier "' + illegal[0] + '"', i);
         }
@@ -206,15 +252,19 @@ function processBlocks(src) {
                 // Note the assignment to match in the IF statement tests below
                 var match;
                 if (singleLine) {
-                    if (match = lineArray[i].match(/^\s*(for|while|if|until)\b.*/)) {
+                    if (match = lineArray[i].match(/^\s*(for|while|if|until|with)\b.*/)) {
                         lineArray[i] = processSingleLineControl(lineArray[i]);
                     }
+                } else if (match = lineArray[i].match(/^(\s*)with(\b.*)/)) {
+                    var indent = match[1];
+                    // multiline WITH
+                    lineArray[i] = indent + 'for ' + processWithHeader(match[2].trim());
                 } else if (match = lineArray[i].match(/^(\s*for)(\b.*)/)) {
                     // multi-line FOR loop 
-                    lineArray[i] = match[1].rtrim() + ' ' + processForTest(match[2].trim());
+                    lineArray[i] = match[1] + ' ' + processForTest(match[2].trim());
                 } else if (match = lineArray[i].match(/^(\s*if)(\b.*)/)) {
                     // Multi-line IF
-                    lineArray[i] = match[1].rtrim() + ' (' + match[2].trim() + ')'
+                    lineArray[i] = match[1] + ' (' + match[2].trim() + ')'
                 } else if (match = lineArray[i].match(/^(\s*)elif(\b.*)/)) {
                     // ELIF, Same as multi-line if
                     lineArray[i] = match[1] + 'else if' + ' (' + match[2].trim() + ')';
@@ -425,7 +475,7 @@ function nanoToJS(src, noWrapper) {
     // exponentiation
     src = src.replace(/\^/g, '**');
 
-    // Optimize var**(2), which is much less efficient than var*var.
+    // Optimize var**(int), which is much less efficient than var*var.
     // Note that we don't allow rnd in here!
     src = src.replace(/(.|..)[ \t]*([δΔ]?([A-Za-z]{1,3}|[αβδθλμρσφψωΔΩ]))\*\*\((-?\d)\)/g, function (match, br, identifier, ignore, exponent) {
         if (br.match(/\+\+|--|\.|\*\*/)) {

@@ -56,6 +56,15 @@ var tests = {
 for x≤1
  if(0)1;if(2)3`,
 
+    WITH: `#nanojam WITH,1
+G = {x:1, y:2, z:0}
+with x,y∈G
+ x = 100
+ y = 0
+ z = 4
+text(G.x)
+`,
+
     triangle: `#nanojam triangle,1
 θ=τ/100
 c=cos(θ);s=sin(θ)
@@ -269,7 +278,8 @@ var initialSource =
     //tests.rgb;
     //tests.text;
     //tests.spacedash;
-    tests.square;
+    //tests.square;
+    tests.WITH;
     //tests.triangle;
     //tests.textbots;
     //tests.stars;
@@ -1499,8 +1509,9 @@ var error = document.getElementById('error');
 /** Returns javascript source or throws an exception */
 function compile(src) {
     try {
-        // Insert the nano reset sequence as a single line, so that line numbers are preserved
-        var resetAnimation = nanoToJS(resetAnimationNanoSource, true).replace(/\n/g, ';');
+        // Insert the nano reset sequence as a single line, so that line numbers are preserved.
+        // Eliminate unnecessary semicolons for cleanliness when reading the merged code.
+        var resetAnimation = nanoToJS(resetAnimationNanoSource, true).replace(/\n/g, ';').replace(/;(\s?;)*/g, ';').replace(/};/g, '}');
         var code = resetAnimation + nanoToJS(src);
         if (jsCode) {
             jsCode.setValue(code);
