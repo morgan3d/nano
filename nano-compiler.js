@@ -231,10 +231,8 @@ function processBlocks(src) {
         if (indent >= 0) {
             // Non-negligible line
             if ((i === 0) && (indent > 0)) {
-                console.log(lineArray[i]);
                 throw makeError('First line must not be indented', i);
             } else if (indent > prevIndent + 1) {
-                //console.dir(lineArray);
                 throw makeError('Indenting must not increase by more than one space per line', i);
             }
 
@@ -255,10 +253,10 @@ function processBlocks(src) {
                     if (match = lineArray[i].match(/^\s*(for|while|if|until|with)\b.*/)) {
                         lineArray[i] = processSingleLineControl(lineArray[i]);
                     }
-                } else if (match = lineArray[i].match(/^(\s*)with(\b.*)/)) {
-                    var indent = match[1];
+                } else if (match = lineArray[i].match(/^(\s*)with(\b.+)/)) {
+                    let spaces = match[1];
                     // multiline WITH
-                    lineArray[i] = indent + 'for ' + processWithHeader(match[2].trim());
+                    lineArray[i] = spaces + 'for ' + processWithHeader(match[2].trim());
                 } else if (match = lineArray[i].match(/^(\s*for)(\b.*)/)) {
                     // multi-line FOR loop 
                     lineArray[i] = match[1] + ' ' + processForTest(match[2].trim());
@@ -304,6 +302,7 @@ function processBlocks(src) {
     if (prevIndent > 0) {
         lineArray[lineArray.length - 1] += '}'.repeat(prevIndent);
     }
+
 
     return lineArray.join("\n");
 }
@@ -400,10 +399,7 @@ function nanoToJS(src, noWrapper) {
     src = src.replace(/\/\/.*$/gm, '');
     
     src = src.replace(/\breset\b/g, '{throw new Error("RESET");}');
-
-    // sin, cos, tan with a single argument
-    src = src.replace(RegExp('\\b(cos|sin|tan)[ \\t]*([δΔ]?[αβδθλμξρσφψωΔΩ]|[ \t]' + identifierPattern + ')([ \t]*)(?!\\.|\\^|\\[|[⁽⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ₍₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ])', 'gi'), '$1($2)$4');
-    
+   
     src = src.replace(/≟/g, ' === ');
     src = src.replace(/≠/g, ' !== ');
     src = src.replace(/¬/g, ' ! ');
@@ -446,6 +442,9 @@ function nanoToJS(src, noWrapper) {
         src = src.replace(/[₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₍₎]/g, function (match) { return subscriptToNormal[match]; });
     }
 
+    // sin, cos, tan with a single argument and no parentheses. Must come after implicit
+    // multiplication so that, e.g., 2cosX parses correctly with regard to the \b
+    src = src.replace(RegExp('\\b(cos|sin|tan)[ \\t]*([δΔ]?[αβδθλμξρσφψωΔΩ]|[ \t]' + identifierPattern + ')([ \t]*)(?!\\.|\\^|\\[|[⁽⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ₍₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ])', 'gi'), '$1($2)$4');
    
     src = processBlocks(src);
 
