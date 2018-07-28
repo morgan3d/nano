@@ -136,14 +136,14 @@ function processWithHeader(test) {
 
     var obj = gensym('obj'), save = gensym('save'), run = gensym('run');
     
-    var match = test.match(/^[ \t]*([δΔ]?(?:[A-Za-z]{1,3}|[αβδθλμξρσφψωΔΩ])[ \t]*)(?:,[ \t]*([δΔ]?(?:[A-Za-z]{1,3}|[αβδθλμξρσφψωΔΩ]))[ \t]*)*∊(.*)$/);
+    var match = test.match(withIdentifierListRegex);
     // match[0] = whole match
-    // match[1...n-2] = variables
-    // match[n-1] = object expression
+    // match[1] = variables
+    // match[2] = object expression
 
-    var expr = match[match.length - 1];
-    var idArray = match.slice(1, match.length - 1);
-    
+    var expr = match[2];
+    var idArray = match[1].split(',').map(function (s) { return s.trim(); });
+    console.log(idArray);
     return '(let ' + run + ' = true, ' +
         obj + ' = (' + expr + ')' +
         //save + ' = ' + variableTable +
@@ -308,8 +308,9 @@ function processBlocks(src) {
 }
 
 
-var identifierPattern = '[δΔ]?([A-Za-z]{1,3}|[αβδθλμξρσφψωΔΩ])';
+var identifierPattern = '[δΔ]?(?:[A-Za-z]{1,3}|[αβδθλμξρσφψωΔΩ])';
 var identifierRegex = RegExp(identifierPattern);
+var withIdentifierListRegex = RegExp('^[ \\t]*(' + identifierPattern + '[ \\t]*(?:,[ \\t]*' + identifierPattern + '[ \\t]*)*)∊(.*)$');
 
 function legalIdentifier(id) {
     return id.match(identifierRegex);
@@ -443,8 +444,8 @@ function nanoToJS(src, noWrapper) {
     }
 
     // sin, cos, tan with a single argument and no parentheses. Must come after implicit
-    // multiplication so that, e.g., 2cosX parses correctly with regard to the \b
-    src = src.replace(RegExp('\\b(cos|sin|tan)[ \\t]*([δΔ]?[αβδθλμξρσφψωΔΩ]|[ \t]' + identifierPattern + ')([ \t]*)(?!\\.|\\^|\\[|[⁽⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ₍₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ])', 'gi'), '$1($2)$4');
+    // multiplication so that, e.g., 2cosθ parses correctly with regard to the \b
+    src = src.replace(RegExp('\\b(cos|sin|tan)[ \\t]*([δΔ]?[αβδθλμξρσφψωΔΩ]|[ \t]' + identifierPattern + ')[ \t]*(?!\\.|\\^|\\[|[⁽⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ₍₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ])', 'g'), '$1($2)');
    
     src = processBlocks(src);
 
