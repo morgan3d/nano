@@ -143,7 +143,7 @@ function processWithHeader(test) {
 
     var expr = match[2];
     var idArray = match[1].split(',').map(function (s) { return s.trim(); });
-    console.log(idArray);
+
     return '(let ' + run + ' = true, ' +
         obj + ' = (' + expr + ')' +
         //save + ' = ' + variableTable +
