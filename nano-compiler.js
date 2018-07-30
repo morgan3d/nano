@@ -441,6 +441,9 @@ function nanoToJS(src, noWrapper) {
         // Replace subscripts
         src = src.replace(/([₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₍₎][₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₍₎ ]*)/g, '[($1)]');
         src = src.replace(/[₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₍₎]/g, function (match) { return subscriptToNormal[match]; });
+
+        // Back-to-back parens. Floor, ceiling, and abs have already been mapped to ()
+        src = src.replace(/\)[ \t]*\(/, ') * (');
     }
 
     // sin, cos, tan with a single argument and no parentheses. Must come after implicit

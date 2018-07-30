@@ -580,7 +580,7 @@ Symbol | Meaning
 `.`    | table string-named element ("object member")
 `()`   | grouping or function call
 `∩`    | bitwise AND (bit set intersection)
-`∩=`   | mutatin bitwise AND
+`∩=`   | mutating bitwise AND
 `∪`    | bitwise OR (bit set union)
 `∪=`   | mutating bitwise OR
 `&`    | logical AND
@@ -644,8 +644,9 @@ Implicit Multiplication
 
 Multiplication is implicit wherever a number is immediately followed by a parenthesized
 expression or variable (including a function call). This also ocurs when any exponent
-appears immediately preceeding a parenthesized expression or variable. For example,
-`2x`, `x²y`, `3(x+y)`.
+appears immediately preceeding a parenthesized expression or variable, and where two
+parenthesized expressions are back to back. For example,
+`2x`, `x²y`, `3(x+y)`, `(y+2)(x+1)`.
 
 Implicit multiplication can be used within subscripts or exponents.
 
@@ -1140,6 +1141,7 @@ its license that permits any use.
 # Changes
 
 2018 Jul 28:
+ - Implicit multiplication for back-to-back parenthesized expressions
  - Added `with` statements
  - Added mutating bitwise XOR `⊕=` operator
  - Added mutating bit shift operators `◅=` and `▻=`
