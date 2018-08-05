@@ -126,10 +126,9 @@ function processWithHeader(test) {
     // Maps to (__ variables are gensyms):
     //
     // 
-    //
+    // create a new scope
     // for (let __run = true,
     //    __obj = (expr),
-    //    /* Save old values from the current scope */ __save = {var0:var0, ... },
     //    /* Copy fields into the current scope */     var0 = __obj.var0, ...
     //     ; __run;                     __run = false,
     //    /* Assign the properties back to __obj */    Object.assign(__obj, {var0:var0, ... }))
@@ -146,7 +145,6 @@ function processWithHeader(test) {
 
     return '(let ' + run + ' = true, ' +
         obj + ' = (' + expr + ')' +
-        //save + ' = ' + variableTable +
         idArray.reduce(function (prev, id) { return prev + ', ' + id + ' = ' + obj +  '.' + id; }, '') +
         '; ' + run + '; ' + run + ' = false, Object.assign(' + obj + ', ' +
         idArray.reduce(function (prev, id) { return prev + id + ':' + id + ', '; }, '{ ') + ' }))';
