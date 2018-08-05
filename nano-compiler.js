@@ -446,7 +446,7 @@ function nanoToJS(src, noWrapper) {
 
     // sin, cos, tan with a single argument and no parentheses. Must come after implicit
     // multiplication so that, e.g., 2cosθ parses correctly with regard to the \b
-    src = src.replace(RegExp('\\b(cos|sin|tan)[ \\t]*([δΔ]?[αβδθλμξρσφψωΔΩ]|[ \t]' + identifierPattern + ')[ \t]*(?!\\.|\\^|\\[|[⁽⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ₍₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ])', 'g'), '$1($2)');
+    src = src.replace(RegExp('\\b(cos|sin|tan)[ \\t]*([δΔ]?[αβδθλμρσφψωΔΩ]|επτξ|' + identifierPattern + ')[ \t]*(?!\\.|\\^|\\[|[⁽⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ₍₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ])', 'g'), '$1($2)');
    
     src = processBlocks(src);
 
