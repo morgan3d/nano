@@ -325,6 +325,14 @@ div.ide #editorStatusBar {
     -webkit-box-sizing: border-box;
 }
 
+.unselectable {
+    user-select:      none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
 /* Detect Chrome & Safari */
 @media screen and (-webkit-min-device-pixel-ratio:0) and (min-resolution:.001dpcm) {
     div.ide #editorStatusBar {

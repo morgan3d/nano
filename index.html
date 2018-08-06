@@ -46,6 +46,8 @@
     <div style="position:absolute; left:103px; top:610px; color:#666; font-size: 80%; z-index:-10">
       &nbsp;&nbsp;New:
       <ul style="margin-top:0px">
+        <li>Added sprites 41 and 42 </li>
+        <li>Made <code>cosτ</code> legal</li>
         <li>Implicit multiplication for back-to-back expressions</li>
         <li><code>⊕=</code>, <code>◅=</code>, and <code>▻=</code> operators</li>
         <li><code>with</code> statements for local variables</li>
@@ -110,8 +112,8 @@
             <div id="error"> </div>
           </div>
         </div>
-        <div id="editorStatusBar"></div>
-        <div style="position: absolute; bottom: 1px; right:18px; color: #666; font-size: 90%">
+        <div id="editorStatusBar" class="unselectable"></div>
+        <div style="position: absolute; bottom: 1px; right:18px; color: #666; font-size: 90%" class="unselectable">
           <input type="checkbox" id="minify" onclick="countCharacters()" checked="checked">Minify
           <input type="checkbox" id="aggressive" onclick="countCharacters()" checked="checked">Aggressive</div>
       </div>
@@ -171,11 +173,11 @@
       <div id="keys" class="tool"> </div>
     </div>
 
-    <div id="paletteWindow" class="hidden toolWindow" onmousedown='DragLib.startMoving(this,event)' onmouseup='DragLib.stopMoving(this)'>
+    <div id="paletteWindow" class="hidden toolWindow unselectable" onmousedown='DragLib.startMoving(this,event)' onmouseup='DragLib.stopMoving(this)'>
       <div id="paletteTray" class="tool"> </div>
     </div>
 
-    <div id="spritesWindow" class="hidden toolWindow" onmousedown='DragLib.startMoving(this,event)' onmouseup='DragLib.stopMoving(this)'>
+    <div id="spritesWindow" class="hidden toolWindow unselectable" onmousedown='DragLib.startMoving(this,event)' onmouseup='DragLib.stopMoving(this)'>
       <div class="tool">
         <canvas id="spritesDisplay" width=512 height=192 onmousedown='event.stopPropagation()'></canvas>
         <canvas id="selectedSprite" style="width:64px; height:64px; position: absolute; left:10px; bottom:10px; background:#000; border: 1px inset; border-radius: 0 0 0 8px;" width=64 height=64>

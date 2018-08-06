@@ -274,13 +274,15 @@ i=j=a=y=∅;clr=0
 };
 
 var initialSource =
+    `#nanojam cos,1
+text(cosτ)`;
     //tests.nanoBoot;
     //tests.nanoReset;
     //tests.rgb;
     //tests.text;
     //tests.spacedash;
     //tests.square;
-    tests.WITH;
+    //tests.WITH;
     //tests.triangle;
     //tests.textbots;
     //tests.stars;

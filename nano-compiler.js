@@ -306,7 +306,7 @@ function processBlocks(src) {
 }
 
 
-var identifierPattern = '[δΔ]?(?:[A-Za-z]{1,3}|[αβδθλμξρσφψωΔΩ])';
+var identifierPattern = '[δΔ]?(?:[A-Za-z]{1,3}|[αβδθλμρσφψωΔΩ])';
 var identifierRegex = RegExp(identifierPattern);
 var withIdentifierListRegex = RegExp('^[ \\t]*(' + identifierPattern + '[ \\t]*(?:,[ \\t]*' + identifierPattern + '[ \\t]*)*)∊(.*)$');
 
@@ -445,9 +445,9 @@ function nanoToJS(src, noWrapper) {
     }
 
     // sin, cos, tan with a single argument and no parentheses. Must come after implicit
-    // multiplication so that, e.g., 2cosθ parses correctly with regard to the \b
-    src = src.replace(RegExp('\\b(cos|sin|tan)[ \\t]*([δΔ]?[αβδθλμρσφψωΔΩ]|επτξ|' + identifierPattern + ')[ \t]*(?!\\.|\\^|\\[|[⁽⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ₍₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ])', 'g'), '$1($2)');
-   
+    // multiplication so that, e.g., 2cosθ parses correctly with regard to the \\b
+    src = src.replace(RegExp('\\b(cos|sin|tan)[ \\t]*([επτξ]|' + identifierPattern + ')(?=\\s|\\b|[^επτξδΔA-Za-z0-9]|$)', 'g'), '$1($2)');
+    
     src = processBlocks(src);
 
     // Process after FOR-loops so that they are easier to parse
@@ -458,9 +458,6 @@ function nanoToJS(src, noWrapper) {
 
     // Array sort (avoid conflicting with the built-in Array.sort for JavaScript)
     src = src.replace(/\bsort\b/g, '_sort');
-
-    // rnd shorthand
-    src = src.replace(/ξ/g, ' rnd() ');
 
     // Expand shifts after blocks so that they aren't misparsed inside
     // FOR loops
@@ -496,6 +493,7 @@ function nanoToJS(src, noWrapper) {
     src = src.replace(/∅/g, ' (undefined) ');
     src = src.replace(/π/g, ' (Math.PI+0) ');
     src = src.replace(/ε/g, ' (1e-4+0) ');
+    src = src.replace(/ξ/g, ' rnd() ');
 
     // Must come after exponentiation
     src = src.replace(/⊕(=?)/g, ' ^$1 ');
