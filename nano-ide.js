@@ -274,8 +274,6 @@ i=j=a=y=∅;clr=0
 };
 
 var initialSource =
-    `#nanojam cos,1
-text(cosτ)`;
     //tests.nanoBoot;
     //tests.nanoReset;
     //tests.rgb;
@@ -290,6 +288,7 @@ text(cosτ)`;
     //tests.runner;
     //tests.hash;
     //tests.plasma;
+    tests.plasma2;
     //tests.sort;
     //tests.ping;
     //tests.IF;
@@ -921,6 +920,7 @@ function onPlayButton() {
     
     setErrorStatus('');
     mode = 'play';
+    emwaFrameTime = 0;
         
     if (! coroutine) {
         // Compile as needed
@@ -1154,7 +1154,7 @@ function makeCartridgeWindowContents() {
     }
     
     function nameHue(name) {
-        return Math.floor((Math.cos(0.2 * name.length) + 1) * 10);
+        return (name === undefined) ? 0.0 : Math.floor((Math.cos(0.2 * name.length) + 1) * 10);
     }
 
     cartridgeArray.sort(function (a, b) {
@@ -1586,9 +1586,15 @@ function setErrorStatus(e) {
 setControlEnable('pause', false);
 var coroutine = null;
 
+var emwaFrameTime = 0;
+var frameTimer = document.getElementById('frameTimer');
+    
 function mainLoopStep(time) {
     refreshPending = false;
 
+    var frameStart = performance.now();
+
+    // Worst-case timeout
     var endTime = time + 15;
     
     // Run the "infinite" loop for a while, maxing out at just under 1/60 of a second or when
@@ -1603,6 +1609,15 @@ function mainLoopStep(time) {
         setErrorStatus('line ' + clamp(1, e.lineNumber, programNumLines) + ': ' + e.message);
         console.log(e);
     }
+
+    var frameDuration = performance.now() - frameStart;
+    if (emwaFrameTime === 0) {
+        emwaFrameTime = frameDuration;
+    } else {
+        emwaFrameTime = emwaFrameTime * 0.95 + frameDuration * 0.05;
+    }
+    frameTimer.innerHTML = "" + Math.round(emwaFrameTime) + " ms";
+    
 
     // Keep the callback chain going
     if (mode === 'play') {
