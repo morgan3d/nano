@@ -70,9 +70,9 @@ a {
 }
 
 .emulatorButton {
-    /* show bounds for debugging */
-    /*border: 1px solid #f00;*/
     position: absolute;
+    /* show bounds for debugging */
+    /* border: 1px solid #f00; */
 }
 
 
@@ -587,24 +587,38 @@ div#paletteWindow {
 div.emulator {
     z-index: 5;
     position:absolute;
-    right:0; top:50px;
+    right:0; top:24px;
+}
+
+canvas#bar {
+    position: absolute;
+    top:67px;
+    left:82px;
+    width:256px;
+    height:32px;
+    background: #000;
+    border-radius: 9px 9px 0 0;
+    /* Slightly soften and tilt to make the embedded image look more real*/
+    filter: blur(0.1px);
+    /* The negative z translation is needed to fix z-order conflicts on Safari */
+    /*transform: translateZ(-15px) perspective(1000px) rotateX(5deg); */
 }
 
 canvas#screen {
     position: absolute;
-    top:83px;
-    left:83px;
+    top:115px;
+    left:82px;
     width:256px;
     height:256px;
     background: #000;
     /* Slightly soften and tilt to make the embedded image look more real*/
     filter: blur(0.1px);
     /* The negative z translation is needed to fix z-order conflicts on Safari */
-    transform: translateZ(-15px) perspective(1000px) rotateX(5deg);
+    /*transform: translateZ(-15px) perspective(1000px) rotateX(5deg); */
 }
 
 div.emulator div.case {
-    height: 583px;
+    height: 613px;
     width: 420px;
     background-image: url("nano.png");
     background-size: 100% 100%;

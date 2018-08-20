@@ -1,4 +1,12 @@
 /* By Morgan McGuire @CasualEffects http://casual-effects.com GPL 3.0 License*/
+
+// Must match nano-runtime.js
+var SCREEN_WIDTH = 64;
+var SCREEN_HEIGHT = SCREEN_WIDTH;
+var BAR_HEIGHT = SCREEN_HEIGHT >> 3;
+var BAR_SPACING = BAR_HEIGHT >> 1;
+var FRAMEBUFFER_HEIGHT = SCREEN_HEIGHT + BAR_SPACING + BAR_HEIGHT;
+
 function clamp(x, lo, hi) { return Math.min(Math.max(x, lo), hi); }
 
 function afterImageLoad(url, callback) {
@@ -34,7 +42,7 @@ var screenPalette = new Uint32Array(
     compilation. So, do not split expressions across newlines in this nano source. */
 var resetAnimationNanoSource = `#nanojam Reset,1
 // flash at start
-if(¬τ)clr=∅;for(i<7)cls(gray(⅗-⅙i));flip
+if(¬τ)clr=∅;for(i<7)cls(gray(⅗-⅙i));show
 
 // fade
 v=(1-|¼²τ-1|)^¼
@@ -66,6 +74,49 @@ if 1
 text(G.x)
 `,
 
+    scope: `#nanojam scope,1
+q = 3
+z = 0
+fcn x()
+ extern q
+ z = 1
+ q = 4
+
+x()
+text('' + z + ', ' + q)
+`,
+
+
+    FCN: `#nanojam fcn,1
+fcn d()
+ for (i<100) pset(64ξ,64ξ,10ξ)
+d()`,
+
+    nest: `#nanojam nest,1
+
+
+if τ≟0
+ x=1
+
+if x≟1
+ x=2
+
+`,
+
+    flower:`#nanojam Flower,1
+clr=12
+srand(1)
+pal(231507)
+fcn T(x,y,θ,L)
+ if L>2
+  for i<3
+   φ=θ+10(ξ-½+⅙cos(τ/100))/L
+   u=x+L*cosφ;v=y+L*sinφ
+   line(x,y,u,v,1+(L>3)+(L>8))
+   T(u,v,φ,⅔L-2ξ)
+
+T(32,64,-½π,25)`,
+    
     triangle: `#nanojam triangle,1
 θ=τ/100
 c=cos(θ);s=sin(θ)
@@ -82,24 +133,23 @@ text(a²+b²)`,
     agent:`#nanojam agent
 // initialize
 if ¬τ
- agents=[];cls(7);rect(-1,-1,63,63,31);clr=∅
+ agents=[];cls(7);cls(7);clr=∅
  for i<30
   agents.add({x:1+2⌊30ξ⌋,y:1+2⌊30ξ⌋,θ:½π⌊4ξ⌋})
   
-for i<agents.len
- a=agentsᵢ
+for a∊agents
+ with θ,x,y∊a
+  // try turning in each direction while blocked
+  for k<2
+   j=0
+   while ¬pget(x+2cosθ,y+2sinθ) & ++j<4
+    θ+=½π(2k-1)
 
- // try turning in each direction while blocked
- for k<2
-  j=0
-  while ¬pget(a.x+2cos(a.θ),a.y+2sin(a.θ)) & ++j<4
-   a.θ+=½π(2k-1)
-
- // remove stuck agents
- if(j≟4)pset(a.x,a.y,0);agents.del(i--);cont
+  // remove stuck agents
+  if(j≟4)pset(x,y,0);agents.rem(a);cont
  
- // advance
- for(j<2)pset(a.x,a.y,0);a.x+=cos(a.θ);a.y+=sin(a.θ)`,
+  // advance
+  for(j<2)pset(x+=cosθ,y+=sinθ,0)`,
 
     FOR: `#nanojam test,1
 for 10<x<32
@@ -180,10 +230,10 @@ if ¬τ
  A=[];clr=2
  for i≤20
   θ=2πξ
-  A.add([63ξ,63ξ,cos(θ),sin(θ)])
+  A.add([63ξ,63ξ,cos(θ),sin(θ),i])
 
 for a∈A
- text(i,a₀,a₁,i%7)
+ text(a₄,a₀,a₁,a₄&7)
  a₀=mid(a₀+a₂,-10,74);a₁=mid(a₁+a₃,-10,74)
  if(ξ<⅕²)θ=2πξ;a₂=cos(θ);a₃=sin(θ)`,
     
@@ -243,17 +293,25 @@ for(x<8)draw(5,3.5,3.5+8x,3462,x,0)
 draw(3,31.5,31.5,2345,0,τ/20)`,
 
     plasma: `#nanojam Plasma,1
-for y<64
+clip(0,-12);xform(0,-12)
+for y<76
  for x<64
   ψ=y+τ;v=mid(noise(3,⅛²x,⅛²ψ,¼³τ)+½,0,1)
   pset(x,y,hsv(⅗v+½,(1-v)^⅗,v,x,ψ))`,
 
     plasma2:`#nanojam plasma2,1
 clr=∅
-for i<4096
- y=⌊64ξ⌋;x=⌊64ξ⌋
- ψ=y+τ;v=mid(noise(3,⅛²x,⅛²ψ,¼³τ)+½,0,1)
- pset(x,y,hsv(⅗v+½,(1-v)^⅗,v,x,ψ))`,
+for y<256
+ for x<256
+  ψ=y+τ;v=mid(noise(3,⅛²x,⅛²ψ,¼³τ)+½,0,1)
+  pset(x,y,hsv(⅗v+½,(1-v)^⅗,v,x,ψ))`,
+
+    manySprites: `#nanojam manySprites,1
+clr=∅
+for y<32
+ for x<32
+  draw(19,8x,8y,4321)
+`,
 
     nanoReset:resetAnimationNanoSource,
     
@@ -279,6 +337,8 @@ var initialSource =
     //tests.rgb;
     //tests.text;
     //tests.spacedash;
+    //tests.nest;
+    tests.scope;
     //tests.square;
     //tests.WITH;
     //tests.triangle;
@@ -288,7 +348,9 @@ var initialSource =
     //tests.runner;
     //tests.hash;
     //tests.plasma;
-    tests.plasma2;
+    //tests.plasma2;
+    //tests.manySprites;
+    //tests.FCN;
     //tests.sort;
     //tests.ping;
     //tests.IF;
@@ -494,16 +556,17 @@ function redrawSelectedSprite() {
     }
     
     if (Runtime && Runtime._draw && Runtime._spriteSheet) {
-        var screen = new Uint8Array(64 * 64);
+        var screen = new Uint8Array(SCREEN_WIDTH * FRAMEBUFFER_HEIGHT);
         screen.fill(fill, 0, screen.length);
         
-        Runtime._draw(selectedSpriteIndex, 6, 6, localPalette, xform, rot, screen);
+        Runtime._draw(selectedSpriteIndex, 6, 6, localPalette, xform, rot, screen, 0, 0, 63, 63);
         
         // Expand the paletted image to RGB values
         // Overwrite the entire image for simplicity, even though we only need the upper 12x12
-        var N = 64 * 64;
+        var N = SCREEN_WIDTH * FRAMEBUFFER_HEIGHT;
+        var data = Runtime._updateImageDataUint32;
         for (var i = 0; i < N; ++i) {
-            Runtime.updateImageDataUint32[i] = screenPalette[screen[i]];
+            data[i] = screenPalette[screen[i]];
         }
 
         // Copy screen to context (reusing the updateImage context from the main engine)
@@ -799,6 +862,12 @@ var ctx = screen.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 ctx.webkitImageSmoothingEnabled = false;
 
+var bar = document.getElementById("bar");
+var barCtx = bar.getContext("2d");
+barCtx.imageSmoothingEnabled = false;
+barCtx.webkitImageSmoothingEnabled = false;
+
+
 function onHelp(event) { window.open('doc/specification.md.html', '_blank'); }
 
 function download(url, name) {
@@ -911,6 +980,7 @@ function onStopButton() {
     mode = 'stop';
     cancelAnimationFrame(lastAnimationRequest);
     ctx.clearRect(0, 0, screen.width, screen.height);
+    barCtx.clearRect(0, 0, bar.width, bar.height);
 }
 
 
@@ -1150,7 +1220,7 @@ function onCloneButton() {
 function makeCartridgeWindowContents() {
     // Make slight changes in brightness so that cartridges don't look too repetitive
     function nameBrightness(name) {
-        return (Math.cos(name.length + name.charCodeAt(name.length - 1) + name.indexOf('a')) * 0.1 + 0.95);
+        return (name === undefined) ? 0.0 : (Math.cos(name.length + name.charCodeAt(name.length - 1) + name.indexOf('a')) * 0.1 + 0.95);
     }
     
     function nameHue(name) {
@@ -1372,6 +1442,9 @@ var editorStatusBar = document.getElementById('editorStatusBar');
 var editor = ace.edit('editor');
 editor.setTheme('ace/theme/tomorrow_night_bright');
 
+// Stop auto-completion of parentheses
+editor.setBehavioursEnabled(false);
+
 var aceSession = editor.getSession();
 aceSession.setTabSize(1);
 aceSession.setUseSoftTabs(true);
@@ -1501,12 +1574,11 @@ if (jsCode) {
     jsCode.getSession().setUseWrapMode(true);
 }
 
-var screenWidth = 64, screenHeight = 64;
 var updateImage = document.createElement('canvas');
-updateImage.width = screenWidth;
-updateImage.height = screenHeight;
+updateImage.width = SCREEN_WIDTH;
+updateImage.height = FRAMEBUFFER_HEIGHT;
 
-var updateImageData = ctx.createImageData(screenWidth, screenHeight);
+var updateImageData = ctx.createImageData(SCREEN_WIDTH, FRAMEBUFFER_HEIGHT);
 var error = document.getElementById('error');
 
 /** Returns javascript source or throws an exception */
@@ -1592,13 +1664,13 @@ var frameTimer = document.getElementById('frameTimer');
 function mainLoopStep(time) {
     refreshPending = false;
 
-    var frameStart = performance.now();
-
+    var frame1 = performance.now();
+    
     // Worst-case timeout
     var endTime = time + 15;
     
     // Run the "infinite" loop for a while, maxing out at just under 1/60 of a second or when
-    // the program explicitly requests a refresh via flip().
+    // the program explicitly requests a refresh via show().
     try {
         while (! refreshPending && (performance.now() < endTime) && (mode === 'play') && coroutine) {
             coroutine.next();
@@ -1609,27 +1681,29 @@ function mainLoopStep(time) {
         setErrorStatus('line ' + clamp(1, e.lineNumber, programNumLines) + ': ' + e.message);
         console.log(e);
     }
-
-    var frameDuration = performance.now() - frameStart;
-    if (emwaFrameTime === 0) {
-        emwaFrameTime = frameDuration;
-    } else {
-        emwaFrameTime = emwaFrameTime * 0.95 + frameDuration * 0.05;
-    }
-    frameTimer.innerHTML = "" + Math.round(emwaFrameTime) + " ms";
-    
+   
 
     // Keep the callback chain going
     if (mode === 'play') {
         lastAnimationRequest = requestAnimationFrame(mainLoopStep);
     }
+
+    var frameTime = performance.now() - frame1;
+    if (emwaFrameTime === 0) {
+        // First frame
+        emwaFrameTime = frameTime;
+    } else {
+        emwaFrameTime = emwaFrameTime * 0.95 + frameTime * 0.05;
+    }
+    frameTimer.innerHTML = "" + Math.round(emwaFrameTime) + " ms";
+
 }
 
 /** When true, the system is waiting for a refresh to occur and mainLoopStep should yield
     as soon as possible. */
 var refreshPending = false;
 
-function reloadRuntime(oncomplete) {   
+function reloadRuntime(oncomplete) {
     Runtime.document.open();
     Runtime.document.write("<script src='nano-runtime.js' charset='utf-8'> </script>");
     Runtime.onload = function () {
@@ -1637,8 +1711,8 @@ function reloadRuntime(oncomplete) {
         Runtime._spriteSheet   = spritePixelData;
         Runtime._fontSheet     = fontPixelData;
         Runtime.rgb            = rgb;
-        Runtime.updateImageDataUint32 = new Uint32Array(updateImageData.data.buffer);
-        Runtime.submitFrame    = submitFrame;
+        Runtime._updateImageDataUint32 = new Uint32Array(updateImageData.data.buffer);
+        Runtime._submitFrame    = submitFrame;
 
         if (oncomplete) { oncomplete(); }
     };
@@ -1699,7 +1773,7 @@ emulatorKeyboardInput.addEventListener('keyup', onEmulatorKeyUp, true);
 /** Returns the ascii code of this character */
 function ascii(x) { return x.charCodeAt(0); }
 
-/** Used by submitFrame() to map axes and buttons to event key codes when sampling the keyboard controller */
+/** Used by _submitFrame() to map axes and buttons to event key codes when sampling the keyboard controller */
 var keyMap = [{'-x':[ascii('A'), 37],         '+x':[ascii('D'), 39],          '-y':[ascii('W'), 38], '+y':[ascii('S'), 40],          a:[ascii('Z'), 32],   b:[ascii('X'), 13], s:[ascii('1'), ascii('1')]},
               {'-x':[ascii('J'), ascii('J')], '+x':[ascii('L'), ascii('L')],  '-y':[ascii('I')],     '+y':[ascii('K'), ascii('K')],  a:[ascii('G'), 186],  b:[ascii('H'), ascii('.')], s:[ascii('7'), ascii('7')]}];
 
@@ -1748,7 +1822,12 @@ function getIdealGamepads() {
 function submitFrame() {
     // Update the image
     updateImage.getContext('2d').putImageData(updateImageData, 0, 0);
-    ctx.drawImage(updateImage, 0, 0, screen.width, screen.height);
+    barCtx.drawImage(updateImage,
+                     0, 0, SCREEN_WIDTH, BAR_HEIGHT,
+                     0, 0, bar.width,    bar.height);
+    ctx.drawImage(updateImage,
+                  0, BAR_HEIGHT + BAR_SPACING, SCREEN_WIDTH, SCREEN_HEIGHT,
+                  0, 0,                        screen.width, screen.height);
 
     if (gifRecording) {
         // Only record alternating frames to reduce file size

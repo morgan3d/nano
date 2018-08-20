@@ -7,7 +7,8 @@ The [**nano ᴊᴀᴍᴍᴇʀ**](../index.html)
 is a fantasy console for tiny games with a single page of source code. It is perfect for
 tweetjams and hobby coding on a busy schedule. Features:
 
-- 64x64 pixel screen
+- 64x64 pixel main screen
+- 64x8 pixel status bar screen
 - 32 colors
 - 60 fps
 - 96 built-in sprites
@@ -71,8 +72,8 @@ if(τ≥9³)text("YOU WIN");wait;τ=0
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You're probably wondering where the main loop is. Every nano program is implicitly within an
-infinite `for` loop with variable variable `τ` that starts at zero, a clear screen command, and
-a page flip.
+infinite `for` loop with variable `τ` that starts at zero, a clear screen command, and
+showing the framebuffer.
 
 A program always begins with `#nanojam` and the title of the game, which is used for the automatic
 title screen and the cartridge label.
@@ -261,7 +262,7 @@ for a∈aln
  if (a.x-10)²+(a.y-y)²<16
   // Hit the ship!
   text("BOOM!",32,32,4)
-  flip
+  show
   wait
   reset
   
@@ -281,7 +282,6 @@ Twitter
 Search Twitter for <a href="https://twitter.com/search?l=&q=%23nanojam%20since%3A2018-01-01&src=typd">#nanojam</a>
 to see the latest games others have posted, such as:
 
-- [Snake](https://twitter.com/Jackson_T_Allen/status/950542136247767041) by [@Jackson_T_Allen](https://twitter.com/Jackson_T_Allen) ([Permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIDKA5AggaQKICgCWAZgBQA1gI8ACUAzgLwDaAzAIwA0zAugNyAdwDQAycAxv04BTGkxwB3GgDYALDkBjwPUGQqLKnhDsc3ANQ1ASoTRIATwB0ADxwFIAJwR5AJkSSEVC2AAmXokSp0HgA2oiAAtABM7PpKgEa4RNwU+lIUAKQpnIREooD6RIIUOAjuFl6iQUR8BQhlVKKFCFY0AKyygH3A+vKcZs1tHTjigjgALqJWQ0T5OAAOteNWLGYsABwFdo5gADwMhWsIAEZb9WtEeBsAvcGhFIJ49oL+dBF40VIAVGBhUpqPePpML689p8WPIWE0ClkAD5WMJUQABBJD9JCzLDAIEEkI2smu+n0nBwZFSNAYgHcCIA))
 - [Pong](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIAKkQHMBQB6LCBCYANoQgLwIAUArgDQBuAlNrgGoCmhkAxgJYAuATzKUAXjQDuTHAgDKXSACc2wgM7NkhMALYLhADwzqASmxVs+GHgDMKAGsAjwAyqk6pAMwAmANwrSAbQAGGgCAXS89f1oqMJFSAF6vcVIAHsMrRQQeAB4PDAQAI1IPCjiAWh4GLwEigFZ8gGpPPOkkMAATNsJlCDaEFXklPLaFMHEKABZxmj1AI1xSOB42ijdpmfqAB3aZgDo9GhqATgYaARoARkq+Nj0+ChUZmimBJgQW9s7lfMgqEC42POsFAAPgJSnQgTkAGRA2alKgQ8YMJKlZL5Zq4OSKf6ZGx0ABU+QAfAICQx6vUVIBAgkA0QQzLzOVxNdQAGR4IH+6QUFGyAA4GMNRhQDmcaDyeDRPDRhUx1ARiBgBWNxisqPVSGI6GrxFKztLDNIAOpEEhfH5-Sw2KiEgBsiNipTiFuoWQCDFicSAA) by [@CasualEffects](https://twitter.com/CasualEffects)
 - [Mandel](https://twitter.com/Jackson_T_Allen/status/951965451990552577) by [@Jackson_T_Allen](https://twitter.com/Jackson_T_Allen) ([Permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAICyBBAcgEQKIBkA0AjAFACWAZgBQA1gI8ACUAHgLwC0AvQNwCeTADBwGcmBAGxEAxgBsATk0CgREQYBqJgCZokLgDoGAegFEuK9Zq1d9pShu1g6AgFTCtxchWtaARnd1PiZSNIIAG4APCIALEQI-oEA7mGRCAiAjcBMFLEsAMyqdPpKDFEIgE3AaUFZOXlchWB8HB61JHyF0EwArLy6uiQIcGAFSbEAFiSSAKYUJCHQCABkCGAATUoeCyHhdIUI4kyLLCtKyZv1qmD2HkpFmzXimyRKSoUADgKjAC7peEF4gwJBFIAahCRdNA6IQ8CwgdAlAQ6EA))
 - [Offroad](https://twitter.com/attilazz/status/979083374114598912) by [@attillazz](https://twitter.com/attilazz) [Permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIDyAzFAnSYAmAoAligBQA1gI8ACUAbgLwAMA3AB40CMrArAMwMAWNAbQC6uAMYAbAM5FWAJgq4ADmHFEAHHS6z2dOgHYFKSOgT5AJkQA2ACy4EvQEa4NFDSt0AtLNlR8kgKZFZABo6ADo6WSJ8NyYKBQRxfBB-fEDrQJSUQKsKBmx0MAB3IisudMDMrgU8wqI9C0DZAGomLKtAjgBOViyFACMaXkBwgjdeQEiCXDAaNzAAFwgiXoaFJjcaKgAqUUhpMAUqVdC6VnWifehIAE8Qpkbeqvyiz0C1QLG3DkCOiw+6QN2GMT4dCiIgcIIvepyBQzXxMGZESgEFAIIhMAA8HQoBTA+BmDDI9CAA)
@@ -294,8 +294,9 @@ to see the latest games others have posted, such as:
 - [Flappy Nano](https://twitter.com/ugoerra/status/951567004867194881) by [@ugoerra](https://twitter.com/ugoerra) ([Permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIBiAbMAHdBPBA5CkAUAJYBmAFADWAjwAJQAeAvAMwBMA3FowIwBs76RgAZC6MCnIAWIQE4hADlYB2ec27dahAMYoATj1aEAzrogATcgFZNAFwCm9G+UCqhOk2CRpSLoT1AJkSsQpLyhAgA1oyAUMTMgH3AANTcgNDEoWamAO7kSjIANMxx8vQAtNQAvdm8rNmsrBqhXj7EADwhCAgAriysRdQAPezEcSzkxID6RGGarQBuLPnE7KlgGTLc2W3Zk+WWrNahCGTkAD58hW0HcQeThVgHzbTUwuxpYMQ2u-ttjXy06HFxhFiDagAUlYcWgkCwADosIQFhlmDk+NksLlJJZLHFpOQetRAJREGloQA))
 - [TRON](https://twitter.com/Jackson_T_Allen/status/951962772061020165) by [@Jackson_T_Allen](https://twitter.com/Jackson_T_Allen) ([Permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIAqAlA8gOQFAEsBmAFADWAjwAJQAeAvANoAMANAGwDMAugNwCetLAjAxYAmTgBNajQAPAbLAHpZ+AiQCkQsgGNIIAC5Z1AGwBOVQKBEWPJEMIcAHiFYEeKmE0BnAgAcwowEa4AOgoyBwBzZ1ccEE9vfy4g60IvXwCAMl9AAyIAWjwAakkyXyo8B0VEmNSfTOD8nypghw9XAFNtAgofBi52gA5sgBYcOLbsqjcCXzjO4fDI8eKE4ObW9s6yNLoybUaKFqEMnGyAIgAFBAB1AEkMA8EhG4Y+Mg4AdzAcbQ4SKjogA))
 - [Rain](https://twitter.com/CasualEffects/status/952049699569139713) by [@CasualEffects](https://twitter.com/CasualEffects) ([Permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIBKYCWIA0BGAUABzABsAKaAXgCYAWCgZgoqywAYB2AShwDNIAnBAB4AeLLRwIAFmQlgAzhOICA1AE5OCVGWLEAPQGbAI8DFWEpbXZLWzCe0CURFgCs7ALRNxPfgE8RuBAgAuAKYC-sQARICtwIATwABygAPAAI4GgHhEgKBEgH3ASADuzLaAVESAkMSAqUSAjcCATcCALcAAsg6AKcCAHcCA3cCAPcCAg8CAw8CAY8CAk8CAlcAA3lhhANpKStC2tFgAuhgOAhgAbBTOi54YcOjEqEpkAL1KexJL7OxAA))
-- [Alternative Boot Sequence](https://twitter.com/CasualEffects/status/950048407942516736) by [@CasualEffects](https://twitter.com/CasualEffects) ([Permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIBClIBcA0BGAUAejwQCcwBLEAI0gHccAzSIhMAHgCZB3AhwQE8BeOGAAeACgAMGQCPAAWgDMACzABneSLABKaZ3XcADkoCmaEQGNISteoBUPANSy2GJeUs37j+UoBuIwNqEPdR18QgAbSABzSHpGBGgWWW4GJlIWLABWbgR9IxFZAA5pUgxZMVtoDBEAbTyAdnyMNiw8gBY0hqxZEoBdQB8aQG7SUkBKIixrcJIeEThSABMRLGlJPDZADwIMCRGrEUW2MTkAH2hpLD3A9SA))
+- [Alternative Boot Sequence](https://twitter.com/CasualEffects/status/950048407942516736) by [@CasualEffects](https://twitter.com/CasualEffects) ([Permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIBClIBcA0BGAUADwDNIAnOACgGYAmDagShyOITAB4rB3AhwQE8BeOGDxkADBkAjwAFoKACzABnGWTB1JnOgG4ADvICmaMjwBUAY0jyWGY-ICWISzPkA3MoG1CHnQZME0VhW7eNqxYAKzcCDr6ZABskjYY0GoYZADaABwA7BRpGFRYaQAsIblYFBQiALqAPjSA3aQ2gJREWHRGAObEYDxkcDYAJmRYaoDeBIAeBOIYYk1GZOIA9FQi0gA+iViLnnRAA))
 - [Virtual Pet](https://twitter.com/Jackson_T_Allen/status/960757428114673664) by [@Jackson_T_Allen](https://twitter.com/Jackson_T_Allen) ([Permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAJgDcCWAnALgVzAGwAcBTTWOAKFQDMAKAGsBHgASgA8BeARgBoBnNgbQCcXYaIC65dnFQATGgAYuLANTRIATwB0LFlwDMTSrTVawYJj0DJBG0HkZ6MAHcaAVgAsXN8o7zdLgGyGVJDoCKgAPG7kCDyARrgAtGyASoSAfcDKgK3ADNHoRADGmDQATN7yqFwuiv4lZRXxhXGGYbRx4fJM9k40-sJuABye-YpuTADcmEQsBQBEACIAogCCMwhTyswjjmComCMMbPLk45M0UwASiwAyACqnAJora4Ydzt0DA0xAA))
+<!-- - [Snake](https://twitter.com/Jackson_T_Allen/status/950542136247767041) by [@Jackson_T_Allen](https://twitter.com/Jackson_T_Allen) ([Permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIDKA5AggaQKICgCWAZgBQA1gI8ACUAzgLwDaAzAIwA0zAugNyAdwDQAycAxv04BTGkxwB3GgDYALDkBjwPUGQqLKnhDsc3ANQ1ASoTRIATwB0ADxwFIAJwR5AJkSSEVC2AAmXokSp0HgA2oiAAtABM7PpKgEa4RNwU+lIUAKQpnIREooD6RIIUOAjuFl6iQUR8BQhlVKKFCFY0AKyygH3A+vKcZs1tHTjigjgALqJWQ0T5OAAOteNWLGYsABwFdo5gADwMhWsIAEZb9WtEeBsAvcGhFIJ49oL+dBF40VIAVGBhUpqPePpML689p8WPIWE0ClkAD5WMJUQABBJD9JCzLDAIEEkI2smu+n0nBwZFSNAYgHcCIA)) -->
 
 
 Saving
@@ -449,24 +450,51 @@ The `keys` property of a table returns an Array of its keys. The read-only `len`
 of the Table directly gives the number of keys.
 
 
+Functions
+=============================================================================================
+
+Functions are first-class values. They can be passed to and returned from other functions,
+stored in data structures, and bound to variables. Declare functions with `fcn` and
+return values from them with `ret`:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ JavaScript
+// Multi-line function block
+fcn solve(a,b,c)
+ ret ½(sqrt(b²-4a*c)-b)/a
+
+// Inline function
+fcn foo(x) x+=1; ret 2x
+
+// Call a user function
+text(foo(3))
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There is no way to declare an anonymous function or use a function definition as an expression.
+
+The `wait` and `show` special syntax are not permitted inside of a function body. If a function
+body takes too long to execute then the nano interpreter may terminate the program to prevent
+the game from becoming unresponsive.
+
+To call a function returned from an expression that ends in parentheses or brackets, use the
+`call` function.
+
+
 Variables
 =============================================================================================
 
-Variables are implicitly declared by their first assignment. 
+Variables are implicitly declared by their first assignment. You may optionally use
+JavaScript-style declarations (see below) when writing longer programs to improve readability
+and limit scope further.
 
-All variables have global scope except for the `for` loop variable, which has the scope of the
-body of the `for` loop.
+Implicitly declared variables have the scope of the enclosing _function_ (as with JavaScript
+`var` and Python variables, and unlike C++ variables that have the scope of the enclosing
+_block_).  The variables captured by `for` and `with` or declared explicitly using
+`let` and `const` are scoped to the _block_.
 
-<!--
-Scopes are created only by
-function definitions (specifically, loops and blocks do not create a scope the way that they do
-in C++). Because user-defined functions are not supported in the current implementation, that
-means all variables are global. -->
-
-Variable name identifiers consist of an optional lower-case or upper case delta, plus 1-3
-Roman letters or the unambiguous-looking Greek letters `αβδθλμξρσφψωΔΩ` by
-themselves. The identifier must not be a reserved word. No numbers, underscores, or other
-unicode characters are allowed in identifiers.
+Variable name identifiers consist of an optional upper case delta plus a series of Roman
+letters, or the unambiguous-looking Greek letters `αβγδζηθιλμρσϕχψωΩ` by themselves, and
+optionally trailing a series of digits. The identifier also must not be a reserved word. No
+underscores or other unicode characters are allowed in identifiers.
 
 Examples of legal identifiers:
 
@@ -485,25 +513,64 @@ k
 Reserved
 ------------------------------------------------------------------------------------------
 
-These are reserved tokens that cannot be used as variable names despite meeting the other
-naming criteria:
+These are reserved tokens that cannot be used as variable names:
 
-`and`, `cos`, `do`, `end`, `fcn`, `for`, `get`, `go`, `has`, `if`, `in`, `len`, `let`, `NaN`,
-`new`, `not`, `or`, `ret`, `to`, `try`, `var`, `xor`, `sin`, `set`, `tan`.
+`and`, `arguments`, `args`, `as`, `async`, `auto`, `await`, `begin`, `break`, `catch`, `class`,
+`const`, `cont`, `continue`, `do`, `end`, `external`, `fcn`, `finally`, `for`, `from`, `function`, `get`, `global`,
+`go`, `goto`, `has`, `if`, `in`, `implements`, `inherits`, `include`, `import`, `len`, `let`, `local`, `loop`,
+`NaN`, `new`, `nonlocal`, `not`, `null`, `or`, `ret`, `to`, `try`, `var`, `xor`, `set`,
+`until`, `while`, `with`, `then`, `else`, `elif`, `flip`, `reset`, `main`, `enum`, `throw`,
+`return`, `yield`, `template`, `public`, `private`, `protected`, `show`, `static`.
 
 Built-in functions such as `tri` that are legal identifiers can be rebound. They are not
 reserved. `cos`, `sin`, and `tan` by themselves are bound to first-class functions, but the special
 syntax that allows them to be invoked without parentheses on single variables is tied to their
-exact names.
+exact names. If you rebind them, then the new functions that you have bound will be invoked.
 
-The words below are not legal variable names anyway because they contain illegal characters 
-or more than three letters, although the current compiler may not enforce that. They
-are reserved. All JavaScript and C++ reserved words are also reserved in nano. 
 
-`#`, `$`, `then`, `else`, `elif`, `begin`, `while`, `until`, `loop`, `?`, `:`, `break`, `cont`,
-`flip`, `reset`, `main`, `catch`, `finally`, `function`, `enum`, `class`, `throw`, `return`, `yield`,
-`await`, `auto`, `template`, `public`, `private`, `protected`, `const`, `static` `async`,
-`goto`, `print`, `window`, `with`, `location`
+`extern`
+------------------------------------------------------------------------------------------
+
+Variables always have lexical scope. However, implicit declaration causes all assignments
+to shadow external ones from enclosing scopes. To assign to a variable declared in an 
+enclosing, external scope, use an `extern` statement on the first line of a function:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ JavaScript
+x = 3
+
+fcn A()
+ x = 4 // local variable
+ 
+fcn B()
+ extern x
+ x = 4 // the global x
+ 
+fcn C()
+ x = 2
+ 
+ fcn D()
+  extern x
+  x = 7 // the C-scope x
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Optional Declaration
+------------------------------------------------------------------------------------------
+
+Variables may optionally be explicitly declared with block scope, as in
+the following examples:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~ JavaScript
+const x = 7 // x may not be rebound
+let y       // Declare y
+let z = 9   // Declare and initialize z
+
+// Declare and initialize two variables on the same line:
+let a = [1, 2]; let b = 'hello'
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Note that only a single variable is permitted per `let` or `const` statement.  Multiple
+statements may be chained using semi-colons on a single line, however.
 
 
 `with` Statement
@@ -585,6 +652,8 @@ Symbol | Meaning
 `∪=`   | mutating bitwise OR
 `&`    | logical AND
 `or`   | logical OR (you can often use the shorter `∪`)
+`not`  | logical NOT (see also the shorter `¬`)
+`and`  | logical AND (see also the shorter `&`)
 `⊕`    | bitwise XOR
 `⊕=`   | mutating bitwise XOR
 `~`    | bitwise NOT
@@ -595,7 +664,7 @@ Symbol | Meaning
 `▻`    | bit shift right
 `▻=`   | mutating bit shift right
 
-There is no conditional ("ternary ?:") operator in nano. 
+There is no conditional ("ternary ?:") operator or logical XOR in nano. 
 
 Spaces are not required around operators in most cases, so long as the text parses
 unambiguously. For example, `1or3` is equivalent to `1 or 3`.
@@ -610,6 +679,22 @@ when the order of operations is unambiguous. For example, `cos a` ==> `cos(a)`, 
 `cos(β)`, and `cosθ*sinφ` ==> `cos(θ) * sin(φ)`.  To avoid confusion and reserve future syntax,
 they may not be invoked in this form when a high-precedence operator follows the argument. Those
 operators are `.`, `[`, subscript, or exponentiation.
+
+Because back-to-back parentheses are interpreted as implicit multiplication, functions that
+are returned from other functions, determined by parenthesized expressions, or stored in 
+tables cannot be invoked using the `()` syntax. Instead, use the `call` function:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ JavaScript
+// Illegal:
+x = (a ? abs : cos)(θ)
+y = tbl["myfunc"](3, 4)
+z = f(a)(b)
+
+// Legal:
+x = call(a ? abs : cos, θ)
+y = call(tbl["myfunc"], 3, 4)
+z = call(f(a), b)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 Exponents
@@ -700,7 +785,7 @@ For flow control purposes, the empty string, 0, and `∅` are false.  All other 
 
 The entire program is implicitly wrapped in an infinite loop. This loop:
 
-1. flips the buffer
+1. shows the buffer
 2. clears the screen to colour `clr` (set `clr=∅` to avoid clearing the screen)
 3. increments `τ`
 
@@ -722,7 +807,8 @@ expression.
 
 Container iteration `for` loops iterate over the keys of a table, the characters of a string,
 or the elements of an array _as of the beginning of the loop_. If the container is modified
-during iteration, the original is still used. The Java/C++ equivalents of nano `for`-loop conditions
+during iteration, the original is still used. That means that you can delete elements from the array
+without affecting the iteration. The Java/C++ equivalents of nano `for`-loop conditions
 are:
 
 nano              | Java/C++
@@ -750,12 +836,14 @@ Special
 
 The following are unconditional statements:
 
-- `flip`: Flip the buffers and update `pad`. Does not clear the screen.
-- `wait`: Flip the buffers and update `pad` until a gamepad button (not direction) is pressed.
+- `show`: Show the current state of the framebuffer and update `pad`. Does not clear the screen.
+- `wait`: Show the framebuffer and update `pad` until a gamepad button (not direction) is pressed.
 
 
 They are not functions and cannot be bound to variables or invoked with parentheses.
+`show` and `wait` are not permitted inside `fcn` blocks.
 
+`flip` is a legacy synonym for `show`.
 
 
 Standard Library
@@ -817,6 +905,13 @@ Table
 
 `table.len`
 : The length of the table (read only).
+
+
+Function
+---------------------------------------------------------
+
+`call(f,a,b,...)`
+: Invoke function `f` with arguments `a`, `b`, etc.
 
 
 Math
@@ -894,9 +989,20 @@ Graphics
 `cls(c)`
 : Clear the screen to colour `c`. Unlike all other rendering commands, 
   requires a colour argument and does not set the current colour to `c`.
+  Obeys the clipping region.
 
 `circ(Ax,Ay,r,colourmap)`
 : Draw a circle centered at (`Ax`, `Ay`) with radius `r`.
+
+`clip(x1,y1,x2,y2)`
+: Set the clipping region to these coordinates. Unspecified values retain their 
+  current value.  Coordinates are clamped to the physical screen. The initial
+  clipping region is `clip(0,0,63,63)`. Values are rounded to the nearest integer
+  and the min and max are taken, so the order of `y2` and `y1` and of `x1` 
+  and `x2` does not matter. It is impossible to set a clipping region smaller than
+  1x1 pixels. The clipping region for the top bar screen is `clip(0,0,-12,-4)`.
+  The clipping region of the entire screen together is `clip(0,-12,63,63)`.
+  The clipping region is not affected by `xform`.
 
 `draw(s,x,y,colourmap,xform,rot)`
 : Draw sprite with index `s` centered at (`x`, `y`), remapping sprite colours by 4-digit
@@ -912,7 +1018,7 @@ Graphics
   If `x` and `y` are specified, apply a dithering pattern based on the pixel position.
 
 `pget(x,y)`
-: Get the screen colour of pixel (`x`, `y`). Returns `∅` if out of bounds.
+: Get the screen colour of pixel (`x`, `y`). Returns `∅` if out of bounds of the clipping region.
 
 `line(Ax,Ay,Bx,By,colourmap)`
 : Draw a line from (`Ax`, `Ay`) to (`Bx`, `By`) using the 1-digit colourmap.
@@ -944,6 +1050,10 @@ Graphics
 
 `tri(Ax,Ay,Bx,By,Cx,Cy,colourmap)`
 : Draw the triangle using the 2-digit colourmap for fill and border.
+
+`xform(addX, addY)`
+: Set the transformation applied to all draw coordinates and `pget`. The default transform
+  is (0, 0).
 
 The default colourmap is 0, which corresponds to the colour from the previous command.
 
@@ -1096,10 +1206,6 @@ The following are permanent limitations:
 - When converting values to strings, the `∞` value becomes the string `"Infinity"` and the `∅`
 value becomes `"undefined"`.
 
-<!-- Nano cannot execute `flip` or `wait` from within a function because of the way that threading
-is handled in the implementation. Technically, user-defined functions aren't supported yet, so
-this is not actually a limitation. -->
-
 
 # Credits
 
@@ -1109,8 +1215,9 @@ font http://www.04.jp.org/ and Joseph White's PICO-8 font.
 
 The <span style="font-size:118%">nano</span> <span style="font-size:90%">JAMMER</span> IDE,
 compiler, font, palette, and artwork are copyright 2018 Morgan McGuire. They were created as a
-one-week vacation "game" jam challenge, which should set your expectation level for support and
-acceptance of patches at zero. The nano package and implementation, including:
+one-week vacation "game" jam challenge (and reworked during a second vacation), which should 
+set your expectation level for support and acceptance of patches at zero. The nano package 
+and implementation, including:
 
 - [`index.html`](../index.html)
 - [`nano.css`](../nano.css)
@@ -1122,8 +1229,8 @@ acceptance of patches at zero. The nano package and implementation, including:
 and excluding the content described below, are licensed under the
 [GPL 3.0](https://opensource.org/licenses/GPL-3.0), but may be relicensed in the future.
 
-The cherry, apple, and chicken sprites are by Justin Cyr ([@JUSTIN_CYR](https://twitter.com/JUSTIN_CYR)). 
-3D PAC-MAN Ghost and Mario character based on sprites by Johan Vinet ([@johanvinet](https://twitter.com/johanvinet)).
+The cherry, apple, and chicken leg sprites are by Justin Cyr ([@JUSTIN_CYR](https://twitter.com/JUSTIN_CYR)). 
+The ghost and plumber character are based on sprites by Johan Vinet ([@johanvinet](https://twitter.com/johanvinet)).
 
 GIF support via [gif.js](https://github.com/jnordberg/gif.js/) (c) 2013 Johan Nordberg,
 used under the MIT license. It includes code by Kevin Weiner, Thibault Imbert, and Anthony
@@ -1135,15 +1242,27 @@ of xorshift (c) 2014 Andreas Madsen and Emil Bay used under the MIT license.
 The code editor for the nano IDE is [ace.js](https://ace.c9.io/) used under the BSD license.
 
 URL encoding uses [lz-string.js](https://github.com/pieroxy/lz-string) (c) 2014 Pieroxy under
-its license that permits any use.
+its license, which permits any use.
 
 
-# Changes
+# Change Log
+
+2018 Aug 20:
+ - Added optional `and` and `not` operators for readability in long-form programs
+ - Added second "bar" screen for status
+ - Added `xform` for camera transformation
+ - Added `clip` for clipping region
+ - Added frame timer for profiling
+ - Added `call` to support first-class functions
+ - Added `fcn` and `ret` for user-defined functions, `extern` for scoping
+ - Renamed `flip` to `show`
+ - Changed variable name rules: more Greek letters permitted, no limit on variable name length, allowed numbers in variable names
+ - Complete compiler rewrite to support nested scopes and single-line control flow after other statements
+ - Disabled editor auto-completion of brackets and parentheses
 
 2018 Aug 5:
  - Added sprites 41 and 42
  - Made `cosτ`, `sinτ`, `tanτ` legal
-
 
 2018 Jul 28:
  - Implicit multiplication for back-to-back parenthesized expressions

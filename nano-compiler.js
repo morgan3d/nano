@@ -68,55 +68,10 @@ function nextInstance(str, c, j, d) {
     }
 }
 
-/** Expression for selective yields to avoid slowing down tight loops */
-var maybeYield = ' {if (!(__yieldCounter = (__yieldCounter + 1) & 1023)) { yield; }} ';
-
-/** Converts a single-line IF, FOR, WHILE, or UNTIL to JavaScript, preserving indenting.
-    Returns the entire string if none of those appear. */
-function processSingleLineControl(str) {
-    var match = str.match(/(^|.*?\b)(for|if|while|until|with)(\b.*)/);
-    if (! match) { return str; }
-    var before = match[1];
-    var type   = match[2];
-    var rest   = match[3];
-
-    // Read the expression
-    var begin = rest.indexOf('(');
-    if (begin === -1) { throw 'Missing ( after single-line "' + type + '".'; }
-    var end = findClosingParen(rest, begin);
-
-    var test = rest.substring(begin + 1, end - 1);
-    switch (type) {
-    case 'with':
-        // With blocks become a single-iteration FOR loop
-        // because that allows specifying code that runs at
-        // the end of the block up front.
-        type = 'for';
-        test = processWithHeader(test);
-        break;
-        
-    case 'until':
-        type = 'while';
-        test = '(! (' + test + '))';
-        break;
-
-    case 'for':
-        test = processForTest(test);
-        break;
-
-    case 'while':
-    case 'if':
-        test = '(' + test + ')';
-        break;
-    }
-
-    var s = before + type + ' ' + test + ' {' + ((type === 'if') ? ' ' : maybeYield) + processSingleLineControl(rest.substring(end)).trim() + '; }';
-    return s;
-}
 
 /** Given a nano WITH preamble not surrounded in extra (), returns JavaScript for a FOR-loop preamble
     that handles the variable binding. */
-function processWithHeader(test) {
+function processWithHeader(test, noDeclareSet) {
     // Cannot create a function because that would break the coroutines used for preemptive
     // multitasking
     //
@@ -142,7 +97,8 @@ function processWithHeader(test) {
 
     var expr = match[2];
     var idArray = match[1].split(',').map(function (s) { return s.trim(); });
-
+    idArray.forEach(function (s) { noDeclareSet[s] = true; });
+        
     return '(let ' + run + ' = true, ' +
         obj + ' = (' + expr + ')' +
         idArray.reduce(function (prev, id) { return prev + ', ' + id + ' = ' + obj +  '.' + id; }, '') +
@@ -151,12 +107,16 @@ function processWithHeader(test) {
 }
 
 
-/** Given a nano FOR-loop test not surrounded in extra (), returns the JavaScript equivalent test */
-function processForTest(test) {
-    var match = test.match(/^[ \t]*([δΔ]?(?:[A-Za-z]{1,3}|[αβδθλμξρσφψωΔΩ]))[ \t]*∊(.*)$/);
+/** Given a nano FOR-loop test that is not surrounded in extra (), returns the JavaScript
+    equivalent test.  Mutates the noDeclareSet to include the index or element variable that
+    will be bound within the loop's body. */
+function processForTest(test, noDeclareSet) {
+    var match = test.match(RegExp('^\\s*(' + identifierPattern + ')\\s*∊(.*)$'));
     if (match) {
         // Generate variables
         var container = gensym('cntnr'), keys = gensym('keys'), index = gensym('index'), cur = match[1], containerExpr = match[2];
+
+        noDeclareSet[cur] = true;
         
         // Container iteration FOR loop. Clone the container if it is an object
         // or array. Iterates over elements of arrays, keys of table, chars of string.
@@ -173,140 +133,312 @@ function processForTest(test) {
     var op = (test[j] === '≤') ? '<=' : '<';
     
     var k = nextInstance(test, '<', j, '≤');
-    var identifier, initExpr = '0';
-    var endExpr = test.substring(j + 1);
+    var identifier, initExpr, endExpr;
 
     if (k === -1) {
         // has the form "variable < expr"
-        identifier = test.substring(0, j);
+        identifier = test.substring(0, j).trim();
+        endExpr = test.substring(j + 1).trim();
+        initExpr = '0';
     } else {
         // has the form "expr < variable < expr"
         // j is the location of the first operator
         // k is the location of the second operator
         
-        initExpr   = test.substring(0, j);
+        initExpr   = test.substring(0, j).trim();
         if (op === '<') {
-            initExpr = 'Math.floor(' + initExpr + ') + 1';
+            initExpr = '_Math.floor(' + initExpr + ') + 1';
         }
 
         op = (test[k] === '≤') ? '<=' : '<';
-        identifier = test.substring(j + 1, k);
-        endExpr = test.substring(k + 1);
+        identifier = test.substring(j + 1, k).trim();
+        endExpr = test.substring(k + 1).trim();
     }
-    
-    initExpr   = initExpr.trim();
-    identifier = identifier.trim();
-    endExpr    = endExpr.trim();
 
     if (! legalIdentifier(identifier)) { throw 'Illegal FOR-loop variable syntax'; }
-                
+
+    // Record the loop identifier as being captured by the loop body
+    noDeclareSet[identifier] = true;
+
     return '(let ' + identifier + ' = ' + initExpr + '; ' + identifier + ' ' + op + ' ' + endExpr + '; ++' + identifier + ')';
 }
 
 
-/** Create braces as dictated by indenting */
-function processBlocks(src) {
-    // Break apart into lines
-    var lineArray = src.split('\n');
-    var prevIndent = 0;
-    for (var i = 0; i < lineArray.length; ++i) {
+/** Creates a new set (Object mapping keys to true) from the parent sets */
+function setUnion(a, b) {
+    return Object.assign(setClone(a), b);
+}
+
+/** Clone an object being used as a set */
+function setClone(a) {
+    return Object.assign({}, a);
+}
+
+function argStringToSet(args) {
+    let set = {};
+    args.split(',').forEach(function (a) { set[a.trim()] = true; });
+    return set;
+}
+
+
+function setToVarDecl(set) {
+    let declArray = Object.getOwnPropertyNames(set);
+    return (declArray.length > 0) ? 'var ' + declArray.join(',') + '; ' : '';
+}
+
+
+
+/**
+ returns the line after processign and mutates the declareSet and noDeclareSet
+
+ 1. Process the line up to the first ';'
+ 2. Process the rest recursively
+*/
+function processLine(line, declareSet, noDeclareSet, inFunction) {
+
+    let next = '';
+    let separatorIndex = line.indexOf(';')
+    if (separatorIndex > 0) {
+        // Separate the next statement out
+        next = line.substring(separatorIndex + 1).trim();
+        line = line.substring(0, separatorIndex).rtrim();
+    } else {
+        line = line.rtrim();
+    }
+
+    if (line.search(/\S/) < 0) {
+        // Empty line!
+        return line;
+    }
+
+    let match;
+    if (match = line.match(/^(\s*)(for|if|while|until|loop|with|fcn)(\b.*)/)) {
+        // line is a control flow-affecting expresion
+        let before = match[1], type = match[2], rest = match[3].trim() + '; ' + next;
+
+        if (type === 'fcn') {
+            // Process with a fresh declareSet and fresh noDeclareSet initialized to the args
+            match = rest.match(/\s*(\S+)?\s*\((.*)\)(.*)/);
+            if (! match) { throw 'Ill-formed single-line fcn'; }
+            let name = match[1];
+            let args = match[2] || '';
+            let body = match[3];
+
+            let bodyDeclareSet = {};
+            body = processLine(body, bodyDeclareSet, argStringToSet(args), true);
+            line = before + 'function ' + name + '(' + args + ') { ' + setToVarDecl(bodyDeclareSet) +  maybeYieldFunction + body + ' }';
+
+        } else {
+
+            // Read the expression
+            let begin = rest.indexOf('(');
+            if (begin === -1) { throw 'Missing ( after single-line "' + type + '".'; }
+            let end = findClosingParen(rest, begin);
+            let test = rest.substring(begin + 1, end - 1);
+
+            // Default to not creating a new scope
+            let newNoDeclareSet = noDeclareSet;
+            
+            switch (type) {
+            case 'with':
+                // With blocks become a single-iteration FOR loop
+                // because that allows specifying code that runs at
+                // the end of the block up front.
+                type = 'for';
+                newNoDeclareSet = setClone(newNoDeclareSet);
+                test = processWithHeader(test, newNoDeclareSet);
+                break;
+
+            case 'loop':
+                type = 'while';
+                test = '(true)';
+                break;
+                
+            case 'until':
+                type = 'while';
+                test = '(! (' + test + '))';
+                break;
+
+            case 'for':
+                newNoDeclareSet = setClone(newNoDeclareSet);
+                test = processForTest(test, newNoDeclareSet);
+                break;
+
+            case 'while':
+            case 'if':
+                test = '(' + test.trim() + ')';
+                break;
+            }
+
+            return before + type + ' ' + test + ' {' + ((type === 'if') ? ' ' : (inFunction ? maybeYieldFunction : maybeYieldGlobal)) +
+                processLine(rest.substring(end), declareSet, newNoDeclareSet, inFunction) + '; }';
+            
+        } // if control flow block
+    } else if (match = line.match(/^(\s*)(let|const|extern)\s+(.*)/)) {
+
+        // match let, const, or extern
+        // Update the noDeclareSet after parsing
+        let before = match[1];
+        let type   = match[2];
+        let rest   = match[3];
+
+        if ((type === 'let') || (type === 'const')) {
+            noDeclareSet[rest.match(identifierRegex)[0]] = true;
+            return before + type + rest + (next ? '; ' + processLine(next, declareSet, noDeclareSet, inFunction) : '');
+        } else { // extern
+            rest.split(',').forEach(function (a) { a = a.trim(); if (a !== '') { noDeclareSet[a.trim()] = true; }});
+            // Recursively process the rest of the line
+            return processLine(next, declareSet, noDeclareSet, inFunction);
+        }
+        
+    } else {
+        // Update the declareSet and then recursively process the next expression.
+        let match = line.match(RegExp('(?=^|[^.\\] \\t])\\s*(' + identifierPattern + ')(?=\\s*=)', 'g'));
+        if (match) {
+            // Declare each assigned variable that was not explicitly precluded from
+            // declaration
+            match.forEach(function(v) { v = v.trim(); ((v !== '') && ! noDeclareSet[v]) { declareSet[v] = true; } });
+        }
+        return line + '; ' + processLine(next, declareSet, noDeclareSet, inFunction);
+    }
+}
+
+
+/**
+ returns nextLineIndex
+
+Mutate the lines in place
+ 
+1. Iteratively process lines in the current block, using processLine on each
+2. Recursively process sub-blocks
+
+*/
+function processBlock(lineArray, startLineIndex, declareSet, noDeclareSet, inFunction) {
+
+    let prevIndent, originalIndent, i;
+    
+    for (i = startLineIndex; i < lineArray.length; ++i) {
         // trim right whitespace
         lineArray[i] = lineArray[i].rtrim();
-        var indent = lineArray[i].search(/\S/);
+        let indent = lineArray[i].search(/\S/);
+        // Ignore empty lines
+        if (indent < 0) { continue; }
 
-        if (/\d\.[^\d]/g.test(lineArray[i])) {
-            throw makeError('Numbers with a trailing decimal point are not permitted', i);
+        
+        if (prevIndent === undefined) {
+            // initialize on the first non-empty line
+            prevIndent = indent;
+            originalIndent = indent;
         }
 
+        // Has the block ended?
+        if (indent < originalIndent) { return i; }
+        
+        ///////////////////////////////////////////////////////////////////////
+        // Check for some illegal situations while we're processing
         if (/[^.\d]0\d/g.test(lineArray[i])) {
             throw makeError('Numbers may not begin with a leading zero', i);
         }
 
-        var illegal = lineArray[i].match(/print|location|window|_|undefined|continue|function/g);
+        let illegal = lineArray[i].match(/_|this|null|arguments|undefined|continue|function/g);
         if (illegal) {
             throw makeError('Illegal identifier "' + illegal[0] + '"', i);
         }
-        if (indent >= 0) {
-            // Non-negligible line
-            if ((i === 0) && (indent > 0)) {
-                throw makeError('First line must not be indented', i);
-            } else if (indent > prevIndent + 1) {
-                throw makeError('Indenting must not increase by more than one space per line', i);
-            }
 
-            // See if the next non-empty line is not indented more than this one
-            var singleLine = true;
-            for (var j = i + 1; j < lineArray.length; ++j) {
-                var nextIndent = lineArray[j].search(/\S/);
-                if (nextIndent >= 0) {
-                    singleLine = (nextIndent <= indent);
-                    break;
-                }
-            }
+        if ((i === 0) && (indent > 0)) {
+            throw makeError('First line must not be indented', i);
+        } else if (indent > prevIndent + 1) {
+            throw makeError('Indentation must not increase by more than one space per line', i);
+        }
 
-            try {
-                // Note the assignment to match in the IF statement tests below
-                var match;
-                if (singleLine) {
-                    if (match = lineArray[i].match(/^\s*(for|while|if|until|with)\b.*/)) {
-                        lineArray[i] = processSingleLineControl(lineArray[i]);
-                    }
-                } else if (match = lineArray[i].match(/^(\s*)with(\b.+)/)) {
-                    let spaces = match[1];
-                    // multiline WITH
-                    lineArray[i] = spaces + 'for ' + processWithHeader(match[2].trim());
-                } else if (match = lineArray[i].match(/^(\s*for)(\b.*)/)) {
-                    // multi-line FOR loop 
-                    lineArray[i] = match[1] + ' ' + processForTest(match[2].trim());
-                } else if (match = lineArray[i].match(/^(\s*if)(\b.*)/)) {
-                    // Multi-line IF
-                    lineArray[i] = match[1] + ' (' + match[2].trim() + ')'
-                } else if (match = lineArray[i].match(/^(\s*)elif(\b.*)/)) {
-                    // ELIF, Same as multi-line if
-                    lineArray[i] = match[1] + 'else if' + ' (' + match[2].trim() + ')';
-                } else if (match = lineArray[i].match(/^(\s*)else\s*$/)) {
-                    lineArray[i] = match[1] + 'else ';
-                } else if (match = lineArray[i].match(/^(\s*while)(\b.*)/)) {
-                    lineArray[i] = match[1] + ' (' + match[2].trim() + ')';
-                } else if (match = lineArray[i].match(/^(\s*until)(\b.*)/)) {
-                    lineArray[i] = match[1] + ' (! (' + match[2].trim() + '))';
-                }
-            } catch (e) {
-                throw makeError(e, i);
-            }
+        ///////////////////////////////////////////////////////////////////////
 
-            // Add curlies
-            if (indent > prevIndent) {
-                // Add { to previous line.
-                lineArray[i - 1] += ' { ';
-                // Yield on loops, and do so at the FRONT so that a 'continue' can't skip the yield.
-                if (! lineArray[i - 1].match(/^\s*(else|if)\b/)) {
-                    lineArray[i - 1] += maybeYield;
-                }
-            } else if (indent < prevIndent) {
-                // Add multiple } to previous line
-                lineArray[i - 1] += ' ' + '}'.repeat(prevIndent - indent);
+        // See if the next non-empty line is not indented more than this one
+        let singleLine = true;
+        for (let j = i + 1; j < lineArray.length; ++j) {
+            let nextIndent = lineArray[j].search(/\S/);
+            if (nextIndent >= 0) {
+                singleLine = (nextIndent <= indent);
+                break;
             }
-            prevIndent = indent;
+        }
 
+        // Note the assignment to match in the IF statement tests below
+        let match;
+        if (singleLine) {
+
+            lineArray[i] = processLine(lineArray[i], declareSet, noDeclareSet, inFunction);
             
-            // Indent everything one space to account for the outer FOR loop we'll insert
-            // later
-            lineArray[i] = ' ' + lineArray[i];
-        } // there is code on this line
+        } else if (match = lineArray[i].match(RegExp('^(\\s*)fcn\\s+(' + identifierPattern + ')\\s*\\(([^\\)]*)\\)'))) {
+            // FCN
+            
+            let prefix = match[1], name = match[2], args = match[3] || '';
+            // Process the body with a declareSet and noDeclareSet from the arguments
+            let bodyDeclareSet = {};
+            let end = processBlock(lineArray, i + 1, bodyDeclareSet, argStringToSet(args), true) - 1;
+            lineArray[i] = prefix + 'function ' + name + '(' + args + ') { ' + setToVarDecl(bodyDeclareSet) + maybeYieldFunction;
+            i = end;
+            lineArray[i] += '}';
+            
+        } else if (match = lineArray[i].match(/^(\s*)with\s+\(?(.+∊.+)\)?\s*$/)) {
+            // WITH
+            
+            let prefix = match[1], bodyNoDeclareSet = setClone(noDeclareSet);
+            lineArray[i] = prefix + 'for ' + processWithHeader(match[2], bodyNoDeclareSet) + ' {';
+            i = processBlock(lineArray, i + 1, declareSet, bodyNoDeclareSet, inFunction) - 1;
+            lineArray[i] += '}';
+            
+        } else if (match = lineArray[i].match(/^(\s*)for\s*\(?(\b.*)\)?\s*$/)) {
+            // FOR
+            
+            let prefix = match[1];
+            let test = match[2];
+            let bodyNoDeclareSet = setClone(noDeclareSet);
+            lineArray[i] = prefix + 'for ' + processForTest(test, bodyNoDeclareSet) + ' { ' + (inFunction ? maybeYieldFunction : maybeYieldGlobal);
+            i = processBlock(lineArray, i + 1, declareSet, bodyNoDeclareSet, inFunction) - 1;
+            lineArray[i] += '}';
+            
+        } else if (match = lineArray[i].match(/^(\s*)(if|elif)(\b.*)$/)) {
+            // IF, ELIF
+
+            let old = i;
+            lineArray[i] = match[1] + (match[2] === 'elif' ? 'else ' : '') + 'if (' + match[3].trim() + ') {';
+            i = processBlock(lineArray, i + 1, declareSet, noDeclareSet, inFunction) - 1;
+            lineArray[i] += '}';
+            
+        } else if (match = lineArray[i].match(/^(\s*else)\s*$/)) {
+            // ELSE
+            
+            lineArray[i] = match[1] + ' {';
+            i = processBlock(lineArray, i + 1, declareSet, noDeclareSet, inFunction) - 1;
+            lineArray[i] += '}';
+            
+        } else if (match = lineArray[i].match(/^(\s*)(while|until)(\b.*)?$/)) {
+            // WHILE/UNTIL/LOOP
+            
+            let test = match[3];
+            if (match[2] === 'until') {
+                test = '! (' + test + ')';
+            } else if (match[2] === 'loop') {
+                test = 'true';
+            }
+
+            lineArray[i] = match[1] + 'while (' + test + ') { ' + (inFunction ? maybeYieldFunction : maybeYieldGlobal);
+            i = processBlock(lineArray, i + 1, declareSet, noDeclareSet, inFunction) - 1;
+            lineArray[i] += '}';
+
+        } else {
+            throw makeError('Illegal block statement', i);
+        }
+
+        prevIndent = indent;
     } // for each line
-
-    // Add multiple } to the last line
-    if (prevIndent > 0) {
-        lineArray[lineArray.length - 1] += '}'.repeat(prevIndent);
-    }
-
-
-    return lineArray.join("\n");
+    
+    return i;
 }
 
 
-var identifierPattern = '[δΔ]?(?:[A-Za-z]{1,3}|[αβδθλμρσφψωΔΩ])';
+var identifierPattern = '[Δ]?(?:[A-Za-z]+|[αβγδζηθιλμρσϕφχψωΩ])[0-9]*';
 var identifierRegex = RegExp(identifierPattern);
 var withIdentifierListRegex = RegExp('^[ \\t]*(' + identifierPattern + '[ \\t]*(?:,[ \\t]*' + identifierPattern + '[ \\t]*)*)∊(.*)$');
 
@@ -333,16 +465,20 @@ function processAbsoluteValue(src) {
 /** Returns one line of Javascript (not nano) code. */
 function makeTitleAnimation(title) {
     title = title.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-    var src = `#nanojam title,1
+
+    // Have to use 'b*=½' instead of 'b>>=1' below because
+    // b must be retained as a double to have enough bits
+    
+    let src = `#nanojam title,1
 text("` + title + `",31,31,1)
 if(⅛τ%8≥4)
  for j<3
   b=[3903080538885870,5990782578476654,6131554409934498]ⱼ
-  for(x<52)b*=½;if(b∩1)pset(x+6,j+50,5);if(⅛τ%8<4)cont
-x=j=b=∅
-for(j<2)if(padⱼ.aa∪padⱼ.bb∪padⱼ.cc∪padⱼ.dd∪padⱼ.ss)j=∅;τ=0`;
+  for(x<52)b*=½;if(b∩1)pset(x+6,j+50,5)
+b=∅
+for(j<2)if(padⱼ.aa∪padⱼ.bb∪padⱼ.cc∪padⱼ.dd∪padⱼ.ss)τ=0`;
 
-    return nanoToJS(src, true).replace(/\n/g, ';');
+    return nanoToJS(src, true).replace(/\n/g, '; ').replace(/{[ \t]*;/g, '{');
 }
 
 var gensymNum = 0;
@@ -350,6 +486,12 @@ var gensymNum = 0;
 function gensym(base) {
     return '__' + (base || '') + (++gensymNum) + '__';
 }
+
+/** Expression for selective yields to avoid slowing down tight loops */
+var maybeYieldGlobal = ' {if (!(__yieldCounter = (__yieldCounter + 1) & 1023)) { yield; }} ';
+
+/** Expression for 'yield' inside a function, where regular yield is not allowed */
+var maybeYieldFunction = ''; // TODO
 
 /** Compiles nano -> JavaScript. If noWrapper is true then no outer exception handler and
     infinite loop are injected. */
@@ -363,7 +505,7 @@ function nanoToJS(src, noWrapper) {
     
     var numProtected = 0, protectionMap = [];
 
-    // Switch to small element-of
+    // Switch to small element-of everywhere before blocks or strings can be processed
     src = src.replace(/∈/g, '∊');
     
     // Title line
@@ -396,8 +538,15 @@ function nanoToJS(src, noWrapper) {
 
     // Remove single-line comments
     src = src.replace(/\/\/.*$/gm, '');
-    
-    src = src.replace(/\breset\b/g, '{throw new Error("RESET");}');
+
+    // Handle scopes and block statement translations
+    {
+        let lineArray = src.split('\n');
+        processBlock(lineArray, 0, {}, {}, false);
+        src = lineArray.join('\n');
+    }
+
+    src = src.replace(/\breset\b/g, '{ throw new Error("RESET"); }');
    
     src = src.replace(/≟/g, ' === ');
     src = src.replace(/≠/g, ' !== ');
@@ -412,7 +561,9 @@ function nanoToJS(src, noWrapper) {
     src = src.replace(/[⌈]/g, ' ceil(');
     src = src.replace(/[⌊]/g, ' flr(');
 
-    src = src.replace(/loop/g, 'while(1)');
+    src = src.replace(/\bloop\b/g, 'while(1)');
+
+    src = src.replace(/\bret\b/g, 'return');
 
     // Process before blocks and implicit multiplication so that
     // they handle the parentheses correctly
@@ -422,7 +573,7 @@ function nanoToJS(src, noWrapper) {
     for (var i = 0; i < 2; ++i) {
         // Implicit multiplication. Must be before operations that may put parentheses after
         // numbers, making the product unclear. 
-        src = src.replace(/([επτξ∞½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒\d⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₎])[ \t]*([\(\[A-Za-zαβδθλμρσφψωΔΩτεπτξ∞])/g, '$1 * $2');
+        src = src.replace(/([επτξ∞½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒\d⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₎])[ \t]*([\(\[A-Za-zαβγδζηιθλμρσϕχψωΔΩτεπξ∞])/g, '$1 * $2');
         
         // Fix any instances of "or" that got accentially turned
         // into implicit multiplication. If there are other text
@@ -440,16 +591,15 @@ function nanoToJS(src, noWrapper) {
         src = src.replace(/([₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₍₎][₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₍₎ ]*)/g, '[($1)]');
         src = src.replace(/[₊₋₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₍₎]/g, function (match) { return subscriptToNormal[match]; });
 
-        // Back-to-back parens. Floor, ceiling, and abs have already been mapped to ()
+        // Back-to-back parens. Note that floor, ceiling, and abs have already been mapped to
+        // ().
         src = src.replace(/\)[ \t]*\(/, ') * (');
     }
 
     // sin, cos, tan with a single argument and no parentheses. Must come after implicit
     // multiplication so that, e.g., 2cosθ parses correctly with regard to the \\b
-    src = src.replace(RegExp('\\b(cos|sin|tan)[ \\t]*([επτξ]|' + identifierPattern + ')(?=\\s|\\b|[^επτξδΔA-Za-z0-9]|$)', 'g'), '$1($2)');
+    src = src.replace(RegExp('\\b(cos|sin|tan)[ \\t]*([επτξ]|' + identifierPattern + ')(?=\\s|\\b|[^επτξΔA-Za-z0-9]|$)', 'g'), '$1($2)');
     
-    src = processBlocks(src);
-
     // Process after FOR-loops so that they are easier to parse
     src = src.replace(/≤/g, ' <= ');
     src = src.replace(/≥/g, ' >= ');
@@ -473,12 +623,14 @@ function nanoToJS(src, noWrapper) {
 
     // Optimize var**(int), which is much less efficient than var*var.
     // Note that we don't allow rnd in here!
-    src = src.replace(/(.|..)[ \t]*([δΔ]?([A-Za-z]{1,3}|[αβδθλμρσφψωΔΩ]))\*\*\((-?\d)\)/g, function (match, br, identifier, ignore, exponent) {
+    src = src.replace(RegExp('(.|..)[ \t]*(' + identifierPattern + ')\\*\\*\\((-?\\d)\\)', 'g'), function (match, br, identifier, exponent) {
+
         if (br.match(/\+\+|--|\.|\*\*/)) {
-            // Order of operations may be a problem; don't subsitute
+            // Order of operations may be a problem; don't substitute
             return match;
         } else {
             exponent = parseInt(exponent);
+            console.log("replacing " + match + " exponent = " + exponent);
             if (exponent === 0) {
                 return br + ' identifier**(0)';
             } else if (exponent < 0) {
@@ -488,39 +640,47 @@ function nanoToJS(src, noWrapper) {
             }
         }
     });
-
+    
     src = src.replace(/∞/g, ' (Infinity) ');
     src = src.replace(/∅/g, ' (undefined) ');
-    src = src.replace(/π/g, ' (Math.PI+0) ');
+    src = src.replace(/π/g, ' (_Math.PI+0) ');
     src = src.replace(/ε/g, ' (1e-4+0) ');
     src = src.replace(/ξ/g, ' rnd() ');
 
     // Must come after exponentiation
     src = src.replace(/⊕(=?)/g, ' ^$1 ');
 
-    src = src.replace(/(flip)/g, '$1(); yield; ');
+    // Alternatives for readable code
+    src = src.replace(/(\b|\d)and(\b|\d)/g, '$1 && $2');
+    src = src.replace(/\bnot\b/g, '!');
+
+    src = src.replace(/\b(flip|show)\b/g, 'show(); yield; ');
 
     // 'wait' must come after loop processing; not considered a loop
-    src = src.replace(/wait/g, 'do { flip(); yield; } while (!(pad[0].aa || pad[0].bb || pad[0].cc || pad[0].dd || pad[0].ss || pad[1].aa || pad[1].bb || pad[1].cc || pad[1].dd || pad[1].ss));');
+    src = src.replace(/\bwait\b/g, 'do { show(); yield; } while (!(pad[0].aa || pad[0].bb || pad[0].cc || pad[0].dd || pad[0].ss || pad[1].aa || pad[1].bb || pad[1].cc || pad[1].dd || pad[1].ss));');
 
     var titleScreen = '';
     if ((flags & 1) === 0) {
         // Generate a title screen
         titleScreen = makeTitleAnimation(title);
     }
-    
+
     // Add the outer loop, restoring tau if destroyed by assignment to a non-number and
     // catching RESET to allow jumping back to an interation of the outer loop.
     src = 'var __yieldCounter = 0; ' + (noWrapper ? '' : 'while(true) { try { ') + (
-        '_drawPalette[0] = _initialPalette[0]; pal(); cls(0); clr = 0; srand(); ' +
-            titleScreen +
-            '_drawPalette[0] = _initialPalette[0]; pal(); clr = 0; srand(); ' +
-            'for (var τ = 0, __count = 0; (τ !== 1) || (__count === 1); ++τ, ++__count) { if (isNaN(τ)) { τ=0; } flip(); yield; cls(clr); ' +
+        titleScreen +
+        '_drawPalette[0] = _initialPalette[0]; pal(); xform(0,0); clip(0,-12,63,63); cls(0); text("' + (noWrapper ? '' : title) + '",31,-8,1); clip(0,0,63,63); clr = 0; srand(); ' +
+            'for (var τ = 0, __count = 0; (τ !== 1) || (__count === 1); ++τ, ++__count) { if (isNaN(τ)) { τ=0; } show(); yield; cls(clr); ' +
             src +
             ' } '
     ) + (noWrapper ? '' : ('} catch (exception) { ' + (
         'if (exception.message !== "RESET") { throw exception; } '
     ) + '} }'));
+
+
+    // Cleanup formatting
+    src = src.replace(/;[ \t]*;/g, ';');
+    src = src.replace(/(\S)[ \t]{2,}/g, '$1 ');
 
     // Unprotect strings
     for (var i = 0; i < protectionMap.length; ++i) {
@@ -532,6 +692,7 @@ function nanoToJS(src, noWrapper) {
     
     return src;
 }
+
 
 var fraction = {
     '½':'(1/2)',

@@ -1,5 +1,17 @@
 /* By Morgan McGuire @CasualEffects http://casual-effects.com GPL 3.0 License */
 
+// Variables named with a leading underscore are illegal in nano and will therefore not be
+// visible to the program.
+
+var _SCREEN_WIDTH_BITS = 6;
+var _SCREEN_WIDTH = 1 << _SCREEN_WIDTH_BITS;
+var _SCREEN_HEIGHT = _SCREEN_WIDTH;
+var _BAR_HEIGHT = _SCREEN_HEIGHT >> 3;
+var _BAR_SPACING = _BAR_HEIGHT >> 1;
+var _FRAMEBUFFER_HEIGHT = _SCREEN_HEIGHT + _BAR_SPACING + _BAR_HEIGHT;
+
+var _Math = Math;
+
 ////////////////////////////////////////////////////////////////////
 // Array
 
@@ -139,9 +151,17 @@ Object.defineProperty(String.prototype, 'find',
 String.prototype.sub = String.prototype.substring;
 
 //////////////////////////////////////////////////////////////////////
+//
+// Function
+
+function call(f) {
+    return Function.call.apply(f, arguments);
+}
+
+//////////////////////////////////////////////////////////////////////
 
 /** Set by the IDE. A view onto the imagedata */
-var updateImageDataUint32;
+var _updateImageDataUint32;
 
 /** Set by reloadRuntime(). 128x32 Uint8 array */
 var _spriteSheet = null;
@@ -149,9 +169,43 @@ var _spriteSheet = null;
 /** Set by reloadRuntime(). 128x23 Uint8 array */
 var _fontSheet = null;
 
-/** Callback to flip the screen buffer and yield to the browser. Set by
+/** Callback to show the screen buffer and yield to the browser. Set by
     reloadRuntime() */
-var submitFrame = null;
+var _submitFrame = null;
+
+// Scissor (clipping) region
+var _clipY1 = 0, _clipY2 = _SCREEN_HEIGHT - 1, _clipX1 = 0, _clipX2 = _SCREEN_WIDTH - 1;
+
+// Draw call offset
+var _offsetX = 0, _offsetY = 0;
+
+
+function xform(addX, addY) {
+    _offsetX = addX;
+    _offsetY = _BAR_HEIGHT + _BAR_SPACING + addY;
+}
+
+
+function clip(x1,y1,x2,y2) {
+    var yShift = _BAR_SPACING + _BAR_HEIGHT;
+    if (x1 === undefined) { x1 = _clipX1; }
+    if (y1 === undefined) { y1 = _clipY1 - yShift; }
+
+    if (x2 === undefined) { x2 = _clipX2; }
+    if (y2 === undefined) { y2 = _clipY2 - yShift; }
+
+    x1 = Math.round(x1) | 0;
+    y1 = Math.round(y1 + yShift) | 0;
+    x2 = Math.round(x2) | 0;
+    y2 = Math.round(y2 + yShift) | 0;
+
+    _clipX1 = _clamp(Math.min(x1, x2), 0, _SCREEN_WIDTH - 1);
+    _clipY1 = _clamp(Math.min(y1, y2), 0, _FRAMEBUFFER_HEIGHT - 1);
+    
+    _clipX2 = _clamp(Math.max(x1, x2), 0, _SCREEN_WIDTH - 1);
+    _clipY2 = _clamp(Math.max(y1, y2), 0, _FRAMEBUFFER_HEIGHT - 1);
+}
+
 
 function abs(x) {
     return (x.length !== undefined) ? x.length : Math.abs(x);
@@ -178,7 +232,7 @@ var exp = Math.exp;
 var _screenPalette;
 
 /** Each pixel is one value in the _screenPalette */
-var _screen = new Uint8Array(64 * 64);
+var _screen = new Uint8Array(_SCREEN_WIDTH * _FRAMEBUFFER_HEIGHT);
 
 var TRANSPARENT = 32;
 
@@ -204,7 +258,7 @@ var fontMap = (function(){
 abcdefghijklmnopqrstuvwxy
 0123456789~!@#$%^&*()_+-=
 {}[]\\/|;:\`'",.?<>Zzεπτ∞∅ξ
-βδΔθλμρσφψΩ∩∪◅▻¬⌊⌋⌈⌉≟≠≤≥∊
+βδΔθλμρσϕψΩ∩∪◅▻¬⌊⌋⌈⌉≟≠≤≥∊
 ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻ᵃᵝⁱʲˣᵏᵘⁿ⁽⁾
 ₀₁₂₃₄₅₆₇₈₉₊₋ₐᵦᵢⱼₓₖᵤₙ₍₎`;
 
@@ -217,10 +271,15 @@ abcdefghijklmnopqrstuvwxy
             map[c] = {x:x*5, y:y*7};
         }
     }
-    map['⊕'] = map['φ'];
+    map['⊕'] = map['φ'] = map['ϕ'];
     map['α'] = map['a'];
     map['ω'] = map['w'];
     map['∈'] = map['∊'];
+    map['ι'] = map['i'];
+    map['χ'] = map['χ'];
+    map['η'] = map['n'];
+    map['ζ'] = map['C'];
+    map['γ'] = map['y'];
     
     return map;
 })();
@@ -386,19 +445,21 @@ function colormapToColor(colormap) {
 }
 
 function tri(Ax, Ay, Bx, By, Cx, Cy, colormap) {
+    Ax += _offsetX; Ay += _offsetY;
+    Bx += _offsetX; By += _offsetY;
+    Cx += _offsetX; Cy += _offsetY;
+    
     colormap |= 0;
     // Extract the fill color, which is not yet used in this implementation
     var fill = colormapToColor(colormap); colormap = (colormap / 10) | 0;
     var border = colormapToColor(colormap);
 
     // Culling optimization
-    if ((Math.min(Ax, Bx, Cx) >= 63.5) || (Math.min(Ay, By, Cy) >= 63.5) ||
-        (Math.max(Ax, Bx, Cx) < -0.5) || (Math.max(Ay, By, Cy) < -0.5)) {
+    if ((Math.min(Ax, Bx, Cx) > _clipX2 + 0.5) || (Math.min(Ay, By, Cy) > _clipY2 + 0.5) ||
+        (Math.max(Ax, Bx, Cx) < _clipX1 - 0.5) || (Math.max(Ay, By, Cy) < _clipY1 - 0.5)) {
         return;
     }
 
-    var width = 64, height = 64, logWidth = 6;
-    
     // Fill
     if (fill !== TRANSPARENT) {
         var shift = ((border !== TRANSPARENT) && (border !== fill)) ? 0.5 : 0;
@@ -410,7 +471,7 @@ function tri(Ax, Ay, Bx, By, Cx, Cy, colormap) {
         // These are the values needed for the edge-intersection test.  Add edges so that the
         // start Y coordinate is less than the end one.
         var edgeArray = [];        
-        var y0 = height, y1 = -1;
+        var y0 = _clipY2 + 1, y1 = _clipY1 - 1;
         function addEdge(Sx, Sy, Ex, Ey) {
             if (Sy < Ey) {
                 // Update bounding box
@@ -427,8 +488,8 @@ function tri(Ax, Ay, Bx, By, Cx, Cy, colormap) {
         addEdge(Cx, Cy, Ax, Ay);
 
         // Intentionally left as a float to avoid float to int conversion for the inner loop
-        y0 = Math.max(0,  Math.floor(y0));
-        y1 = Math.min(height - 1, Math.floor(y1));
+        y0 = Math.max(_clipY1,  Math.floor(y0));
+        y1 = Math.min(_clipY2, Math.floor(y1));
         for (var y = y0; y <= y1; ++y) {
             // For this scanline, intersect the edge lines of the triangle.
             // As a convex polygon, we can simply intersect ALL edges and then
@@ -445,10 +506,10 @@ function tri(Ax, Ay, Bx, By, Cx, Cy, colormap) {
                 }
             }
 
-            if ((x0 < width) && (x1 >= 0)) {
+            if ((x0 <= _clipX2) && (x1 >= _clipX1)) {
                 _screen.fill(fill,
-                             (Math.max(Math.round(x0 + shift) << 0,  0) + (y << logWidth)) | 0,
-                             (Math.min(Math.round(x1 - shift) << 0, width - 1) + (y << logWidth) + 1) | 0);
+                             (Math.max(Math.round(x0 + shift) << 0, _clipX1) + (y << _SCREEN_WIDTH_BITS)) | 0,
+                             (Math.min(Math.round(x1 - shift) << 0, _clipX2) + (y << _SCREEN_WIDTH_BITS) + 1) | 0);
             }
         }
     }
@@ -463,13 +524,14 @@ function tri(Ax, Ay, Bx, By, Cx, Cy, colormap) {
 
 
 function circ(x, y, radius, colormap) {
+    x += _offsetX; y += _offsetY;
     colormap |= 0;
     var fill = colormapToColor(colormap); colormap = (colormap / 10) | 0;
     var border = colormapToColor(colormap);
 
     // Culling optimization
-    if ((x - radius >= 63.5) || (y - radius >= 63.5) ||
-        (x + radius < -0.5) || (y + radius < -0.5)) {
+    if ((x - radius > _clipX2 + 0.5) || (y - radius > _clipY2 + 0.5) ||
+        (x + radius < _clipX1 - 0.5) || (y + radius < _clipY1 - 0.5)) {
         return;
     }
 
@@ -543,6 +605,9 @@ function circ(x, y, radius, colormap) {
 
 
 function rect(x1, y1, x2, y2, colormap) {
+    x1 += _offsetX; y1 += _offsetY;
+    x2 += _offsetX; y2 += _offsetY;
+    
     colormap |= 0;
     var fill = colormapToColor(colormap); colormap = (colormap / 10) | 0;
     var border = colormapToColor(colormap);
@@ -555,8 +620,8 @@ function rect(x1, y1, x2, y2, colormap) {
     y1 = t1; y2 = t2;
     
     // Culling optimization
-    if ((x1 >= 63.5) || (x2 < -0.5) ||
-        (y1 >= 63.5) || (y2 < -0.5)) {
+    if ((x1 > _clipX2 + 0.5) || (x2 < _clipX1 - 0.5) ||
+        (y1 > _clipY2 + 0.5) || (y2 < _clipY1 - 0.5)) {
         return;
     }
 
@@ -571,13 +636,13 @@ function rect(x1, y1, x2, y2, colormap) {
     if (fill !== TRANSPARENT) {
         // Snap to integer and clip to screen. We don't need to
         // round because we know that the rect is visible.
-        x1 = Math.max((x1 + 0.5) | 0, 0);
-        x2 = Math.min((x2 + 0.5) | 0, 63);
-        y1 = Math.max((y1 + 0.5) | 0, 0);
-        y2 = Math.min((y2 + 0.5) | 0, 63);
+        x1 = Math.max((x1 + 0.5) | 0, _clipX1);
+        x2 = Math.min((x2 + 0.5) | 0, _clipX2);
+        y1 = Math.max((y1 + 0.5) | 0, _clipY1);
+        y2 = Math.min((y2 + 0.5) | 0, _clipY2);
         
         // Fill spans
-        for (var y = y1, i = y1 * 64; y <= y2; ++y, i += 64) {
+        for (var y = y1, i = y1 << _SCREEN_WIDTH_BITS; y <= y2; ++y, i += _SCREEN_WIDTH) {
             _screen.fill(fill, i + x1, i + x2 + 1);
         }
     }
@@ -591,8 +656,8 @@ function _hline(x1, y, x2, color) {
     x2 = Math.round(x2) | 0;
     y  = Math.round(y) | 0;
     
-    if ((x2 >= 0) && (x1 <= 63) && (y >= 0) && (y <= 63)) {
-        _screen.fill(color, Math.max(x1, 0) + y * 64, Math.min(x2, 63) + y * 64 + 1);
+    if ((x2 >= _clipX1) && (x1 <= _clipX2) && (y >= _clipY1) && (y <= _clipY2)) {
+        _screen.fill(color, Math.max(x1, _clipX1) + (y << _SCREEN_WIDTH_BITS), Math.min(x2, _clipX2) + (y << _SCREEN_WIDTH_BITS) + 1);
     }
 }
 
@@ -603,10 +668,10 @@ function _vline(x, y1, y2, color) {
     y1 = Math.round(y1) | 0;
     y2 = Math.round(y2) | 0;
     
-    if ((y2 >= 0) && (y1 <= 63) && (x >= 0) && (x <= 63)) {
-        y1 = Math.max(0, y1);
-        y2 = Math.min(63, y2);
-        for (var y = y1, i = y1 * 64 + x; y <= y2; ++y, i += 64) {
+    if ((y2 >= _clipY1) && (y1 <= _clipY2) && (x >= _clipX1) && (x <= _clipX2)) {
+        y1 = Math.max(_clipY1, y1);
+        y2 = Math.min(_clipY2, y2);
+        for (var y = y1, i = (y1 << _SCREEN_WIDTH_BITS) + x; y <= y2; ++y, i += _SCREEN_WIDTH) {
             _screen[i] = color;
         }
     }
@@ -614,12 +679,15 @@ function _vline(x, y1, y2, color) {
 
 
 function line(x1, y1, x2, y2, colormap) {
+    x1 += _offsetX; y1 += _offsetY;
+    x2 += _offsetX; y2 += _offsetY;
+    
     var color = colormapToColor(colormap | 0);
 
     // Offscreen culling optimization
     if ((color === undefined) || (color === TRANSPARENT) ||
-        (Math.min(x1, x2) >= 63.5) || (Math.max(x1, x2) < -0.5) ||
-        (Math.min(y1, y2) >= 63.5) || (Math.max(y1, y2) < -0.5)) {
+        (Math.min(x1, x2) > _clipX2 + 0.5) || (Math.max(x1, x2) < _clipX1 - 0.5) ||
+        (Math.min(y1, y2) > _clipY2 + 0.5) || (Math.max(y1, y2) < _clipY1 - 0.5)) {
         return;
     }
 
@@ -646,14 +714,12 @@ function line(x1, y1, x2, y2, colormap) {
             temp = x1; x1 = x2; x2 = temp;
         }
 
-        var width = 64, height = 64;
-        
         if (moreHorizontal) {
             // Crop horizontally:
             var m = dy / dx;
-            var dx = Math.max(0, x1) - x1;
+            var dx = Math.max(_clipX1, x1) - x1;
             x1 += dx; y1 += m * dx;
-            x2 = Math.min(x2, width);
+            x2 = Math.min(x2, _clipX2);
             for (var x = x1, y = y1; x <= x2; ++x, y += m) {
                 _pset(x, y, color);
             } // for x
@@ -661,9 +727,9 @@ function line(x1, y1, x2, y2, colormap) {
             // Compute the inverted slope
             var m = dx / dy;
             // Crop vertically:
-            var dy = Math.max(0, y1) - y1;
+            var dy = Math.max(_clipY1, y1) - y1;
             x1 += dy * m; y1 += dy;
-            y2 = Math.min(y2, height);
+            y2 = Math.min(y2, _clipY2);
             for (var y = y1, x = x1; y <= y2; ++y, x += m) {
                 _pset(x, y, color);
             } // for y
@@ -677,7 +743,7 @@ function pset(x, y, color) {
     if (y === undefined) {
         // Single-argument version
         color = x;
-        x = y = -1;
+        x = y = -100;
     }
     
     if (color === undefined) {
@@ -687,6 +753,7 @@ function pset(x, y, color) {
     }
 
     if (color !== TRANSPARENT) {
+        x += _offsetX; y += _offsetY;
         _pset(x, y, color & 31);
     }
 }
@@ -703,21 +770,24 @@ function _pset(x, y, color) {
     var j = Math.round(y) << 0;
 
     // "i >>> 0" converts from signed to unsigned int,
-    // which forces negative values to be large
+    // which forces negative values to be large and lets us
+    // early-out sooner in the tests
     
-    if (((i >>> 0) < 64) && ((j >>> 0) < 64)) {
-        _screen[(i + (j << 6)) << 0] = color;
+    if (((i >>> 0) <= _clipX2) && ((j >>> 0) <= _clipY2) && (i >= _clipX1) && (y >= _clipY1)) {
+        _screen[(i + (j << _SCREEN_WIDTH_BITS)) << 0] = color;
     }
 }
 
 
 function pget(x, y) {
+    x += _offsetX; y += _offsetY;
+    
     // See comment in _pset
     var i = Math.round(x) | 0;
     var j = Math.round(y) | 0;
 
-    if (((i >>> 0) < 64) && ((j >>> 0) < 64)) {
-        return _screen[i + (j << 6)];
+    if (((i >>> 0) <= _clipX2) && ((j >>> 0) <= _clipY2) && (i >= _clipX1) && (j >= _clipY1)) {
+        return _screen[i + (j << _SCREEN_WIDTH_BITS)];
     } else {
         return undefined;
     }
@@ -727,6 +797,7 @@ function pget(x, y) {
 function text(str, x, y, colormap) {
     if (x === undefined) { x = 31; }
     if (y === undefined) { y = 3; }
+    x += _offsetX; y += _offsetY;
     str = '' + str;
     
     colormap |= 0;
@@ -752,7 +823,7 @@ function text(str, x, y, colormap) {
     x = Math.round(x - width * 0.5) | 0;
     y = Math.round(y - 2.5) | 0;
 
-    if ((x - 1 > 63) || (y - 1 > 63) || (y + 6 < 0) || (x + width + 4 < 0)) {
+    if ((x > _clipX2) || (y > _clipY2) || (y + 6 < _clipY1) || (x + width + 4 < _clipX1)) {
         // Cull when off-screen
         return;
     }
@@ -772,12 +843,12 @@ function text(str, x, y, colormap) {
             if (src) {
                 for (var j = 1, dstY = y; j < 6; ++j, ++dstY) {
                     // On screen in Y?
-                    if ((dstY >>> 0) < 64) {
-                        for (var i = 1, dstX = x, dstIndex = x + (dstY << 6), srcIndex = 1 + src.x + ((src.y + j) << 7);
+                    if (((dstY >>> 0) <= _clipY2) && (dstY >= _clipY1)) {
+                        for (var i = 1, dstX = x, dstIndex = x + (dstY << _SCREEN_WIDTH_BITS), srcIndex = 1 + src.x + ((src.y + j) << (_SCREEN_WIDTH_BITS + 1));
                              i < 4;
                              ++i, ++dstX, ++dstIndex, ++srcIndex) {
                             // In character and on screen in X?
-                            if ((_fontSheet[srcIndex] === 4) && ((dstX >>> 0) < 64)) {
+                            if ((_fontSheet[srcIndex] === 4) && ((dstX >>> 0) <= _clipX2) && (dstX >= _clipX1)) {
                                 _screen[dstIndex] = textColor;
                             } // on screen x
                         } // for i
@@ -807,8 +878,9 @@ function _clamp(x, L, H) {
 }
 
 
-/** Helper so that the IDE can visualize sprites */
-function _draw(spr, x, y, localPalette, xform, rot, screen) {
+/** Helper function to share code between the IDE and the runtime. Clipping region has to be
+ passed because it is different for those cases. */
+function _draw(spr, x, y, localPalette, xform, rot, screen, clipX1, clipY1, clipX2, clipY2) {
     var c = Math.cos(rot), s = Math.sin(rot);
 
     // Compute the net 2x2 transformation matrix
@@ -841,7 +913,7 @@ function _draw(spr, x, y, localPalette, xform, rot, screen) {
 
     // What is the farthest a corner sticks out?
     var p = 2;
-        
+
     // Iterate over *output* pixels
     for (var j = -p; j < 8 + p; ++j) {
         var dstY = dstY0 + j;
@@ -861,8 +933,8 @@ function _draw(spr, x, y, localPalette, xform, rot, screen) {
                 var slot = _spriteSheet[srcX + (srcY << 7)];
                 var color = localPalette[slot];
                 if (color !== TRANSPARENT) {
-                    if (((dstX >>> 0) < 64) && ((dstY >>> 0) < 64)) {
-                        screen[dstX + (dstY << 6)] = color;
+                    if (((dstX >>> 0) <= _clipX2) && ((dstY >>> 0) <= _clipY2) && (dstX >= _clipX1) && (dstY >= _clipY1)) {
+                        screen[dstX + (dstY << _SCREEN_WIDTH_BITS)] = color;
                     }
                 } // if not transparent
             } // Clamp to bounds
@@ -872,11 +944,12 @@ function _draw(spr, x, y, localPalette, xform, rot, screen) {
 
 
 function draw(spr, x, y, colormap, xform, rot) {
+    x += _offsetX; y += _offsetY;
     rot = rot || 0;
     
     // Out of bounds sprite indices, off screen (including worst-case rotation)
     spr |= 0;
-    if ((spr < 0) || (spr > 95) || (x < -8) || (y < -8) || (x > 71) || (y > 71)) {
+    if ((spr < 0) || (spr > 95) || (x < _clipX1 - 8) || (y < _clipY1 - 8) || (x > _clipX2 + 8) || (y > _clipY2 + 8)) {
         return;
     }
 
@@ -891,7 +964,8 @@ function draw(spr, x, y, colormap, xform, rot) {
         localPalette[4 - slot] = colormapToColor(colormap); colormap = (colormap / 10) | 0;
     }
 
-    _draw(spr, x, y, localPalette, xform, rot, _screen);    
+
+    _draw(spr, x, y, localPalette, xform, rot, _screen, _clipX1, _clipY1, _clipX2, _clipY2);    
 }
 
 
@@ -901,20 +975,28 @@ function wrap(x, hi) {
 }
 
 
-function flip() {
+function show() {
     // Expand the paletted image to RGB values
-    var N = 64 * 64;
+    var N = _SCREEN_WIDTH * _FRAMEBUFFER_HEIGHT;
     for (var i = 0; i < N; ++i) {
-        updateImageDataUint32[i] = _screenPalette[_screen[i]];
+        _updateImageDataUint32[i] = _screenPalette[_screen[i]];
     }
 
-    submitFrame();
+    _submitFrame();
 }
 
 
 function cls(c) {
     if (c !== undefined) {
-        _screen.fill(c & 63);
+        if ((_clipX1 === 0) && (_clipX2 === _SCREEN_WIDTH - 1) ) {
+            // Fill a consecutive region
+            _screen.fill(c & 63, _clipY1 << _SCREEN_WIDTH_BITS, (_clipY2 + 1) << _SCREEN_WIDTH_BITS);
+        } else {
+            // Fill spans
+            for (var y = _clipY1, i = _clipY1 << _SCREEN_WIDTH_BITS; y <= _clipY2; ++y, i += _SCREEN_WIDTH) {
+                _screen.fill(c & 63, i + _clipX1, i + _clipX2 + 1);
+            }
+        }
     }
 }
 
@@ -1019,10 +1101,12 @@ var [rnd, srand] = (function() {
 })();
 
 
-var GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
+var _GeneratorFunction = Object.getPrototypeOf(function*(){}).constructor;
 
 /** Creates a new coroutine from code in this environment.  Invoke next() repeatedly on the
     returned object to execute it. */
 function _makeCoroutine(code) {
-    return (new GeneratorFunction(code))();
+    // Protect certain variables location and window by shadowing them, since
+    // programs that overwrite (or read!) them could cause problems.
+    return (new _GeneratorFunction('var location, document, window, Math; ' + code))();
 }
