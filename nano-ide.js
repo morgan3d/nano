@@ -336,9 +336,9 @@ var initialSource =
     //tests.nanoReset;
     //tests.rgb;
     //tests.text;
-    //tests.spacedash;
+    tests.spacedash;
     //tests.nest;
-    tests.scope;
+    //tests.scope;
     //tests.square;
     //tests.WITH;
     //tests.triangle;

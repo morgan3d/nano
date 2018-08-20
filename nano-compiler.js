@@ -297,7 +297,7 @@ function processLine(line, declareSet, noDeclareSet, inFunction) {
         if (match) {
             // Declare each assigned variable that was not explicitly precluded from
             // declaration
-            match.forEach(function(v) { v = v.trim(); ((v !== '') && ! noDeclareSet[v]) { declareSet[v] = true; } });
+            match.forEach(function(v) { v = v.trim(); if ((v !== '') && ! noDeclareSet[v]) { declareSet[v] = true; } });
         }
         return line + '; ' + processLine(next, declareSet, noDeclareSet, inFunction);
     }
