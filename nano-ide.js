@@ -1549,18 +1549,85 @@ function countCharacters() {
         '<a target="_blank" href="' + url + '">' + (url.length > 2048 ? '<span style="color:#c00">' : '<span>') + url.length + '</span> / 2048 url</a>';
 }
 
+const autocorrectTable = [
+    '\\Delta',    'Δ',
+    '\\alpha',    'α',
+    '\\beta',     'β',
+    '\\gamma',    'γ',
+    '\\delta',    'δ',
+    '\\epsilon',  'ε',
+    '\\zeta',     'ζ',
+    '\\eta',      'η',
+    '\\theta',    'θ',
+    '\\iota',     'ι',
+    '\\lambda',   'λ',
+    '\\mu',       'μ',
+    '\\rho',      'ρ',
+    '\\sigma',    'σ',
+    '\\phi',      'ϕ',
+    '\\chi',      'χ',
+    '\\psi',      'ψ',
+    '\\omega',    'ω',
+    '\\Omega',    'Ω',
+    '\\tau',      'τ',
+    '\\time',     'τ',
+    '\\xi',       'ξ',
+    '\\rnd',      'ξ',
+    '==',        '≟',
+    '?=',        '≟',
+    '!=',        '≠',
+    '\\neq',      '≠',
+    '\\eq',       '≟',
+    '\\not',      '¬',
+    '\\leq',      '≤',
+    '\\geq',      '≥',
+    '>>',        '▻',
+    '<<',        '◅',
+    '\\pi',       'π',
+    '\\infty',    '∞',
+    '\\nil',      '∅',
+    '\\half',     '½',
+    '\\third',    '⅓',
+    '\\quarter',  '¼',
+    '\\fifth',    '⅕'
+];
+
 
 editor.session.on('change', function () {
-    // Strip any \r inserted by pasting on windows, replace any \t that
-    // likewise snuck in. This is rare, so don't invoke setValue on every
-    // keystroke.
-    var src = editor.getValue();
+    let src = editor.getValue();
     if (src.match(/\r|\t|[\u2000-\u200B]/)) {
+        // Strip any \r inserted by pasting on windows, replace any \t that
+        // likewise snuck in. This is rare, so don't invoke setValue unless
+        // one is actually inserted.
         src = src.replace(/\r\n|\n\r/g, '\n').replace(/\r/g, '\n');
         src = src.replace(/\t/g, '    ').replace(/\u2003|\u2001/g, '   ').replace(/\u2007/g, '  ');
         editor.setValue(src);
+    } else {
+        // Autocorrect
+        let position = editor.getCursorPosition();
+        let index = editor.session.doc.positionToIndex(position);
+
+        let LONGEST_AUTOCORRECT = 10;
+        let start = index - LONGEST_AUTOCORRECT;
+        let substr = src.substring(start, index + 1);
+
+        // Look for any possible match in substr, which is faster than
+        // searching the entirety of the source on every keystroke
+        for (let i = 0; i < autocorrectTable.length; i += 2) {
+            let target = autocorrectTable[i];
+            let x = substr.indexOf(target);
+            if (x >= 0) {
+                let replacement = autocorrectTable[i + 1];
+                // Found an autocorrectable substring: replace it
+                src = src.substring(0, start + x) + replacement + src.substring(start + x + target.length);
+                editor.setValue(src);
+
+                // Move the cursor to retain its position
+                editor.gotoLine(position.row + 1, Math.max(0, position.column - target.length + replacement.length + 1), false);
+                break;
+            }
+        }
     }
-    src = null;
     
     countCharacters();
     setChanged(true);

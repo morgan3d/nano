@@ -249,11 +249,6 @@ function processLine(line, declareSet, noDeclareSet, inFunction) {
                 test = processWithHeader(test, newNoDeclareSet);
                 break;
 
-            case 'loop':
-                type = 'while';
-                test = '(true)';
-                break;
-                
             case 'until':
                 type = 'while';
                 test = '(! (' + test + '))';
@@ -414,13 +409,11 @@ function processBlock(lineArray, startLineIndex, declareSet, noDeclareSet, inFun
             lineArray[i] += '}';
             
         } else if (match = lineArray[i].match(/^(\s*)(while|until)(\b.*)?$/)) {
-            // WHILE/UNTIL/LOOP
+            // WHILE/UNTIL
             
             let test = match[3];
             if (match[2] === 'until') {
                 test = '! (' + test + ')';
-            } else if (match[2] === 'loop') {
-                test = 'true';
             }
 
             lineArray[i] = match[1] + 'while (' + test + ') { ' + (inFunction ? maybeYieldFunction : maybeYieldGlobal);
@@ -539,6 +532,8 @@ function nanoToJS(src, noWrapper) {
     // Remove single-line comments
     src = src.replace(/\/\/.*$/gm, '');
 
+    src = src.replace(/\bloop\b/g, 'while(1)');
+
     // Handle scopes and block statement translations
     {
         let lineArray = src.split('\n');
@@ -560,8 +555,6 @@ function nanoToJS(src, noWrapper) {
     src = src.replace(/[⌉⌋]/g, ')');
     src = src.replace(/[⌈]/g, ' ceil(');
     src = src.replace(/[⌊]/g, ' flr(');
-
-    src = src.replace(/\bloop\b/g, 'while(1)');
 
     src = src.replace(/\bret\b/g, 'return');
 
