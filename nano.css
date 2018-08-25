@@ -35,6 +35,10 @@ div#header {
     z-index: 19;
 }
 
+.noEditor .idePart {
+    visibility: hidden;
+}
+
 a {
     color:#5949d0 !important;
 }
@@ -70,9 +74,10 @@ a {
 }
 
 .emulatorButton {
+    cursor: pointer;
     position: absolute;
     /* show bounds for debugging */
-    /* border: 1px solid #f00; */
+    /*  border: 1px solid #f00; */
 }
 
 
@@ -141,7 +146,9 @@ a {
     -moz-user-select: none;
     -ms-user-select:  none;
     user-select:      none;
-    width:            40px;
+    width:            35px;
+    font-size:        90%;
+    cursor:           pointer;
 }
 
 .noselect {
@@ -352,7 +359,7 @@ div.ide #editorStatusBar {
 }
 
 div#symbolsWindow {
-    width:            547px;
+    width:            593px;
     height:           139px;
     top:              350px;
     left:             50px;
@@ -378,6 +385,22 @@ div.tool {
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
 }
+
+/**************************************************/
+
+div#soundsWindow {
+    width:            320px;
+    height:           243px;
+    top:              280px;
+    left:             150px;
+}
+
+div#soundsWindow .button {
+    width:            20px;
+    height:           16px;
+    margin:           2px;
+}
+
 
 /**************************************************/
 
@@ -581,14 +604,51 @@ div#paletteWindow {
     width: 302px;
 }
 
+#hideButton {
+    position: absolute;
+    right:8px;
+    top: 5px;
+    color: #CCC;
+    border-radius: 0 6px 0 0;
+    padding-left: 2px;
+    padding-right: 2px;
+    height: 14px;
+    font-size: 18px;
+    baseline-shift: super;
+    cursor: pointer;
+    text-shadow:       1px 3px 2px rgba(0, 0, 0, 0.15);
+}
 
 /**************************************************/
 
 div.emulator {
-    z-index: 5;
-    position:absolute;
-    right:0; top:24px;
+    z-index:          5;
+    position:         absolute;
+    right:            0px;
+    top:              24px;
+    width:            420px;
 }
+
+.noEditor div.emulator {
+    left: 0px;
+}
+
+.noEditor #emulatorHelp {
+    left: 50px;
+    width: 320px;
+}
+
+
+div.emulator div.case {
+    position:         absolute;
+    top:              0px;
+    left:             0px;
+    width:            420px;
+    height:           613px;
+    background-image: url("nano.png");
+    background-size:  100% 100%;
+}
+
 
 canvas#bar {
     position: absolute;
@@ -617,9 +677,3 @@ canvas#screen {
     /*transform: translateZ(-15px) perspective(1000px) rotateX(5deg); */
 }
 
-div.emulator div.case {
-    height: 613px;
-    width: 420px;
-    background-image: url("nano.png");
-    background-size: 100% 100%;
-}

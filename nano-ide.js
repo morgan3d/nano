@@ -9,6 +9,17 @@ var FRAMEBUFFER_HEIGHT = SCREEN_HEIGHT + BAR_SPACING + BAR_HEIGHT;
 
 function clamp(x, lo, hi) { return Math.min(Math.max(x, lo), hi); }
 
+function toggleEditor() {
+    var body = document.getElementsByTagName("body")[0];
+    body.classList.toggle('noEditor');
+
+    if (body.classList.contains('noEditor')) {
+        // No point in showing the emulator if it isn't running,
+        // so start it
+        onPlayButton();
+    }
+}
+
 function afterImageLoad(url, callback) {
     var image = new Image();
     image.onload = function () { callback(image); };
@@ -361,6 +372,26 @@ var initialSource =
     //tests.colorgrid;
 
 
+
+/** If null, use HTML Audio tags. Otherwise, use web audio support, which has more features and
+    lower latency. Implementation from codeheart.js */
+var _ch_audioContext;
+
+var _ch_isLocal  =  (window.location.toString().substr(0, 7) === "file://");
+var _ch_isChrome =  (navigator.userAgent.toLowerCase().indexOf("chrome") !== -1);
+
+if (! (_ch_isLocal && _ch_isChrome)) {
+    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (window.AudioContext) {
+        try {
+            _ch_audioContext = new AudioContext();
+        } catch(e) {
+            console.log(e);
+        }
+    }
+}
+
+
 function getQueryString(field) {
     var reg = new RegExp( '[?&]' + field + '=([^&#]*)', 'i' );
     var string = reg.exec(location.href);
@@ -603,46 +634,63 @@ document.getElementById('selectedSpriteDiagonalButton').onclick = document.getEl
 
 function makeSymbolsWindow() {
     var chars =
-`½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒ %^*/-+ ;
-επτ∞∅ξ αβδΔθλμρσφψωΩ {}
-∩∪⊕~◅▻¬&X⌊⌋|⌈⌉≟≠=∊≤≥<>
-⁰¹²³⁴⁵⁶⁷⁸⁹⁽⁾⁻⁺ᵃᵝⁱʲˣᵏᵘⁿ
-₀₁₂₃₄₅₆₇₈₉₍₎₋₊ₐᵦᵢⱼₓₖᵤₙ`;
+`½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒ %^*/-+ {};
+επτ∞∅ξΔαβγδζηθλιμρσϕχψωΩ
+∩∪⊕~◅▻¬ &X ≟≠≤≥<> =∊ ⌊⌋|⌈⌉
+⁰¹²³⁴⁵⁶⁷⁸⁹ ⁽⁾⁻⁺ ᵃᵝⁱʲˣᵏᵘⁿ
+₀₁₂₃₄₅₆₇₈₉ ₍₎₋₊ ₐᵦᵢⱼₓₖᵤₙ`;
 
     var tooltipTable = {
         '%': 'modulo',
         '^': 'exponent',
         '*': 'multiplication',
-        '/': 'real division',
+        '/': 'division',
         '-': 'subtraction',
         '+': 'addition/string concatenation',
         ';': 'statement separator',
-        'ε': 'small value',
-        'π': 'constant 3.14...',
-        'τ': 'integer time in frames',
-        '∞': 'infinity',
-        '∅': 'nil',
-        'ξ': 'random',
-        'α': 'variable',
+        'ε': 'small value (\\epsilon)',
+        'π': 'constant 3.14... (\\pi)',
+        'τ': 'integer time in frames (\\tau)',
+        '∞': 'infinity (\\infty)',
+        '∅': 'nil (\\nil)',
+        'ξ': 'random (\\xi)',
+        'Δ': 'variable prefix (\\Delta)',
+        'α': 'variable (\\alpha)',
+        'β': 'variable (\\beta)',
+        'γ': 'variable (\\gamma)',
+        'δ': 'variable (\\delta)',
+        'ζ': 'variable (\\zeta)',
+        'η': 'variable (\\eta)',
+        'ι': 'variable (\\iota)',
+        'λ': 'variable (\\lambda)',
+        'μ': 'variable (\\mu)',
+        'ρ': 'variable (\\rho)',
+        'σ': 'variable (\\sigma)',
+        'ϕ': 'variable (\\phi)',
+        'χ': 'variable (\\chi)',
+        'ψ': 'variable (\\psi)',
+        'ω': 'variable (\\omega)',
+        'Ω': 'variable (\\Omega)',        
         '{': 'begin table',
         '}': 'end table',
         '∩': 'bitwise and',
         '∪': 'bitwise or',
         '⊕': 'bitwise xor',
         '~': 'bitwise not',
-        '◅': 'bit shift left',
-        '▻': 'bit shift right',
-        '¬': 'logical not',
+        '◅': 'bit shift left (<<)',
+        '▻': 'bit shift right (>>)',
+        '¬': 'logical not (\\not)',
         '&': 'logical and',
         'X': 'logical or',
         '⌊': 'floor',
         '|': 'absolute value',
         '⌈': 'ceiling',
-        '≟': 'equals',
-        '≠': 'not equal/logical xor',
-        '∊': 'in (FOR loop)',
+        '≟': 'equals (?=)',
+        '≠': 'not equal/logical xor (!=)',
+        '∊': 'FOR-loop in (\\in)',
         '=': 'assignment',
-        '≤': 'compare',
+        '≤': 'compare (\\leq)',
+        '≥': 'compare (\\geq)',
         '⁰': 'exponent',
         '₀': 'array index'
     };
@@ -662,9 +710,31 @@ function makeSymbolsWindow() {
             s += '<div onmousedown="event.stopPropagation()" class="button" title="' + tooltip + '" onclick="insertSymbol(\'' + c + '\')"><label><span class="label"><span>' + c + '</span></span></label></div>';
         }
     }
-    document.getElementById('keys').innerHTML = s ;
+    document.getElementById('keys').innerHTML = s;
 }
 
+/** Filled out by makeSoundsWindow */
+var soundArray = [];
+
+function makeSoundsWindow() {
+    var s = '';
+    var type = ['Coin', 'Shoot', 'Explode', 'Powerup', 'Hit', 'Jump', 'Blip', 'Wild'];
+
+    for (let i = 0; i < type.length; ++i) {
+        s += '<div style="margin-bottom:5px; width:60px; text-align:left; display: inline-block; position: relative; top: -7px">' + type[i] + '</div>';
+        for (let j = 0; j < 10; ++j) {
+            let num = i * 10 + j;
+            let numStr = (i == 0 ? '0' : '') + num;
+            soundArray.push(loadSound('sounds/' + numStr + '-' + type[i] + '.mp3'));
+            s += '<div onmousedown="event.stopPropagation()" class="button" onclick="playSoundNum(\'' + num + '\')"><label><span class="label"><span>' + numStr + '</span></span></label></div>';
+        } // j
+        s += '<br>';
+    } // i        
+    
+    document.getElementById('sounds').innerHTML = s;
+}
+
+makeSoundsWindow();
 makeSymbolsWindow();
 
 /** SymbolsWindow callback */
@@ -672,6 +742,128 @@ function insertSymbol(s) {
     editor.session.replace(editor.selection.getRange(), s);
     // Restore focus to the editor
     editor.focus();
+}
+
+
+
+// Use only MP3s
+function loadSound(url) {
+    if (_ch_audioContext) {
+        // Use asynchronous loading
+        var sound = Object.seal({ src: url, 
+                                  loaded: false, 
+                                  source: null,
+                                  buffer: null,
+                                  playing: false });
+        
+        var request = new XMLHttpRequest();
+        request.open('GET', url, true);
+        request.responseType = 'arraybuffer';
+        
+        // Decode asynchronously
+        request.onload = function() {
+            _ch_audioContext.decodeAudioData(
+                request.response, 
+                function onSuccess(buffer) {
+                    sound.buffer = buffer;
+                    sound.loaded = true;
+                    
+                    // Create a buffer, which primes this sound for playing
+                    // without delay later.
+                    sound.source = _ch_audioContext.createBufferSource();
+                    sound.source.buffer = sound.buffer;
+                    sound.source.connect(_ch_audioContext.destination);
+                }, 
+                function onFailure() {
+                    console.warn("Could not load sound " + url);
+                });
+        };
+        
+        sound.playing = false;
+        request.send();
+        return sound;
+
+    } else {
+        // Legacy and local Chrome path
+        var s = new Audio();
+        s.src = url;
+        s.preload = "auto";
+        
+        s.playing = false;
+        s.onended = function() { s.playing = false; };
+        s.onpause = s.onended;
+
+        s.load();
+        return s;
+    }
+}
+
+
+function playSoundNum(n) {
+    playSound(soundArray[Math.max(0, Math.min(n, soundArray.length - 1))], false);
+}
+
+
+function playSound(sound, loop) {
+    // Ensure that the value is a boolean
+    loop = loop ? true : false;
+
+    if (_ch_audioContext) {
+        // Chrome creates the audio context paused if it was
+        // originally made on page load--resume it.
+        _ch_audioContext.resume();
+        
+        if (sound.loaded) {
+            // A new source must be created every time that the sound is played
+            sound.source = _ch_audioContext.createBufferSource();
+            sound.source.buffer = sound.buffer;
+            sound.source.connect(_ch_audioContext.destination);
+            sound.source.loop = loop;
+            sound.source.onended = function () {
+                sound.source = null;
+                sound.playing = false; 
+            };
+
+            if (! sound.source.start) {
+                // Backwards compatibility
+                sound.source.start = sound.source.noteOn;
+                sound.source.stop  = sound.source.noteOff;
+            }
+            
+            sound.playing = true;
+            sound.source.start(0);
+        }
+    } else {
+        // Legacy support
+        if (_ch_audioContext && ! sound.webAudioSound) {
+            // Force the sound through the Web Audio API for lower
+            // latency playback on Chrome. 
+            // Do this the first time, and then mark as webaudio for the future
+            sound.webAudioSound = _ch_audioContext.createMediaElementSource(sound);
+            sound.webAudioSound.connect(_ch_audioContext.destination);
+        }
+        
+        try {
+            // Reset the sound
+            if (! loop) {
+                sound.currentTime = 0;
+            }
+            
+            // Avoid changing properties unless required because the 
+            // browser's implementation may be inefficient.
+            if (sound.loop != loop) {
+                sound.loop = loop;
+            }
+            
+            // Only play if needed
+            if (! loop || sound.paused || sound.ended) {
+                sound.play();
+                sound.playing = true;
+            }
+        } catch (e) {
+            // Ignore invalid state error if loading has not succeeded yet
+        }
+    } // web audio
 }
 
 
@@ -1573,6 +1765,7 @@ const autocorrectTable = [
     '\\time',     'τ',
     '\\xi',       'ξ',
     '\\rnd',      'ξ',
+    '\\in',       '∊',
     '==',        '≟',
     '?=',        '≟',
     '!=',        '≠',
@@ -1778,6 +1971,7 @@ function reloadRuntime(oncomplete) {
         Runtime._spriteSheet   = spritePixelData;
         Runtime._fontSheet     = fontPixelData;
         Runtime.rgb            = rgb;
+        Runtime.play           = playSoundNum;
         Runtime._updateImageDataUint32 = new Uint32Array(updateImageData.data.buffer);
         Runtime._submitFrame    = submitFrame;
 
@@ -1989,7 +2183,8 @@ window.onbeforeunload = function (event) {
         activeCartridge.filename = getFilename(getTitle(initialSource));
         activeCartridge.readOnly = true;
         activeCartridge.googleDriveFileID = undefined;
-        setTimeout(onPlayButton, 750);
+        setTimeout(toggleEditor, 750);
+        
     } else {
         activeCartridge.code = initialSource;
     }
