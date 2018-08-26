@@ -196,6 +196,10 @@ function setToVarDecl(set) {
 */
 function processLine(line, declareSet, noDeclareSet, inFunction) {
 
+    if (inFunction && line.match(/\b(flip|show|wait)\b/)) {
+        throw 'Cannot show or wait inside a function';
+    }
+
     let next = '';
     let separatorIndex = line.indexOf(';')
     if (separatorIndex > 0) {
@@ -226,7 +230,7 @@ function processLine(line, declareSet, noDeclareSet, inFunction) {
 
             let bodyDeclareSet = {};
             body = processLine(body, bodyDeclareSet, argStringToSet(args), true);
-            line = before + 'function ' + name + '(' + args + ') { ' + setToVarDecl(bodyDeclareSet) +  maybeYieldFunction + body + ' }';
+            line = before + 'function ' + name + '(' + args + ') { ' + setToVarDecl(bodyDeclareSet) + maybeYieldFunction + body + ' }';
 
         } else {
 
@@ -361,8 +365,11 @@ function processBlock(lineArray, startLineIndex, declareSet, noDeclareSet, inFun
         // Note the assignment to match in the IF statement tests below
         let match;
         if (singleLine) {
-
-            lineArray[i] = processLine(lineArray[i], declareSet, noDeclareSet, inFunction);
+            try {
+                lineArray[i] = processLine(lineArray[i], declareSet, noDeclareSet, inFunction);
+            } catch (e) {
+                throw makeError(e, i);
+            }
             
         } else if (match = lineArray[i].match(RegExp('^(\\s*)fcn\\s+(' + identifierPattern + ')\\s*\\(([^\\)]*)\\)'))) {
             // FCN

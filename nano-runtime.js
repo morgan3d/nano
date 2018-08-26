@@ -395,6 +395,7 @@ function pal(p) {
     }
 }
 
+function _noop() {}
 
 function mid(a, b, c) {
     if (a < b) {
