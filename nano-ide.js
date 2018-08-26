@@ -347,7 +347,7 @@ var initialSource =
     //tests.nanoReset;
     //tests.rgb;
     //tests.text;
-    tests.spacedash;
+    //tests.spacedash;
     //tests.nest;
     //tests.scope;
     //tests.square;
@@ -366,7 +366,7 @@ var initialSource =
     //tests.ping;
     //tests.IF;
     //tests.FOR;
-    //tests.input;
+    tests.input;
     //tests.agent;
     //tests.rect;
     //tests.colorgrid;
@@ -1235,6 +1235,12 @@ function onCartridgeArrayScrollUp() {
 }
 
 
+function onCartridgeClick(i) {
+    cartridgeArrayScrollIndex = i;
+    updateCartridgeArrayPositions();
+}
+
+
 function updateCartridgeArrayPositions() {
     var scrollOffset = -cartridgeArrayScrollIndex * cartridgeArrayScrollIncrement;
     
@@ -1302,22 +1308,30 @@ function computeCartridgeArray() {
             // Nothing to load
             makeCartridgeWindowContents();
         } else {
-            for (var i = 0; i < files.length; ++i) {
-                googleDriveGetTextFile(files[i].id, function(fileID, contents, filename) {
-                    if (contents) {
-                        var title = getTitle(contents);
-                        var filename = getFilename(title);
-                        addToCartridgeArray(title, filename, fileID, contents, false);
-                    } else {
-                        console.log('Could not load Google Drive file "' + filename + '" with fileID ' + fileID);
-                    }
-                    
-                    --remaining;
-                    if (remaining <= 0) {
-                        makeCartridgeWindowContents();
-                    }
-                }, files[i].name);
-            } // for i
+
+            // Google Drive rate limits querries, so we have to slow down the fetch rate
+            // in this loop slightly to avoid hitting the quota.
+            // In order to do that (in a backwards-compatible way to IE11),
+            // we fire these asynchronously.
+
+            files.forEach(function (file, index) {
+                setTimeout(function () {
+                    googleDriveGetTextFile(file.id, function(fileID, contents, filename) {
+                        if (contents) {
+                            var title = getTitle(contents);
+                            var filename = getFilename(title);
+                            addToCartridgeArray(title, filename, fileID, contents, false);
+                        } else {
+                            console.log('Could not load Google Drive file "' + filename + '" with fileID ' + fileID);
+                        }
+                        
+                        --remaining;
+                        if (remaining <= 0) {
+                            makeCartridgeWindowContents();
+                        }
+                    }, file.name);
+                }, 200 * index);
+            }); // forEach
         } // if
     });
 }
@@ -1444,12 +1458,12 @@ function makeCartridgeWindowContents() {
     }
     
     var c = cartridgeArray[0];
-    var s = '<div id="cartridge0" style="filter: sepia(100%) saturate(300%) hue-rotate(-45deg); position: absolute; top: ' + c.y + 'px; left:' + c.x + 'px" class="cartridge" onmousedown="event.stopPropagation()"><div class="label">(NEW CART)</div></div>';
+    var s = '<div id="cartridge0" style="filter: sepia(100%) saturate(300%) hue-rotate(-45deg); position: absolute; top: ' + c.y + 'px; left:' + c.x + 'px" class="cartridge" onmousedown="onCartridgeClick(0) || event.stopPropagation()"><div class="label">(NEW CART)</div></div>';
 
     var foundActive = false;
     for (var i = 1; i < cartridgeArray.length; ++i) {
         var c = cartridgeArray[i];
-        s += '<div id="cartridge' + i + '" style="filter: sepia(' + c.hue + '%) brightness(' + c.brightness + '); position: absolute; top: ' + c.y + 'px; left:' + c.x + 'px" class="cartridge" onmousedown="event.stopPropagation()"><div class="label">' + c.title + '</div></div>';
+        s += '<div id="cartridge' + i + '" style="filter: sepia(' + c.hue + '%) brightness(' + c.brightness + '); position: absolute; top: ' + c.y + 'px; left:' + c.x + 'px" class="cartridge" onmousedown="onCartridgeClick(' + i + ') || event.stopPropagation()"><div class="label">' + c.title + '</div></div>';
         foundActive = foundActive || (c.fileID === activeCartridge.fileID);
     }
     document.getElementById('allCarts').innerHTML = s;
@@ -1458,11 +1472,6 @@ function makeCartridgeWindowContents() {
         // The active cartridge's file ID does not seem to exist any more on Google Drive, so
         // remove its reference.
         activeCartridge.fileID = undefined;
-
-        // Technically, the cartridge is unsaved in this case. However, this also triggers for
-        // the very load, and we don't want to warn in that case.
-        //
-        // setChanged(true);
     }
     
     setTimeout(updateCartridgeArrayPositions, 10);

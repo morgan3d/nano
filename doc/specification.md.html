@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-                         **nano ᴊᴀᴍᴍᴇʀ**
+                         **nano <span style="font-size:75%">JAMMER</span>**
                   **Fantasy Console Specification**
             **by [Casual Effects](https://casual-effects.com)**
 
@@ -753,13 +753,8 @@ Name   | Value
 `joy`  | shorthand for `pad₀`
 `ξ`    | random number on [0, 1), resampled every time the expression is used
 
-Each gamepad table has direction fields `x` and `y` on [-1, 1] and `a` and `b` buttons on
-[0, 1] for current state.  It also indicates which directions and buttons were pressed *in the
-current frame* with `xx`, `yy`, `aa`, and `bb`, which have the same ranges as their
-current-state counterparts. There is also the dependent field `θ=atan(x,y)`.
-
 The main-loop variable `τ` is time, as integer number of frames. It may be reassigned 
-to reset time.
+to reset time and is a built-in object, but is not an operator.
 
 
 Typing
@@ -817,7 +812,29 @@ as well. The list of replacements is:
     `\third`    |`⅓` 
     `\quarter`  |`¼` 
     `\fifth`    |`⅕`
-                 
+
+
+Input
+==============================================================================================
+
+The gamepad objects in the `pad` array, or `joy` variable (which is equal to `pad[0]`) have
+the following fields:
+
+Field | Values   | Meaning
+------|----------|----------------------------------
+`x`   | -1,0,+1  | Current D-pad value on the $x$-axis (+1 = right)
+`xx`  | -1,0,+1  | Direction that was just pressed this frame on the $x$-axis
+`y`   | -1,0,+1  | Current D-pad value on the $y$-axis (+1 = forward)
+`yy`  | -1,0,+1  | Direction that was just pressed this frame on the $y$-axis
+`θ`   | -π to +π | `atan(y, x)`
+`a`   | 0 or 1   | 1 if the A button is currently pressed
+`aa`  | 0 or 1   | 1 if the A button was just pressed this frame
+`b`   | 0 or 1   | 1 if the B button is currently pressed
+`bb`  | 0 or 1   | 1 if the B button was just pressed this frame
+`s`   | 0 or 1   | 1 if the start button is currently pressed
+`ss`  | 0 or 1   | 1 if the start button was just pressed this frame
+
+
 
 Flow Control
 ==============================================================================================
