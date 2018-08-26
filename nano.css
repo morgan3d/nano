@@ -556,7 +556,7 @@ div#paletteWindow {
     box-shadow: inset 2px 2px 3px rgba(0,0,0,0.2);
 }
 
-#paletteWindow #paletteSlot0, #paletteWindow #paletteSlot7, #paletteWindow #paletteSlot8, #paletteWindow #paletteSlot9 {
+#paletteWindow #paletteSlot0, #paletteWindow #paletteSlot9 {
     width: 21px;
     height: 20px;
     margin-left: 3px;

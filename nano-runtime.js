@@ -237,13 +237,12 @@ var _screen = new Uint8Array(_SCREEN_WIDTH * _FRAMEBUFFER_HEIGHT);
 var TRANSPARENT = 32;
 
 // The initial "default"/"previous" color is stored directly in slot [0]
-var _initialPalette = [7, 7, 13, 0, 8, 10, 12, 255, 255, TRANSPARENT];
+var _initialPalette = [7, 7, 13, 0, 8, 10, 12, 11, 29, TRANSPARENT];
 
 /** Current subset of the fixed _screenPalette available, by index. Set by pal().
 
     0 = previous
-    1-6 = configurable
-    7-8 = reserved (for shadow and future expansion)
+    1-8 = configurable
     9 = transparent
  */
 var _drawPalette = new Uint8Array(_initialPalette);
@@ -389,12 +388,13 @@ function pal(p) {
             _drawPalette[i] = _initialPalette[i];
         }
     } else {
-        for (var i = 1; i <= 6; ++i) {
+        for (var i = 1; i <= 8; ++i) {
             _drawPalette[i] = (p % 100) & 31;
             p /= 100;
         }
     }
 }
+
 
 function mid(a, b, c) {
     if (a < b) {

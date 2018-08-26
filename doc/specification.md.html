@@ -1096,7 +1096,7 @@ Graphics
 : Draw a line from (`Ax`, `Ay`) to (`Bx`, `By`) using the 1-digit colourmap.
 
 `pal(p)`
-: Sets the draw palette colours 1-6 from the 12-digit palette. See the Colours section for details.
+: Sets the draw palette colours 1-8 from the 12-digit palette. See the Colours section for details.
   With no arguments, resets to the default palette.
 
 `pset(x,y,c)`
@@ -1145,8 +1145,8 @@ to give a better grayscale. The second 16 colours fill some holes between them a
 
 
 The *palette* is a set of 10 colours available for drawing shapes and sprites, which are
-selected from the full 32 possible colours on the screen. In the palette, six colours are
-user-selectable and four are special values that are not configurable.
+selected from the full 32 possible colours on the screen. In the palette, eight colours are
+user-selectable and two are special values that are not configurable.
 
 The `pal` command changes configurable part of the palette by specifying a 12-digit integer.
 Every two digits are one colour. Changing the palette does not affect colours already
@@ -1160,18 +1160,17 @@ from a sprite (as a 1-4 digit integer).
 The interpretation of colour map digits within the palette is:
 
 - 0 = default colour for this command
-- 1-6 = configurable
-- 7 & 8 = reserved for future features
+- 1-8 = configurable
 - 9 = transparent
 
-For example, to set the configurable colours to a grayscale ramp (0,1,5,13,6,7) of PICO-8
-colours, use `pal(70613050100)`. Note that there cannot be a leading zero on the number.
+For example, to set the first six configurable colours to a grayscale ramp (0,1,5,13,6,7) of
+PICO-8 colours, use `pal(70613050100)`. Note that there cannot be a leading zero on the number.
 
 The default colour for most commands is the previous colour used. For text, the default is the
 previous colour for the main stroke and transparent for the outline and shadow.
 
-The initial configurable palette is equivalent to `pal(121008000607)`. This corresponds to
-white, gray, black, red, yellow, aqua. The initial default colour is white. Changing the
+The initial configurable palette is equivalent to `pal(2911121008001307)`. This corresponds to
+white, gray, black, red, yellow, aqua, lime, purple. The initial default colour is white. Changing the
 palette preserves the default colour.
 
 Note that unlike other drawing commands, `pset` and `pget` operate directly on colours instead
@@ -1179,11 +1178,13 @@ of palette values.
 
 
 <!-- 
-Largest palette value:
+Largest palette value in this scheme:
 3131313131313131
 
 Largest consecutively-representable double:
 9007199254740992
+
+(so, it is fine to represent the palette as a single integer!)
 -->
 
 ### Sprites
@@ -1320,6 +1321,10 @@ its license, which permits any use.
 # Change Log
 
 2018 Aug 24:
+ - Exposed palette slots 7 and 8
+ - Documented the start button
+ - Can now click on cartridges to select them
+ - Rate limited access to Google Drive to prevent quota errors
  - Added sounds
  - IDE autocorrect for typing special characters
  - Can now hide the editor

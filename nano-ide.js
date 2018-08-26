@@ -867,7 +867,7 @@ function playSound(sound, loop) {
 }
 
 
-var paletteToolCurrentPalette = [7, 7, 13, 0, 8, 10, 12, 255, 255, 32];
+var paletteToolCurrentPalette = [7, 7, 13, 0, 8, 10, 12, 11, 29, 32];
 
 afterImageLoad('rainbow-selector.png', function (rainbowImage) {
     var rainbowImageData = getImageData(rainbowImage);
@@ -907,17 +907,15 @@ afterImageLoad('rainbow-selector.png', function (rainbowImage) {
     s += '<div style="position: absolute; top: 166px; left: 40px"><span style="position:relative; top:4px">Palette</span> ';
     for (var i = 9; i >= 0; --i) {
         var style = '';
-        if ((i >= 1) && (i < 7)) {
+        if ((i >= 1) && (i < 9)) {
             var c = imageDataToHTMLColorString(screenPalette[paletteToolCurrentPalette[i]]);
-            style = ' style = "background:' + c + '" '; 
+            style = ' style="background:' + c + '" '; 
         } else if (i === 9) {
             style = ' title="Transparent" ';
         } else if (i === 0) {
             style = ' title="Previous" ';
-        } else {
-            style = ' title="Reserved" ';
         }
-        s += '<div class="paletteSlot" ondragover="event.preventDefault()" ' + ((i > 0 && i < 7) ? 'ondrop="colorDragDrop(event)"' : '') + ' id="paletteSlot' + i + '"' + style + '>' + i + '</div>';
+        s += '<div class="paletteSlot" ondragover="event.preventDefault()" ' + ((i > 0 && i < 9) ? 'ondrop="colorDragDrop(event)"' : '') + ' id="paletteSlot' + i + '"' + style + '>' + i + '</div>';
     }
     s += '</div>';
 
@@ -974,7 +972,7 @@ function colorDragDrop(event) {
 
 function updatePaletteToolCmd() {
     var s = ')';
-    for (var i = 1; i < 7; ++i) {
+    for (var i = 1; i < 9; ++i) {
         var c = paletteToolCurrentPalette[i];
         s = c + s;
         if (c < 10) {
