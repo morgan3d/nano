@@ -296,6 +296,7 @@ to see the latest games others have posted, such as:
 - [Rain](https://twitter.com/CasualEffects/status/952049699569139713) by [@CasualEffects](https://twitter.com/CasualEffects) ([Permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIBKYCWIA0BGAUABzABsAKaAXgCYAWCgZgoqywAYB2AShwDNIAnBAB4AeLLRwIAFmQlgAzhOICA1AE5OCVGWLEAPQGbAI8DFWEpbXZLWzCe0CURFgCs7ALRNxPfgE8RuBAgAuAKYC-sQARICtwIATwABygAPAAI4GgHhEgKBEgH3ASADuzLaAVESAkMSAqUSAjcCATcCALcAAsg6AKcCAHcCA3cCAPcCAg8CAw8CAY8CAk8CAlcAA3lhhANpKStC2tFgAuhgOAhgAbBTOi54YcOjEqEpkAL1KexJL7OxAA))
 - [Alternative Boot Sequence](https://twitter.com/CasualEffects/status/950048407942516736) by [@CasualEffects](https://twitter.com/CasualEffects) ([Permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIBClIBcA0BGAUADwDNIAnOACgGYAmDagShyOITAB4rB3AhwQE8BeOGDxkADBkAjwAFoKACzABnGWTB1JnOgG4ADvICmaMjwBUAY0jyWGY-ICWISzPkA3MoG1CHnQZME0VhW7eNqxYAKzcCDr6ZABskjYY0GoYZADaABwA7BRpGFRYaQAsIblYFBQiALqAPjSA3aQ2gJREWHRGAObEYDxkcDYAJmRYaoDeBIAeBOIYYk1GZOIA9FQi0gA+iViLnnRAA))
 - [Virtual Pet](https://twitter.com/Jackson_T_Allen/status/960757428114673664) by [@Jackson_T_Allen](https://twitter.com/Jackson_T_Allen) ([Permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAJgDcCWAnALgVzAGwAcBTTWOAKFQDMAKAGsBHgASgA8BeARgBoBnNgbQCcXYaIC65dnFQATGgAYuLANTRIATwB0LFlwDMTSrTVawYJj0DJBG0HkZ6MAHcaAVgAsXN8o7zdLgGyGVJDoCKgAPG7kCDyARrgAtGyASoSAfcDKgK3ADNHoRADGmDQATN7yqFwuiv4lZRXxhXGGYbRx4fJM9k40-sJuABye-YpuTADcmEQsBQBEACIAogCCMwhTyswjjmComCMMbPLk45M0UwASiwAyACqnAJora4Ydzt0DA0xAA))
+- [Flower](https://twitter.com/CasualEffects/status/1033767948454977541) by [@CasualEffects](https://twitter.com/CasualEffects) ([Permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIBiAbSB3ApgJwDQEYAoAMwGMQEBzbDACgA9cBPXQDuBcAZASkIQEtiCDgD4ATLwTFI2fgB4AzBISAx4AC8rANQBOWoD7gALQBejYE1CUpADOtQEqEAJsAjwFy4B6DgG4ArqvoaOAKnMLZTcAN1UmXz8LPhBglBjMBmZcD1wQ3Hl9WhF5LiyRAA4nN2o6VPTlXEAVQg59UV0eC2wIABNafB5SFGxVUQAWQgAHMBRaUQA2fFFRAFYABgB2fBnRXMJsTFIAF1o53D30VXH5XFE98Z4N7d3T-Fx0DL2Zy82dvfk7h-kZ3D6X6-e43uv3ePFK6Fo8lEuHGfVwRkAA8CnZ5AA))
 <!-- - [Snake](https://twitter.com/Jackson_T_Allen/status/950542136247767041) by [@Jackson_T_Allen](https://twitter.com/Jackson_T_Allen) ([Permalink](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIDKA5AggaQKICgCWAZgBQA1gI8ACUAzgLwDaAzAIwA0zAugNyAdwDQAycAxv04BTGkxwB3GgDYALDkBjwPUGQqLKnhDsc3ANQ1ASoTRIATwB0ADxwFIAJwR5AJkSSEVC2AAmXokSp0HgA2oiAAtABM7PpKgEa4RNwU+lIUAKQpnIREooD6RIIUOAjuFl6iQUR8BQhlVKKFCFY0AKyygH3A+vKcZs1tHTjigjgALqJWQ0T5OAAOteNWLGYsABwFdo5gADwMhWsIAEZb9WtEeBsAvcGhFIJ49oL+dBF40VIAVGBhUpqPePpML689p8WPIWE0ClkAD5WMJUQABBJD9JCzLDAIEEkI2smu+n0nBwZFSNAYgHcCIA)) -->
 
 
@@ -1076,9 +1077,9 @@ Graphics
   The clipping region of the entire screen together is `clip(0,-12,63,63)`.
   The clipping region is not affected by `xform`.
 
-`draw(s,x,y,colourmap,xform,rot)`
+`draw(s,x,y,colourmap,flips,rot)`
 : Draw sprite with index `s` centered at (`x`, `y`), remapping sprite colours by 4-digit
-  `colourmap` and transforming by `xform`. See the Sprites section for more information.
+  `colourmap` and transforming by `flips`. See the Sprites section for more information.
   The result is undefined and may change between versions for the cases where `s` is less than
   zero or greater than 63.
 
@@ -1123,9 +1124,11 @@ Graphics
 `tri(Ax,Ay,Bx,By,Cx,Cy,colourmap)`
 : Draw the triangle using the 2-digit colourmap for fill and border.
 
-`xform(addX, addY)`
+`xform(addX,addY,scaleX,scaleY)`
 : Set the transformation applied to all draw coordinates and `pget`. The default transform
-  is (0, 0).
+  is (0, 0). The scale parameters must be +1 or -1 and are primarily intended for flipping the
+  Y axis. Scaling affects the location of sprites and text but not their own axes; text will
+  always render right side up.
 
 The default colourmap is 0, which corresponds to the colour from the previous command.
 
@@ -1200,22 +1203,22 @@ full, completely full, or full and small by changing the colourmap.
 `draw` renders centered sprites. Centering for an 8x8 sprite means offsetting x,y by 3.5 in each dimension. This makes 
 (3,3) the "center" for integer coordinates.
 
-The xform value is encoded in three bits as:
-  - if `(xform ∩ 1)`, flip diagonally
-  - if `(xform ∩ 2)`, flip horizontally
-  - if `(xform ∩ 4)`, flip vertically
+The optional `flips` parameter to `draw` encodes in three bits:
+  - if `(flips ∩ 1)`, flip diagonally
+  - if `(flips ∩ 2)`, flip horizontally
+  - if `(flips ∩ 4)`, flip vertically
     
 This allows all axis-aligned transformations to be encoded in a single digit. The 90-degree
 clockwise rotations are thus (xor these with with 2 or 4 if you want to also flip H or V):
 
- CW Rotation |VHD Bits| `xform`
+ CW Rotation |VHD Bits| `flips`
  -----------:|--------|---------
  0 degrees   | 000    | 0
  90 degrees  | 011    | 3
  180 degrees | 110    | 6
  270 degrees | 101    | 5
 
-The `rot` argument rotates an arbitrary amount clockwise in radians *after* the `xform`
+The `rot` argument rotates an arbitrary amount clockwise in radians *after* the `flips`
 transformation. It defaults to zero.
 
 For rotating by 0 &leq; `i` &lt; 4 integer 90-degree clockwise intervals programmatically,
@@ -1320,10 +1323,13 @@ its license, which permits any use.
 
 # Change Log
 
-2018 Aug 24:
+2018 Aug 27:
+ - `xform` now allows flipping axes
  - Exposed palette slots 7 and 8
  - Documented the start button
  - Can now click on cartridges to select them
+
+2018 Aug 24:
  - Rate limited access to Google Drive to prevent quota errors
  - Added sounds
  - IDE autocorrect for typing special characters

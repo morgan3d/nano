@@ -177,12 +177,15 @@ var _submitFrame = null;
 var _clipY1 = 0, _clipY2 = _SCREEN_HEIGHT - 1, _clipX1 = 0, _clipX2 = _SCREEN_WIDTH - 1;
 
 // Draw call offset
-var _offsetX = 0, _offsetY = 0;
+var _offsetX = 0, _offsetY = 0, _scaleX = 1, _scaleY = 1;
 
 
-function xform(addX, addY) {
+function xform(addX, addY, scaleX, scaleY) {
     _offsetX = addX;
     _offsetY = _BAR_HEIGHT + _BAR_SPACING + addY;
+
+    _scaleX = (scaleX === -1) ? -1 : +1;
+    _scaleY = (scaleY === -1) ? -1 : +1;
 }
 
 
@@ -248,11 +251,11 @@ var _initialPalette = [7, 7, 13, 0, 8, 10, 12, 11, 29, TRANSPARENT];
 var _drawPalette = new Uint8Array(_initialPalette);
 _drawPalette[0] = _initialPalette[0];
 
-var fontWidth = {'!':1, '|':1, '.':1, 'i':1, 'I':1, 'l':1, 'ⁱ':1, 'ᵢ':1,
+var _fontWidth = {'!':1, '|':1, '.':1, 'i':1, 'I':1, 'l':1, 'ⁱ':1, 'ᵢ':1,
                  ' ':2, ',':2, ';':2, '[':2, ']':2, '`':2, '\'':2, '(':2, ')':2, 'f':2, '⌊':2, '⌋':2, '⌈':2, '⌉':2, '¹':2, 'ʲ':2, '⁽':2, '⁾':2, '₁':2, 'ⱼ':2, '₍':2, '₎':2};
 
 /** Maps characters to x,y coordinates in the _fontSheet  */
-var fontMap = (function(){
+var _fontMap = (function(){
  var f = `ABCDEFGHIJKLMNOPQRSTUVWXY
 abcdefghijklmnopqrstuvwxy
 0123456789~!@#$%^&*()_+-=
@@ -285,8 +288,8 @@ abcdefghijklmnopqrstuvwxy
 
 
 var clr = 0;
-var joy = {x:0, y:0, θ:0, a:0, b:0, s:0, aa:0, bb:0, ss:0};
-var pad = [joy, {x:0, y:0, θ:0, a:0, b:0, s:0, aa:0, bb:0, ss:0}];
+var joy = Object.seal({x:0, y:0, θ:0, a:0, b:0, s:0, aa:0, bb:0, ss:0});
+var pad = [joy, Object.seal({x:0, y:0, θ:0, a:0, b:0, s:0, aa:0, bb:0, ss:0})];
 
 var hashview = new DataView(new ArrayBuffer(8));
 
@@ -446,9 +449,9 @@ function colormapToColor(colormap) {
 }
 
 function tri(Ax, Ay, Bx, By, Cx, Cy, colormap) {
-    Ax += _offsetX; Ay += _offsetY;
-    Bx += _offsetX; By += _offsetY;
-    Cx += _offsetX; Cy += _offsetY;
+    Ax = Ax * _scaleX + _offsetX; Ay = Ay * _scaleY + _offsetY;
+    Bx = Bx * _scaleX + _offsetX; By = By * _scaleY + _offsetY;
+    Cx = Cx * _scaleX + _offsetX; Cy = Cy * _scaleY + _offsetY;
     
     colormap |= 0;
     // Extract the fill color, which is not yet used in this implementation
@@ -525,7 +528,7 @@ function tri(Ax, Ay, Bx, By, Cx, Cy, colormap) {
 
 
 function circ(x, y, radius, colormap) {
-    x += _offsetX; y += _offsetY;
+    x = x * _scaleX + _offsetX; y = y * _scaleY + _offsetY;
     colormap |= 0;
     var fill = colormapToColor(colormap); colormap = (colormap / 10) | 0;
     var border = colormapToColor(colormap);
@@ -606,8 +609,8 @@ function circ(x, y, radius, colormap) {
 
 
 function rect(x1, y1, x2, y2, colormap) {
-    x1 += _offsetX; y1 += _offsetY;
-    x2 += _offsetX; y2 += _offsetY;
+    x1 = x1 * _scaleX + _offsetX; y1 = y1 * _scaleY + _offsetY;
+    x2 = x2 * _scaleX + _offsetX; y2 = y2 * _scaleY + _offsetY;
     
     colormap |= 0;
     var fill = colormapToColor(colormap); colormap = (colormap / 10) | 0;
@@ -680,8 +683,8 @@ function _vline(x, y1, y2, color) {
 
 
 function line(x1, y1, x2, y2, colormap) {
-    x1 += _offsetX; y1 += _offsetY;
-    x2 += _offsetX; y2 += _offsetY;
+    x1 = x1 * _scaleX + _offsetX; y1 = y1 * _scaleY + _offsetY;
+    x2 = x2 * _scaleX + _offsetX; y2 = y2 * _scaleY + _offsetY;
     
     var color = colormapToColor(colormap | 0);
 
@@ -744,7 +747,7 @@ function pset(x, y, color) {
     if (y === undefined) {
         // Single-argument version
         color = x;
-        x = y = -100;
+        x = y = -10000;
     }
     
     if (color === undefined) {
@@ -754,7 +757,7 @@ function pset(x, y, color) {
     }
 
     if (color !== TRANSPARENT) {
-        x += _offsetX; y += _offsetY;
+        x = x * _scaleX + _offsetX; y = y * _scaleY + _offsetY;
         _pset(x, y, color & 31);
     }
 }
@@ -781,7 +784,7 @@ function _pset(x, y, color) {
 
 
 function pget(x, y) {
-    x += _offsetX; y += _offsetY;
+    x = x * _scaleX + _offsetX; y = y * _scaleY + _offsetY;
     
     // See comment in _pset
     var i = Math.round(x) | 0;
@@ -798,7 +801,7 @@ function pget(x, y) {
 function text(str, x, y, colormap) {
     if (x === undefined) { x = 31; }
     if (y === undefined) { y = 3; }
-    x += _offsetX; y += _offsetY;
+    x = x * _scaleX + _offsetX; y = y * _scaleY + _offsetY;
     str = '' + str;
     
     colormap |= 0;
@@ -817,7 +820,7 @@ function text(str, x, y, colormap) {
     var width = str.length - 1;
     // Variable-width letters
     for (var c = 0; c < str.length; ++c) {
-        width += (fontWidth[str[c]] || 3);
+        width += (_fontWidth[str[c]] || 3);
     }
 
     // Center and round
@@ -840,7 +843,7 @@ function text(str, x, y, colormap) {
     if (textColor != TRANSPARENT) {
         for (var c = 0; c < str.length; ++c) {
             var chr = str[c];
-            var src = fontMap[chr];
+            var src = _fontMap[chr];
             if (src) {
                 for (var j = 1, dstY = y; j < 6; ++j, ++dstY) {
                     // On screen in Y?
@@ -856,7 +859,7 @@ function text(str, x, y, colormap) {
                     } // on screen y
                 } // for j
             } // character in font
-            x += (fontWidth[chr] || 3) + 1;
+            x += (_fontWidth[chr] || 3) + 1;
             
         } // for each character
     } // not transparent

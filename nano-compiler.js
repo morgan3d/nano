@@ -669,7 +669,7 @@ function nanoToJS(src, noWrapper) {
     // catching RESET to allow jumping back to an interation of the outer loop.
     src = 'var __yieldCounter = 0; ' + (noWrapper ? '' : 'while(true) { try { ') + (
         titleScreen +
-        '_drawPalette[0] = _initialPalette[0]; pal(); xform(0,0); clip(0,-12,63,63); cls(0); text("' + (noWrapper ? '' : title) + '",31,-8,1); clip(0,0,63,63); clr = 0; srand(); ' +
+        '_drawPalette[0]=_initialPalette[0]; pal(); xform(0,0,1,1); clip(0,-12,63,63); cls(0); text("' + (noWrapper ? '' : title) + '",31,-8,1); clip(0,0,63,63); clr=0; srand(); ' +
             'for (var τ = 0, __count = 0; (τ !== 1) || (__count === 1); ++τ, ++__count) { if (isNaN(τ)) { τ=0; } show(); yield; cls(clr); ' +
             src +
             ' } '
