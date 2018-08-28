@@ -3,13 +3,7 @@
 // Variables named with a leading underscore are illegal in nano and will therefore not be
 // visible to the program.
 
-var _SCREEN_WIDTH_BITS = 6;
-var _SCREEN_WIDTH = 1 << _SCREEN_WIDTH_BITS;
-var _SCREEN_HEIGHT = _SCREEN_WIDTH;
-var _BAR_HEIGHT = _SCREEN_HEIGHT >> 3;
-var _BAR_SPACING = _BAR_HEIGHT >> 1;
-var _FRAMEBUFFER_HEIGHT = _SCREEN_HEIGHT + _BAR_SPACING + _BAR_HEIGHT;
-
+var _SCREEN_WIDTH_BITS, _SCREEN_WIDTH, _SCREEN_HEIGHT, _BAR_HEIGHT, _BAR_SPACING, _FRAMEBUFFER_HEIGHT;
 var _Math = Math;
 
 ////////////////////////////////////////////////////////////////////
@@ -235,7 +229,7 @@ var exp = Math.exp;
 var _screenPalette;
 
 /** Each pixel is one value in the _screenPalette */
-var _screen = new Uint8Array(_SCREEN_WIDTH * _FRAMEBUFFER_HEIGHT);
+var _screen;
 
 var TRANSPARENT = 32;
 
@@ -283,7 +277,7 @@ abcdefghijklmnopqrstuvwxy
     map['ζ'] = map['C'];
     map['γ'] = map['y'];
     
-    return map;
+    return Object.freeze(map);
 })();
 
 
@@ -799,7 +793,7 @@ function pget(x, y) {
 
 
 function text(str, x, y, colormap) {
-    if (x === undefined) { x = 31; }
+    if (x === undefined) { x = _SCREEN_WIDTH >> 1; }
     if (y === undefined) { y = 3; }
     x = x * _scaleX + _offsetX; y = y * _scaleY + _offsetY;
     str = '' + str;
@@ -840,6 +834,8 @@ function text(str, x, y, colormap) {
         // TODO: Draw shadow
     }
 
+    const _FONT_WIDTH_BITS = 7;
+
     if (textColor != TRANSPARENT) {
         for (var c = 0; c < str.length; ++c) {
             var chr = str[c];
@@ -848,7 +844,7 @@ function text(str, x, y, colormap) {
                 for (var j = 1, dstY = y; j < 6; ++j, ++dstY) {
                     // On screen in Y?
                     if (((dstY >>> 0) <= _clipY2) && (dstY >= _clipY1)) {
-                        for (var i = 1, dstX = x, dstIndex = x + (dstY << _SCREEN_WIDTH_BITS), srcIndex = 1 + src.x + ((src.y + j) << (_SCREEN_WIDTH_BITS + 1));
+                        for (var i = 1, dstX = x, dstIndex = x + (dstY << _SCREEN_WIDTH_BITS), srcIndex = 1 + src.x + ((src.y + j) << _FONT_WIDTH_BITS);
                              i < 4;
                              ++i, ++dstX, ++dstIndex, ++srcIndex) {
                             // In character and on screen in X?

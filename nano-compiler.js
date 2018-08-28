@@ -187,7 +187,6 @@ function setToVarDecl(set) {
 }
 
 
-
 /**
  returns the line after processign and mutates the declareSet and noDeclareSet
 
@@ -463,18 +462,21 @@ function processAbsoluteValue(src) {
 
 
 /** Returns one line of Javascript (not nano) code. */
-function makeTitleAnimation(title) {
+function makeTitleAnimation(title, screenScale) {
     title = title.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 
     // Have to use 'b*=½' instead of 'b>>=1' below because
     // b must be retained as a double to have enough bits
-    
-    let src = `#nanojam title,1
-text("` + title + `",31,31,1)
+
+    var flags = 1;
+    if (screenScale === 2) { flags |= 2; }
+    var center = ((64 * screenScale) >> 1) - 1;
+    let src = `#nanojam title,` + flags + `
+text("` + title + `",` + center + `,`+ center +`,1)
 if(⅛τ%8≥4)
  for j<3
   b=[3903080538885870,5990782578476654,6131554409934498]ⱼ
-  for(x<52)b*=½;if(b∩1)pset(x+6,j+50,5)
+  for(x<52)b*=½;if(b∩1)pset(x+` + (center - 25) + `,j+` + (center + 19) + `,5)
 b=∅
 for(j<2)if(padⱼ.aa∪padⱼ.bb∪padⱼ.cc∪padⱼ.dd∪padⱼ.ss)τ=0`;
 
@@ -517,6 +519,8 @@ function nanoToJS(src, noWrapper) {
         flags = parseInt(specFlags || 0);
         return '\n';
     });
+
+    var screenScale = ((flags >> 1) & 1) === 1 ? 2 : 1;
 
     if (! title) {
         throw makeError('The first line must be "#nanojam &lt;gametitle&gt;"', 0);
@@ -662,14 +666,17 @@ function nanoToJS(src, noWrapper) {
     var titleScreen = '';
     if ((flags & 1) === 0) {
         // Generate a title screen
-        titleScreen = makeTitleAnimation(title);
+        titleScreen = makeTitleAnimation(title, screenScale);
     }
 
+    var screenWidth = 64 * screenScale, screenHeight = 64 * screenScale, barHeight = 8 * screenScale, barSeparator = 4 * screenScale;
+    var framebufferHeight = barHeight + (barHeight >> 1) + screenHeight;
+    
     // Add the outer loop, restoring tau if destroyed by assignment to a non-number and
     // catching RESET to allow jumping back to an interation of the outer loop.
-    src = 'var __yieldCounter = 0; ' + (noWrapper ? '' : 'while(true) { try { ') + (
+    src = 'var __yieldCounter = 0; _setFramebufferSize(' + screenWidth + '); ' + (noWrapper ? '' : 'while(true) { try { ') + (
         titleScreen +
-        '_drawPalette[0]=_initialPalette[0]; pal(); xform(0,0,1,1); clip(0,-12,63,63); cls(0); text("' + (noWrapper ? '' : title) + '",31,-8,1); clip(0,0,63,63); clr=0; srand(); ' +
+            '_drawPalette[0]=_initialPalette[0]; pal(); xform(0,0,1,1); clip(0,' + (-barHeight - barSeparator) + ',' + (screenWidth - 1) + ',' + (screenHeight - 1) + '); cls(0); text("' + (noWrapper ? '' : title) + '",' + (screenWidth >> 1) + ',' + (-barHeight) + ',1); clip(0,0,' + (screenWidth - 1) + ',' + (screenHeight - 1) + '); clr=0; srand(); ' +
             'for (var τ = 0, __count = 0; (τ !== 1) || (__count === 1); ++τ, ++__count) { if (isNaN(τ)) { τ=0; } show(); yield; cls(clr); ' +
             src +
             ' } '

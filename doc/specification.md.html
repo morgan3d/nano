@@ -7,8 +7,8 @@ The [**nano ᴊᴀᴍᴍᴇʀ**](../index.html)
 is a fantasy console for tiny games with a single page of source code. It is perfect for
 tweetjams and hobby coding on a busy schedule. Features:
 
-- 64x64 pixel main screen
-- 64x8 pixel status bar screen
+- 64x64 pixel main screen (optional 128x18)
+- 64x8 pixel status bar screen (optional 128x16)
 - 32 colors
 - 60 fps
 - 96 built-in sprites
@@ -1250,7 +1250,17 @@ Title Flags
 ---------------------------------------------------------
 
 The first line of a nano program must be `#nanojam` followed by the game title and an optional
-comma and integer flags. The only current flags are `1` = no title screen and `0` = default.
+comma and integer flags. You can construct flags by bitwise-OR of property bits:
+
+Property         | Flag
+-----------------|---------:
+No title screen  | 1
+Run at 128x128   | 2
+
+The default is a title screen and all 64x64 graphics. Keep in mind that 128x128 graphics
+render 4x slower due to the increased pixel count; it may be hard to make some programs
+reach the full 60fps at "high resolution".
+
 Future flags will affect the rendering of the title screen and cartridge label.
 
 
@@ -1324,6 +1334,7 @@ its license, which permits any use.
 # Change Log
 
 2018 Aug 27:
+ - Optional 128x128 double-resolution screen
  - `xform` now allows flipping axes
  - Exposed palette slots 7 and 8
  - Documented the start button

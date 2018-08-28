@@ -1,11 +1,7 @@
 /* By Morgan McGuire @CasualEffects http://casual-effects.com GPL 3.0 License*/
 
 // Must match nano-runtime.js
-var SCREEN_WIDTH = 64;
-var SCREEN_HEIGHT = SCREEN_WIDTH;
-var BAR_HEIGHT = SCREEN_HEIGHT >> 3;
-var BAR_SPACING = BAR_HEIGHT >> 1;
-var FRAMEBUFFER_HEIGHT = SCREEN_HEIGHT + BAR_SPACING + BAR_HEIGHT;
+var SCREEN_WIDTH, SCREEN_HEIGHT, BAR_HEIGHT, BAR_SPACING, FRAMEBUFFER_HEIGHT;
 
 function clamp(x, lo, hi) { return Math.min(Math.max(x, lo), hi); }
 
@@ -347,7 +343,7 @@ var initialSource =
     //tests.nanoReset;
     //tests.rgb;
     //tests.text;
-    //tests.spacedash;
+    tests.spacedash;
     //tests.nest;
     //tests.scope;
     //tests.square;
@@ -366,7 +362,7 @@ var initialSource =
     //tests.ping;
     //tests.IF;
     //tests.FOR;
-    tests.input;
+    //tests.input;
     //tests.agent;
     //tests.rect;
     //tests.colorgrid;
@@ -426,7 +422,7 @@ function getPixelData5(image) {
         pixelData[i] = c;
     }
     // Throw away the data used for conversion to an array
-    tempCtx = tempCanvas = imageData = null;
+    imageData = null;
     return pixelData;
 }
 
@@ -1842,11 +1838,30 @@ if (jsCode) {
 }
 
 var updateImage = document.createElement('canvas');
-updateImage.width = SCREEN_WIDTH;
-updateImage.height = FRAMEBUFFER_HEIGHT;
-
-var updateImageData = ctx.createImageData(SCREEN_WIDTH, FRAMEBUFFER_HEIGHT);
+var updateImageData;
 var error = document.getElementById('error');
+
+function setFramebufferSize(w) {
+    SCREEN_WIDTH = w;
+    SCREEN_HEIGHT = SCREEN_WIDTH;
+    BAR_HEIGHT = SCREEN_HEIGHT >> 3;
+    BAR_SPACING = BAR_HEIGHT >> 1;
+    FRAMEBUFFER_HEIGHT = SCREEN_HEIGHT + BAR_SPACING + BAR_HEIGHT;
+
+    updateImage.width = SCREEN_WIDTH;
+    updateImage.height = FRAMEBUFFER_HEIGHT;
+    updateImageData = ctx.createImageData(SCREEN_WIDTH, FRAMEBUFFER_HEIGHT);
+    if (Runtime) {
+        Runtime._SCREEN_WIDTH_BITS = Math.log2(SCREEN_WIDTH) | 0;
+        Runtime._SCREEN_WIDTH = SCREEN_WIDTH;
+        Runtime._SCREEN_HEIGHT = SCREEN_HEIGHT;
+        Runtime._BAR_HEIGHT = BAR_HEIGHT;
+        Runtime._BAR_SPACING = BAR_SPACING;
+        Runtime._FRAMEBUFFER_HEIGHT = FRAMEBUFFER_HEIGHT;
+        Runtime._screen = new Uint8Array(SCREEN_WIDTH * FRAMEBUFFER_HEIGHT)
+        Runtime._updateImageDataUint32 = new Uint32Array(updateImageData.data.buffer);
+    }
+}
 
 /** Returns javascript source or throws an exception */
 function compile(src) {
@@ -1979,14 +1994,13 @@ function reloadRuntime(oncomplete) {
         Runtime._fontSheet     = fontPixelData;
         Runtime.rgb            = rgb;
         Runtime.play           = playSoundNum;
-        Runtime._updateImageDataUint32 = new Uint32Array(updateImageData.data.buffer);
+        Runtime._setFramebufferSize = setFramebufferSize;
         Runtime._submitFrame    = submitFrame;
-
+        if (SCREEN_WIDTH) { setFramebufferSize(SCREEN_WIDTH); }
         if (oncomplete) { oncomplete(); }
     };
     
     Runtime.document.close();
-
 }
 
 
@@ -2167,7 +2181,9 @@ function submitFrame() {
 
 
 setTimeout(function () {
-    reloadRuntime();
+    reloadRuntime(function () {
+        setFramebufferSize(64);
+    });
 }, 0);
 
 var emulatorButtonState = {};
