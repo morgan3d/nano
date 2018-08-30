@@ -1090,11 +1090,11 @@ Graphics
 : Return the colour closest to the hue-saturate-value specification, which are each on [0, 1].
   If `x` and `y` are specified, apply a dithering pattern based on the pixel position.
 
-`pget(x,y)`
-: Get the screen colour of pixel (`x`, `y`). Returns `∅` if out of bounds of the clipping region.
-
 `line(Ax,Ay,Bx,By,colourmap)`
 : Draw a line from (`Ax`, `Ay`) to (`Bx`, `By`) using the 1-digit colourmap.
+  
+`pget(x,y)`
+: Get the screen colour of pixel (`x`, `y`). Returns `∅` if out of bounds of the clipping region.
 
 `pal(p)`
 : Sets the draw palette colours 1-8 from the 12-digit palette. See the Colours section for details.

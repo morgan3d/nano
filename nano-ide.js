@@ -306,6 +306,26 @@ for y<76
   ψ=y+τ;v=mid(noise(3,⅛²x,⅛²ψ,¼³τ)+½,0,1)
   pset(x,y,hsv(⅗v+½,(1-v)^⅗,v,x,ψ))`,
 
+  triangles: `#nanojam Triangles,3
+  xform(0,128,1,-1)
+  if ¬τ // Init
+   clr = 25
+   mtn = []
+   for i < 200
+    // todo noise
+    mtn[i] = 30noise(3,½i) + 30
+    
+    s = 8
+  oldY = mtn[mtn.len - 1]
+  for i < mtn.len
+   x = i * s; y = mtn[i]
+   //tri(x - s, oldY,  x - s, 0,  x, y,   2)
+   //tri(x - s, 0,     x, y,      x, 0,  1)
+   line(x - s, oldY+20, x,y+20, 3)
+   oldY = y
+  
+  draw(1, 4, 96, 4321)`,
+
     plasma2:`#nanojam plasma2,1
 clr=∅
 for y<256
@@ -343,7 +363,8 @@ var initialSource =
     //tests.nanoReset;
     //tests.rgb;
     //tests.text;
-    tests.spacedash;
+    tests.triangles;
+    //tests.spacedash;
     //tests.nest;
     //tests.scope;
     //tests.square;

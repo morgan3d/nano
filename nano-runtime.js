@@ -486,19 +486,19 @@ function tri(Ax, Ay, Bx, By, Cx, Cy, colormap) {
         addEdge(Cx, Cy, Ax, Ay);
 
         // Intentionally left as a float to avoid float to int conversion for the inner loop
-        y0 = Math.max(_clipY1,  Math.floor(y0));
+        y0 = Math.max(_clipY1, Math.floor(y0));
         y1 = Math.min(_clipY2, Math.floor(y1));
-        for (var y = y0; y <= y1; ++y) {
+        for (let y = y0; y <= y1; ++y) {
             // For this scanline, intersect the edge lines of the triangle.
             // As a convex polygon, we can simply intersect ALL edges and then
             // take the min and max intersections.
-            var x0 = Infinity, x1 = -Infinity;
-            for (var i = edgeArray.length - 1; i >= 0; --i) {
-                var seg = edgeArray[i];
+            let x0 = Infinity, x1 = -Infinity;
+            for (let i = edgeArray.length - 1; i >= 0; --i) {
+                let seg = edgeArray[i];
                 
-                var ry = y - seg[1];
+                let ry = y - seg[1];
                 if ((ry >= 0) && (ry < seg[3])) {
-                    x = seg[0] + ry * seg[2];
+                    let x = seg[0] + ry * seg[2];
                     if (x < x0) { x0 = x; }
                     if (x > x1) { x1 = x; }
                 }
