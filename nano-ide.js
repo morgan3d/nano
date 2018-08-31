@@ -604,15 +604,14 @@ function redrawSelectedSprite() {
     }
     
     if (Runtime && Runtime._draw && Runtime._spriteSheet) {
-        var screen = new Uint8Array(SCREEN_WIDTH * FRAMEBUFFER_HEIGHT);
-        screen.fill(fill, 0, screen.length);
+        let N = SCREEN_WIDTH * FRAMEBUFFER_HEIGHT;
+        let screen = new Uint8Array(N);
+        screen.fill(fill);
         
-        Runtime._draw(selectedSpriteIndex, 6, 6, localPalette, xform, rot, screen, 0, 12, 63, 63);
-        
+        Runtime._draw(selectedSpriteIndex, 6, 6, localPalette, xform, rot, screen, 0, 0, 63, 63);
         // Expand the paletted image to RGB values
         // Overwrite the entire image for simplicity, even though we only need the upper 12x12
-        var N = SCREEN_WIDTH * FRAMEBUFFER_HEIGHT;
-        var data = Runtime._updateImageDataUint32;
+        let data = Runtime._updateImageDataUint32;
         for (var i = 0; i < N; ++i) {
             data[i] = screenPalette[screen[i]];
         }

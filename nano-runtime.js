@@ -881,15 +881,15 @@ function _clamp(x, L, H) {
 /** Helper function to share code between the IDE and the runtime. Clipping region has to be
  passed because it is different for those cases. */
 function _draw(spr, x, y, localPalette, xform, rot, screen, clipX1, clipY1, clipX2, clipY2) {
-    var c = Math.cos(rot), s = Math.sin(rot);
+    let c = Math.cos(rot), s = Math.sin(rot);
 
     // Compute the net 2x2 transformation matrix
-    var A = c, B = s, C = -s, D = c;
+    let A = c, B = s, C = -s, D = c;
     xform |= 0;
 
     if (xform & 1) {
         // Transpose: swap axes
-        var temp = A; A = C; C = temp;
+        let temp = A; A = C; C = temp;
         temp = B; B = D; D = temp;
     }
 
@@ -904,36 +904,36 @@ function _draw(spr, x, y, localPalette, xform, rot, screen, clipX1, clipY1, clip
     }
 
     // Center of the destination (integers)
-    var dstX0 = Math.round(x - 3.5) | 0;
-    var dstY0 = Math.round(y - 3.5) | 0;
+    let dstX0 = Math.round(x - 3.5) | 0;
+    let dstY0 = Math.round(y - 3.5) | 0;
     
     // Top left of the source (integer)
-    var srcX0 = ((spr & 15) << 3);
-    var srcY0 = (((spr >> 4) & 15) << 3);
+    let srcX0 = ((spr & 15) << 3);
+    let srcY0 = (((spr >> 4) & 15) << 3);
 
     // What is the farthest a corner sticks out?
-    var p = 2;
+    let p = 2;
 
     // Iterate over *output* pixels
-    for (var j = -p; j < 8 + p; ++j) {
-        var dstY = dstY0 + j;
-        var v = j - 3.5;
+    for (let j = -p; j < 8 + p; ++j) {
+        let dstY = dstY0 + j;
+        let v = j - 3.5;
         
-        for (var i = -p; i < 8 + p; ++i) {
-            var dstX = dstX0 + i;
-            var u = i - 3.5;
+        for (let i = -p; i < 8 + p; ++i) {
+            let dstX = dstX0 + i;
+            let u = i - 3.5;
 
-            var srcX = Math.round(u * A + v * B + 3.5) | 0;
-            var srcY = Math.round(u * C + v * D + 3.5) | 0;
+            let srcX = Math.round(u * A + v * B + 3.5) | 0;
+            let srcY = Math.round(u * C + v * D + 3.5) | 0;
 
             if (((srcX >>> 0) < 8) && ((srcY >>> 0) < 8)) {
                 // Inside the source sprite
                 srcX += srcX0; srcY += srcY0;
 
-                var slot = _spriteSheet[srcX + (srcY << 7)];
-                var color = localPalette[slot];
+                let slot = _spriteSheet[srcX + (srcY << 7)];
+                let color = localPalette[slot];
                 if (color !== TRANSPARENT) {
-                    if (((dstX >>> 0) <= _clipX2) && ((dstY >>> 0) <= _clipY2) && (dstX >= _clipX1) && (dstY >= _clipY1)) {
+                    if (((dstX >>> 0) <= clipX2) && ((dstY >>> 0) <= clipY2) && (dstX >= clipX1) && (dstY >= clipY1)) {
                         screen[dstX + (dstY << _SCREEN_WIDTH_BITS)] = color;
                     }
                 } // if not transparent
