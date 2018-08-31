@@ -944,7 +944,7 @@ function _draw(spr, x, y, localPalette, xform, rot, screen, clipX1, clipY1, clip
 
 
 function draw(spr, x, y, colormap, xform, rot) {
-    x += _offsetX; y += _offsetY;
+    x = x * _scaleX + _offsetX; y = y * _scaleY + _offsetY;
     rot = rot || 0;
     
     // Out of bounds sprite indices, off screen (including worst-case rotation)
