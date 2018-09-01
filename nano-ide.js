@@ -1,11 +1,7 @@
 /* By Morgan McGuire @CasualEffects http://casual-effects.com GPL 3.0 License*/
 
 // Must match nano-runtime.js
-var SCREEN_WIDTH = 64;
-var SCREEN_HEIGHT = SCREEN_WIDTH;
-var BAR_HEIGHT = SCREEN_HEIGHT >> 3;
-var BAR_SPACING = BAR_HEIGHT >> 1;
-var FRAMEBUFFER_HEIGHT = SCREEN_HEIGHT + BAR_SPACING + BAR_HEIGHT;
+var SCREEN_WIDTH, SCREEN_HEIGHT, BAR_HEIGHT, BAR_SPACING, FRAMEBUFFER_HEIGHT;
 
 function clamp(x, lo, hi) { return Math.min(Math.max(x, lo), hi); }
 
@@ -310,6 +306,26 @@ for y<76
   ψ=y+τ;v=mid(noise(3,⅛²x,⅛²ψ,¼³τ)+½,0,1)
   pset(x,y,hsv(⅗v+½,(1-v)^⅗,v,x,ψ))`,
 
+  triangles: `#nanojam Triangles,3
+  xform(0,128,1,-1)
+  if ¬τ // Init
+   clr = 25
+   mtn = []
+   for i < 200
+    // todo noise
+    mtn[i] = 30noise(3,½i) + 30
+    
+    s = 8
+  oldY = mtn[mtn.len - 1]
+  for i < mtn.len
+   x = i * s; y = mtn[i]
+   //tri(x - s, oldY,  x - s, 0,  x, y,   2)
+   //tri(x - s, 0,     x, y,      x, 0,  1)
+   line(x - s, oldY+20, x,y+20, 3)
+   oldY = y
+  
+  draw(1, 4, 96, 4321)`,
+
     plasma2:`#nanojam plasma2,1
 clr=∅
 for y<256
@@ -347,6 +363,7 @@ var initialSource =
     //tests.nanoReset;
     //tests.rgb;
     //tests.text;
+    tests.triangles;
     //tests.spacedash;
     //tests.nest;
     //tests.scope;
@@ -366,7 +383,7 @@ var initialSource =
     //tests.ping;
     //tests.IF;
     //tests.FOR;
-    tests.input;
+    //tests.input;
     //tests.agent;
     //tests.rect;
     //tests.colorgrid;
@@ -426,7 +443,7 @@ function getPixelData5(image) {
         pixelData[i] = c;
     }
     // Throw away the data used for conversion to an array
-    tempCtx = tempCanvas = imageData = null;
+    imageData = null;
     return pixelData;
 }
 
@@ -587,15 +604,14 @@ function redrawSelectedSprite() {
     }
     
     if (Runtime && Runtime._draw && Runtime._spriteSheet) {
-        var screen = new Uint8Array(SCREEN_WIDTH * FRAMEBUFFER_HEIGHT);
-        screen.fill(fill, 0, screen.length);
+        let N = SCREEN_WIDTH * FRAMEBUFFER_HEIGHT;
+        let screen = new Uint8Array(N);
+        screen.fill(fill);
         
-        Runtime._draw(selectedSpriteIndex, 6, 6, localPalette, xform, rot, screen, 0, 12, 63, 63);
-        
+        Runtime._draw(selectedSpriteIndex, 6, 6, localPalette, xform, rot, screen, 0, 0, 63, 63);
         // Expand the paletted image to RGB values
         // Overwrite the entire image for simplicity, even though we only need the upper 12x12
-        var N = SCREEN_WIDTH * FRAMEBUFFER_HEIGHT;
-        var data = Runtime._updateImageDataUint32;
+        let data = Runtime._updateImageDataUint32;
         for (var i = 0; i < N; ++i) {
             data[i] = screenPalette[screen[i]];
         }
@@ -1842,11 +1858,30 @@ if (jsCode) {
 }
 
 var updateImage = document.createElement('canvas');
-updateImage.width = SCREEN_WIDTH;
-updateImage.height = FRAMEBUFFER_HEIGHT;
-
-var updateImageData = ctx.createImageData(SCREEN_WIDTH, FRAMEBUFFER_HEIGHT);
+var updateImageData;
 var error = document.getElementById('error');
+
+function setFramebufferSize(w) {
+    SCREEN_WIDTH = w;
+    SCREEN_HEIGHT = SCREEN_WIDTH;
+    BAR_HEIGHT = SCREEN_HEIGHT >> 3;
+    BAR_SPACING = BAR_HEIGHT >> 1;
+    FRAMEBUFFER_HEIGHT = SCREEN_HEIGHT + BAR_SPACING + BAR_HEIGHT;
+
+    updateImage.width = SCREEN_WIDTH;
+    updateImage.height = FRAMEBUFFER_HEIGHT;
+    updateImageData = ctx.createImageData(SCREEN_WIDTH, FRAMEBUFFER_HEIGHT);
+    if (Runtime) {
+        Runtime._SCREEN_WIDTH_BITS = Math.log2(SCREEN_WIDTH) | 0;
+        Runtime._SCREEN_WIDTH = SCREEN_WIDTH;
+        Runtime._SCREEN_HEIGHT = SCREEN_HEIGHT;
+        Runtime._BAR_HEIGHT = BAR_HEIGHT;
+        Runtime._BAR_SPACING = BAR_SPACING;
+        Runtime._FRAMEBUFFER_HEIGHT = FRAMEBUFFER_HEIGHT;
+        Runtime._screen = new Uint8Array(SCREEN_WIDTH * FRAMEBUFFER_HEIGHT)
+        Runtime._updateImageDataUint32 = new Uint32Array(updateImageData.data.buffer);
+    }
+}
 
 /** Returns javascript source or throws an exception */
 function compile(src) {
@@ -1979,14 +2014,13 @@ function reloadRuntime(oncomplete) {
         Runtime._fontSheet     = fontPixelData;
         Runtime.rgb            = rgb;
         Runtime.play           = playSoundNum;
-        Runtime._updateImageDataUint32 = new Uint32Array(updateImageData.data.buffer);
+        Runtime._setFramebufferSize = setFramebufferSize;
         Runtime._submitFrame    = submitFrame;
-
+        if (SCREEN_WIDTH) { setFramebufferSize(SCREEN_WIDTH); }
         if (oncomplete) { oncomplete(); }
     };
     
     Runtime.document.close();
-
 }
 
 
@@ -2167,7 +2201,9 @@ function submitFrame() {
 
 
 setTimeout(function () {
-    reloadRuntime();
+    reloadRuntime(function () {
+        setFramebufferSize(64);
+    });
 }, 0);
 
 var emulatorButtonState = {};

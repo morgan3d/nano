@@ -3,13 +3,7 @@
 // Variables named with a leading underscore are illegal in nano and will therefore not be
 // visible to the program.
 
-var _SCREEN_WIDTH_BITS = 6;
-var _SCREEN_WIDTH = 1 << _SCREEN_WIDTH_BITS;
-var _SCREEN_HEIGHT = _SCREEN_WIDTH;
-var _BAR_HEIGHT = _SCREEN_HEIGHT >> 3;
-var _BAR_SPACING = _BAR_HEIGHT >> 1;
-var _FRAMEBUFFER_HEIGHT = _SCREEN_HEIGHT + _BAR_SPACING + _BAR_HEIGHT;
-
+var _SCREEN_WIDTH_BITS, _SCREEN_WIDTH, _SCREEN_HEIGHT, _BAR_HEIGHT, _BAR_SPACING, _FRAMEBUFFER_HEIGHT;
 var _Math = Math;
 
 ////////////////////////////////////////////////////////////////////
@@ -235,7 +229,7 @@ var exp = Math.exp;
 var _screenPalette;
 
 /** Each pixel is one value in the _screenPalette */
-var _screen = new Uint8Array(_SCREEN_WIDTH * _FRAMEBUFFER_HEIGHT);
+var _screen;
 
 var TRANSPARENT = 32;
 
@@ -283,7 +277,7 @@ abcdefghijklmnopqrstuvwxy
     map['ζ'] = map['C'];
     map['γ'] = map['y'];
     
-    return map;
+    return Object.freeze(map);
 })();
 
 
@@ -492,19 +486,19 @@ function tri(Ax, Ay, Bx, By, Cx, Cy, colormap) {
         addEdge(Cx, Cy, Ax, Ay);
 
         // Intentionally left as a float to avoid float to int conversion for the inner loop
-        y0 = Math.max(_clipY1,  Math.floor(y0));
+        y0 = Math.max(_clipY1, Math.floor(y0));
         y1 = Math.min(_clipY2, Math.floor(y1));
-        for (var y = y0; y <= y1; ++y) {
+        for (let y = y0; y <= y1; ++y) {
             // For this scanline, intersect the edge lines of the triangle.
             // As a convex polygon, we can simply intersect ALL edges and then
             // take the min and max intersections.
-            var x0 = Infinity, x1 = -Infinity;
-            for (var i = edgeArray.length - 1; i >= 0; --i) {
-                var seg = edgeArray[i];
+            let x0 = Infinity, x1 = -Infinity;
+            for (let i = edgeArray.length - 1; i >= 0; --i) {
+                let seg = edgeArray[i];
                 
-                var ry = y - seg[1];
+                let ry = y - seg[1];
                 if ((ry >= 0) && (ry < seg[3])) {
-                    x = seg[0] + ry * seg[2];
+                    let x = seg[0] + ry * seg[2];
                     if (x < x0) { x0 = x; }
                     if (x > x1) { x1 = x; }
                 }
@@ -799,7 +793,7 @@ function pget(x, y) {
 
 
 function text(str, x, y, colormap) {
-    if (x === undefined) { x = 31; }
+    if (x === undefined) { x = _SCREEN_WIDTH >> 1; }
     if (y === undefined) { y = 3; }
     x = x * _scaleX + _offsetX; y = y * _scaleY + _offsetY;
     str = '' + str;
@@ -840,6 +834,8 @@ function text(str, x, y, colormap) {
         // TODO: Draw shadow
     }
 
+    const _FONT_WIDTH_BITS = 7;
+
     if (textColor != TRANSPARENT) {
         for (var c = 0; c < str.length; ++c) {
             var chr = str[c];
@@ -848,7 +844,7 @@ function text(str, x, y, colormap) {
                 for (var j = 1, dstY = y; j < 6; ++j, ++dstY) {
                     // On screen in Y?
                     if (((dstY >>> 0) <= _clipY2) && (dstY >= _clipY1)) {
-                        for (var i = 1, dstX = x, dstIndex = x + (dstY << _SCREEN_WIDTH_BITS), srcIndex = 1 + src.x + ((src.y + j) << (_SCREEN_WIDTH_BITS + 1));
+                        for (var i = 1, dstX = x, dstIndex = x + (dstY << _SCREEN_WIDTH_BITS), srcIndex = 1 + src.x + ((src.y + j) << _FONT_WIDTH_BITS);
                              i < 4;
                              ++i, ++dstX, ++dstIndex, ++srcIndex) {
                             // In character and on screen in X?
@@ -885,15 +881,15 @@ function _clamp(x, L, H) {
 /** Helper function to share code between the IDE and the runtime. Clipping region has to be
  passed because it is different for those cases. */
 function _draw(spr, x, y, localPalette, xform, rot, screen, clipX1, clipY1, clipX2, clipY2) {
-    var c = Math.cos(rot), s = Math.sin(rot);
+    let c = Math.cos(rot), s = Math.sin(rot);
 
     // Compute the net 2x2 transformation matrix
-    var A = c, B = s, C = -s, D = c;
+    let A = c, B = s, C = -s, D = c;
     xform |= 0;
 
     if (xform & 1) {
         // Transpose: swap axes
-        var temp = A; A = C; C = temp;
+        let temp = A; A = C; C = temp;
         temp = B; B = D; D = temp;
     }
 
@@ -908,36 +904,36 @@ function _draw(spr, x, y, localPalette, xform, rot, screen, clipX1, clipY1, clip
     }
 
     // Center of the destination (integers)
-    var dstX0 = Math.round(x - 3.5) | 0;
-    var dstY0 = Math.round(y - 3.5) | 0;
+    let dstX0 = Math.round(x - 3.5) | 0;
+    let dstY0 = Math.round(y - 3.5) | 0;
     
     // Top left of the source (integer)
-    var srcX0 = ((spr & 15) << 3);
-    var srcY0 = (((spr >> 4) & 15) << 3);
+    let srcX0 = ((spr & 15) << 3);
+    let srcY0 = (((spr >> 4) & 15) << 3);
 
     // What is the farthest a corner sticks out?
-    var p = 2;
+    let p = 2;
 
     // Iterate over *output* pixels
-    for (var j = -p; j < 8 + p; ++j) {
-        var dstY = dstY0 + j;
-        var v = j - 3.5;
+    for (let j = -p; j < 8 + p; ++j) {
+        let dstY = dstY0 + j;
+        let v = j - 3.5;
         
-        for (var i = -p; i < 8 + p; ++i) {
-            var dstX = dstX0 + i;
-            var u = i - 3.5;
+        for (let i = -p; i < 8 + p; ++i) {
+            let dstX = dstX0 + i;
+            let u = i - 3.5;
 
-            var srcX = Math.round(u * A + v * B + 3.5) | 0;
-            var srcY = Math.round(u * C + v * D + 3.5) | 0;
+            let srcX = Math.round(u * A + v * B + 3.5) | 0;
+            let srcY = Math.round(u * C + v * D + 3.5) | 0;
 
             if (((srcX >>> 0) < 8) && ((srcY >>> 0) < 8)) {
                 // Inside the source sprite
                 srcX += srcX0; srcY += srcY0;
 
-                var slot = _spriteSheet[srcX + (srcY << 7)];
-                var color = localPalette[slot];
+                let slot = _spriteSheet[srcX + (srcY << 7)];
+                let color = localPalette[slot];
                 if (color !== TRANSPARENT) {
-                    if (((dstX >>> 0) <= _clipX2) && ((dstY >>> 0) <= _clipY2) && (dstX >= _clipX1) && (dstY >= _clipY1)) {
+                    if (((dstX >>> 0) <= clipX2) && ((dstY >>> 0) <= clipY2) && (dstX >= clipX1) && (dstY >= clipY1)) {
                         screen[dstX + (dstY << _SCREEN_WIDTH_BITS)] = color;
                     }
                 } // if not transparent
@@ -948,7 +944,7 @@ function _draw(spr, x, y, localPalette, xform, rot, screen, clipX1, clipY1, clip
 
 
 function draw(spr, x, y, colormap, xform, rot) {
-    x += _offsetX; y += _offsetY;
+    x = x * _scaleX + _offsetX; y = y * _scaleY + _offsetY;
     rot = rot || 0;
     
     // Out of bounds sprite indices, off screen (including worst-case rotation)
