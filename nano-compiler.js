@@ -469,7 +469,7 @@ function makeTitleAnimation(title, screenScale) {
     // b must be retained as a double to have enough bits
 
     var flags = 1;
-    if (screenScale === 2) { flags |= 2; }
+    if (screenScale === 2) { flags |= 2; } else if (screenScale === 4) { flags |= 4; }
     var center = ((64 * screenScale) >> 1) - 1;
     let src = `#nanojam title,` + flags + `
 text("` + title + `",` + center + `,`+ center +`,1)
@@ -505,13 +505,13 @@ function nanoToJS(src, noWrapper) {
         return '' +  String.fromCharCode(numProtected++ + protectionBlockStart);
     }
     
-    var numProtected = 0, protectionMap = [];
+    let numProtected = 0, protectionMap = [];
 
     // Switch to small element-of everywhere before blocks or strings can be processed
     src = src.replace(/∈/g, '∊');
     
     // Title line
-    var title = undefined, flags = 0;
+    let title = undefined, flags = 0;
     src = src.replace(/^#nanojam[ \t]+(..+?)((?:,)([ \t]*\d+[ \t]*))?(?:$|\n)/, function (match, specTitle, ignore, specFlags) {
         // remove comments
         specTitle = specTitle.replace(/\/\/.*$|\/\*.*\*\//g, '').trim();
@@ -520,7 +520,13 @@ function nanoToJS(src, noWrapper) {
         return '\n';
     });
 
-    var screenScale = ((flags >> 1) & 1) === 1 ? 2 : 1;
+    let screenScale = 1;
+    switch ((flags >> 1) & 3) {
+    case 1: screenScale = 2; break;
+    case 2: screenScale = 4; break;
+    case 3: throw makeError("Illegal screen size flags in title: 0b110", 0); break;
+    }
+        
 
     if (! title) {
         throw makeError('The first line must be "#nanojam &lt;gametitle&gt;"', 0);
