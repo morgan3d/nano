@@ -622,8 +622,8 @@ function nanoToJS(src, noWrapper) {
     src = src.replace(/\^/g, '**');
 
     src = src.replace(/(\b|\d)or(\b|\d)/g, '$1 || $2');
-    src = src.replace(/∩(=?)\b/g, ' &$1 ');
-    src = src.replace(/∪(=?)\b/g, ' |$1 ');
+    src = src.replace(/∩(=?)/g, ' &$1 ');
+    src = src.replace(/∪(=?)/g, ' |$1 ');
 
     // Optimize var**(int), which is much less efficient than var*var.
     // Note that we don't allow rnd in here!
