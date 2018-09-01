@@ -1010,6 +1010,9 @@ Math
 : A hash value of string or number `x`, returning a value on [0, 1].
   If `y` is specified, the hash considers the union of the values.
 
+`lerp(a,b,t)`
+: Returns `a*(1-t)+b*t`
+
 `min(a,b,...)`
 : Smallest of the arguments
 
@@ -1070,12 +1073,13 @@ Graphics
 `clip(x1,y1,x2,y2)`
 : Set the clipping region to these coordinates. Unspecified values retain their 
   current value.  Coordinates are clamped to the physical screen. The initial
-  clipping region is `clip(0,0,63,63)`. Values are rounded to the nearest integer
+  clipping region in default 64x64 resolution is `clip(0,0,63,63)`, and `clip()` resets to this default. Values are rounded to the nearest integer
   and the min and max are taken, so the order of `y2` and `y1` and of `x1` 
   and `x2` does not matter. It is impossible to set a clipping region smaller than
   1x1 pixels. The clipping region for the top bar screen is `clip(0,0,-12,-4)`.
   The clipping region of the entire screen together is `clip(0,-12,63,63)`.
-  The clipping region is not affected by `xform`.
+  The clipping region is not affected by `xform`. Higher resolutions are scaled
+  proportionally.
 
 `draw(s,x,y,colourmap,flips,rot)`
 : Draw sprite with index `s` centered at (`x`, `y`), remapping sprite colours by 4-digit
@@ -1128,7 +1132,7 @@ Graphics
 : Set the transformation applied to all draw coordinates and `pget`. The default transform
   is (0, 0). The scale parameters must be +1 or -1 and are primarily intended for flipping the
   Y axis. Scaling affects the location of sprites and text but not their own axes; text will
-  always render right side up.
+  always render right side up. `xform()` resets to the default transformation.
 
 The default colourmap is 0, which corresponds to the colour from the previous command.
 
@@ -1332,6 +1336,12 @@ its license, which permits any use.
 
 
 # Change Log
+
+2018 Sep 1:
+ - Fixed `let` and `const` compilation
+ - Added `lerp`
+ - Fixed `tri`
+
 
 2018 Aug 27:
  - Optional 128x128 double-resolution screen

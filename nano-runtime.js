@@ -175,6 +175,11 @@ var _offsetX = 0, _offsetY = 0, _scaleX = 1, _scaleY = 1;
 
 
 function xform(addX, addY, scaleX, scaleY) {
+    if (addX === undefined) {
+        addX = 0; addY = 0;
+        scaleX = 1; scaleY = 1;
+    }
+    
     _offsetX = addX;
     _offsetY = _BAR_HEIGHT + _BAR_SPACING + addY;
 
@@ -185,7 +190,14 @@ function xform(addX, addY, scaleX, scaleY) {
 
 function clip(x1,y1,x2,y2) {
     var yShift = _BAR_SPACING + _BAR_HEIGHT;
-    if (x1 === undefined) { x1 = _clipX1; }
+    if (x1 === undefined) {
+        if (y1 === undefined && x2 === undefined && y2 === undefined) {
+            // No arguments
+            x1 = 0; y1 = 0; x2 = _SCREEN_WIDTH - 1; y2 = SCREEN_HEIGHT - 1;
+        } else {
+            x1 = _clipX1;
+        }
+    }
     if (y1 === undefined) { y1 = _clipY1 - yShift; }
 
     if (x2 === undefined) { x2 = _clipX2; }
@@ -327,6 +339,8 @@ function hash(x, y) {
 }
 
 function _lerp(a,b,t) { return a * (1 - t) + b * t; }
+
+var lerp = _lerp;
 
 // Fast 1D "hash" used by noise()
 function _nhash1(n) { n = Math.sin(n) * 1e4; return n - Math.floor(n); }
