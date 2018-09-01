@@ -411,13 +411,19 @@ function _noop() {}
 function mid(a, b, c) {
     if (a < b) {
         if (b < c) {
+            // a < b < c
             return b;
-        } else {
+        } else if (a < c) {
+            // a < c <= b
             return c;
+        } else {
+            // c <= a < b
+            return a;
         }
     } else if (a < c) {
         return a;
     } else if (b < c) {
+        // b < c <= a
         return c;
     } else {
         return b;
