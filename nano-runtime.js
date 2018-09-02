@@ -431,10 +431,8 @@ function xyz(x, y, z) {
 
 
 function overlap(A, B) {
-    return ((A.pos.x + A.ext.x >= B.pos.x - B.ext.x) &&
-            (A.pos.x - A.ext.x <= B.pos.x + B.ext.x) &&
-            (A.pos.y + A.ext.y >= B.pos.y - B.ext.y) &&
-            (A.pos.y - A.ext.y <= B.pos.y + B.ext.y));
+    return ((Math.abs(A.pos.x - B.pos.x) <= (A.ext.x + B.ext.x)) &&
+            (Math.abs(A.pos.y - B.pos.y) <= (A.ext.y + B.ext.y)));
 }
 
 
