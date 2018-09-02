@@ -420,6 +420,16 @@ function vec(x, y, z, w) {
 }
 
 
+function xy(x, y) {
+    return Object.seal({x:x, y:y});
+}
+
+
+function xyz(x, y, z) {
+    return Object.seal({x:x, y:y, z:z});
+}
+
+
 function overlap(A, B) {
     return ((A.pos.x + A.ext.x >= B.pos.x - B.ext.x) &&
             (A.pos.x - A.ext.x <= B.pos.x + B.ext.x) &&
