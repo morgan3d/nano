@@ -420,6 +420,14 @@ function vec(x, y, z, w) {
 }
 
 
+function overlap(A, B) {
+    return ((A.pos.x + A.ext.x >= B.pos.x - B.ext.x) &&
+            (A.pos.x - A.ext.x <= B.pos.x + B.ext.x) &&
+            (A.pos.y + A.ext.y >= B.pos.y - B.ext.y) &&
+            (A.pos.y - A.ext.y <= B.pos.y + B.ext.y));
+}
+
+
 function mid(a, b, c) {
     if (a < b) {
         if (b < c) {

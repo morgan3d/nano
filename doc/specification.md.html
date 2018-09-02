@@ -1030,6 +1030,11 @@ Math
 : Value noise on the range [-1, 1], bicubically interpolated between integer locations at
   octave 0. Unused dimensions default to zero.
 
+`overlap(A,B)`
+: Assumes that `A` and `B` are tables of the form `{pos:vec(x,y), ext:vec(hw,hh)}` where
+  `hw` and `hh` are the half-width and half-height of a rectangle centered at `(x,y)`.
+  Returns true if those rectangles overlap.
+
 `pow(a,b)`
 : Exponent. See also the `^` operator.
 
@@ -1050,6 +1055,10 @@ Math
 
 `tan(x)`
 : Tangent of `x` radians.
+
+`vec(x,y,z)`
+: Creates a mutable 2D or 3D vector (`z` is optional) table that cannot have extra keys
+  added to it later.
 
 `wrap(x,hi)`
 : Real-number modulus. Wraps `x` to the range [0, `hi`). `hi` defaults to `1.0` if not specified.
