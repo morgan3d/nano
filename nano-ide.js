@@ -698,9 +698,11 @@ function makeSymbolsWindow() {
         '¬': 'logical not (\\not)',
         '&': 'logical and',
         'X': 'logical or',
-        '⌊': 'floor',
+        '⌊': 'floor (\\lfloor)',
+        '⌋': 'floor (\\rfloor)',
         '|': 'absolute value',
-        '⌈': 'ceiling',
+        '⌈': 'ceiling (\\lceil)',
+        '⌉': 'ceiling (\\rceil)',
         '≟': 'equals (?=)',
         '≠': 'not equal/logical xor (!=)',
         '∊': 'FOR-loop in (\\in)',
@@ -1805,7 +1807,11 @@ const autocorrectTable = [
     '\\half',     '½',
     '\\third',    '⅓',
     '\\quarter',  '¼',
-    '\\fifth',    '⅕'
+    '\\fifth',    '⅕',
+    '\\lfloor',   '⌊',
+    '\\rfloor',   '⌋',
+    '\\lceil',    '⌈',
+    '\\rceil',    '⌉'
 ];
 
 
