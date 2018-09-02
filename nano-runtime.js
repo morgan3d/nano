@@ -408,6 +408,18 @@ function pal(p) {
 
 function _noop() {}
 
+
+function vec(x, y, z, w) {
+    if (w !== undefined) {
+        return Object.seal({x:x, y:y, z:z, w:w})
+    } else if (z !== undefined) {
+        return Object.seal({x:x, y:y, z:z})
+    } else {
+        return Object.seal({x:x, y:y})
+    }
+}
+
+
 function mid(a, b, c) {
     if (a < b) {
         if (b < c) {
