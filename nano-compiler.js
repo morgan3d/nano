@@ -583,7 +583,7 @@ function nanoToJS(src, noWrapper) {
     for (var i = 0; i < 2; ++i) {
         // Implicit multiplication. Must be before operations that may put parentheses after
         // numbers, making the product unclear. 
-        src = src.replace(/([επτξ∞½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒\d⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₎])[ \t]*([\(\[A-Za-zαβγδζηιθλμρσϕχψωΔΩτεπξ∞])/g, '$1 * $2');
+        src = src.replace(/([^A-Za-zαβγδζηθιλμρσϕφχψωΩ])([0-9]+|[επτξ∞½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₎])[ \t]*([\(\[A-Za-zαβγδζηιθλμρσϕχψωΔΩτεπξ∞])/g, '$1$2 * $3');
         
         // Fix any instances of "or" that got accentially turned
         // into implicit multiplication. If there are other text
