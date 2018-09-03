@@ -7,6 +7,16 @@ The [**nano ᴊᴀᴍᴍᴇʀ**](../index.html) is a fantasy console for
 tiny games. It is perfect for hobby coding, a game programming 
 course, and tweetjams. 
 
+The nano integrated development environment is free, runs in a browser, and connects to Google
+Drive. So, you can turn a few spare minutes on any computer or tablet into productive coding time.
+
+The nano programming language is designed to make short, readable programs. Indentation and
+newlines signify blocks and ends of statements. The syntax is based on math notation and looks
+like pseudocode.
+
+![](nano-ide.png width=563 height=368 border=1)
+
+
 Virtual Hardware Features:
 
 - 64x64 pixel main screen (optional 128x128 or 256x256)
@@ -33,22 +43,374 @@ Online Software Features:
 - Auto-minimizer for Twitter
 - Open source: use online, fork, or run locally
 
-The nano integrated development environment is free, runs in a browser, and connects to Google
-Drive. So, you can turn a few spare minutes on any computer or tablet into productive coding time.
-
-The nano programming language is designed to make short, readable programs. Indentation and
-newlines signify blocks and ends of statements. The syntax is based on math notation and looks
-like pseudocode.
-
-
-![](nano-ide.jpg width=563 height=368 border=1)
-
 
 Examples
 =============================================================================================
 
-Optimized
+Friendly
 ---------------------------------------------------------------------------------------------
+
+### Pong
+
+![ ](pong.png width=217px height=257px) As
+[one of the first](https://en.wikipedia.org/wiki/Pong) video games,
+[*Pong*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIAKkQHMBQGCWAzBgI8AKD6RAgAwYID0VCAkiNgC7ZgA22AXgKYJMAWvNPG6UaCAEbs2CAA6QAzs2yoEEACYIAbtzaQAxswCelKWxkBeBAA8jACgDMAJgA0CZwEpKOmQiu27AF63AB6vBDFaJG4AJwBaWTYwI1jtMBjWCTZuBUp1bBi-BABtAGoARjc48oBdSgV9SBjeK2KyNzIaiLkwdXVsouLnN2c6jHEAMSaEbjB9fjkklJiMXGnsBAAeBCdIhABZSB0+QR6+7MpZXv7uQCNcIrhsdUc3K-O7hFKz24A6azcAKwATi8eyQ1wGRjkimUqEoUKsTgB+Ri9y+zm6ewAIjEwAB3E68N43NQgTQNJqiBDqXF4uwAFnprwhdzcRjc5XCTG41iYdgpzVubiZCCMoOoURZkkgAFcQPoqXgEAAfYnZe5xSTSP7KrYIekIABkKqhmrMbB+Rl1212CAQCllZMc9PC2l0lqKcRCKNuWAlCAAQtIEGhIDkegomGcbj8DjK2CxElCJJABPanuGJCZ-RUENNqnxIGoE7FwNzCem0CA8-gBLxGnArhkHSAfpQleaPQAqakFe4APlFCB7Pso-oAKqdU4JColkqkBTkxw65c9PGPSqVF4BAgkA0QS+u2d6xFTsI9y2iLiHH4isKkDcwocECiNaFOwbbYADg81NpdiBlQIJ+2AjK4CAAaC4hBuYcj8EYSj6AosYAIIKAoMpwLwdZajBcBHOGCh6HibBGG2R6fFYPh-AA3DhFpQqUlHuiYSrKuRmrOLqg4OBQboWseVhxFR1j1I6zwAGyclgV60hW5oYDS+IMg4bhHqp2rsuB5QQUAA)
+is a great place to start. It is an endless and simplified tennis game for two players. The
+nano version is 100 lines of code, but shows how to implement multiple players, graphics,
+sounds, scores, and the basic physics of the game.
+
+Any nano program can be encoded as a URL. Click on the word "Pong" above to load this game directly
+into a browser and play it. If you're new to programming, experiment with its source code for a bit.
+
+For experienced programmers, I'll point out some of the unusual features of nano that you can see
+here. nano uses **unicode** characters. This means that some fractions, such as `¼`, can appear in the
+source code as numbers. Subscripts can also be used. These are array indices. The code
+`paddleᵢ` is a shorter form of `paddle[i]`. The special variable `τ` (which you can insert 
+from the Symbols window or type using autocorrect as `\tau`) is the frame counter. It is
+0 on the first frame, so `if τ≟0` branches to run specifying initialization code that only runs
+for frame zero.
+
+nano automatically wraps the whole program with a title screen, main loop, and screen clear
+inside of the main loop. This lets you get straight to the interesting parts of the program.
+Here's the full source code:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+#nanojam Pong
+
+if τ ≟ 0
+ // Initialize the game
+ // ball position and velocity
+ ball = xy(32, 32)
+ vel  = xy(½, ¼)
+ 
+ // Per-player variables
+ dir = [+1, -1]
+ score = [0, 0] 
+ paddle = [32, 32]
+
+// For each player
+for i < 2
+ // Move the paddle
+ paddleᵢ = mid(3, paddleᵢ + padᵢ.x, 59)
+
+ // Paddle y position
+ y = 25dirᵢ + 32 
+ 
+ // Draw the paddle and score
+ draw(44, paddleᵢ, y, 1)
+ text(scoreᵢ, 4, y)
+
+ // Paddle bounce
+ if |paddleᵢ - ball.x| < 4 & |y - ball.y| < 2
+  sound(34)
+  vel.y = -¼dirᵢ
+
+ // Ball goes past paddle. Multiply both sides by
+ // +1 or -1 to alternate the sign of the comparison.
+ if ball.y * dirᵢ > y * dirᵢ
+  // The other player scores
+  sound(32)
+  ++score₁₋ᵢ
+  ball.x = ball.y = 32
+  
+// Draw the center line
+for (i < 8) draw(91, 8i, 32, 91)
+
+// Ball physics. Assume the ball moves slowly.
+ball.x += vel.x; ball.y += vel.y
+if |ball.x - 32| > 30
+ vel.x = -vel.x
+ sound(61)
+
+// Draw the ball
+draw(43, ball.x, ball.y, 9191)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+### Rainbow
+
+[*Rainbow*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIBKYCWIBGkDuAoAxgDYBOCAvAgIwBMuuA9PQgCLFjYJgJGQCuAJgl4BndAHMEAFwAWAUwZN+sgGZhehSQgAOYQrMmTZAcmEJs01Idw7CACgCUBVMXy3KABgA0VAKzeALN6UjvjOrpSBVABs3j4hYW4AHEHUAfEuttRevml0jCxsHIYgCMTiwrjKkKSoCAA8VO64CPkAyvrckITVCMCUCBhgwrKCkCUysgjSvPLaurbSwgButrVMHkFB9o4tTKzsnAj8qMIA1gjoUham+F18xM2hGf5+CFHJCADM7ggAtBdbZoKBAAYV4mgm3FkIEMpD4mhE4iukzOAE9Ot1eA8bG5qOlXC9vO9vNRKFsgA)
+is a simple scene of a sky after a summer shower.
+ 
+~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+#nanojam Rainbow
+clr = 12
+
+// Draw a cloud using the
+// default palette's white
+pal()
+circ(10, 15, 4, 1)
+circ(14, 16, 5)
+circ(18, 12, 4)
+circ(20, 15, 4)
+
+// Draw ten rings
+for i < 10
+ // Set color #1 based on the hue
+ pal(hsv(i / 10, 1, 1))
+ // Draw a disk in this colour
+ circ(45, 68, 30 - i, 1)
+ 
+// Cut the center out using the sky colour
+pal(12)
+circ(45, 68, 21, 1)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+### Colours
+
+[*Colours*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIDCkA2kCuAnAzgGgEYAoAM0iwQE8EAeBANgBYiEyKAPWh5hBACwwBTBAF4EnAPTcWCHGAAuoqgikBmAEwyAbmFRL1CALTK1m3gAccg+QAp2eKg744tNgYIdz5Dnagf2qAEpAoA)
+loops over every pixel `(x,y)` on the screen and computes a hue, saturation, and value for
+it. It then uses the `hsv` command to find the closest nano colour to those and sets the pixel
+value.
+
+The nano hues vary from 0 to 1, so to create a rainbow I used the horizontal pixel position divided by 64. I scaled
+`y` by 32 so that the top half of the screen would fade in from white (zero saturation)
+and the bottom half would fade out to black (zero value).
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+#nanojam Colours,1
+for y < 64
+ for x < 64
+  hue = x / 64
+  sat = y / 32
+  val = 2 - y / 32
+  pset(x, y, hsv(hue, sat, val, x, y))
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+### Driver
+
+[*Driver*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIAiAnAlgNwKYoFBoDMFAR4AUH0iBABlwQA8EBeBAZgCYaAxepgRmoQ4BPRlRoBnAA4ATEYGVCXAGMANihHNcEsEoAUPPZUoAOA5QCslAOwBKXFJRgA7touGANF3eDXpgGwAWGyERIIBqBEkpfCIggD4EY05uBH9APuBOYSYAWj9cFCwFABdtVkpXUr8-V39XVhsCSFVhAB4EAE5xEQiEACoSBABSeIRMhByEO0dtVp5XNldDYTCxV1bp1x4bJPow6EhBADpaXCS4MFptWhrKTZE4NBAL1z9mG00dHlY+IwNPyxsJpw+VyXPylZg+Uy1IA)
+is a peaceful drive down an empty highway with flowers on both sides. Can you figure out how to add oncoming traffic to make it more
+challenging?
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+#nanojam Driver
+if τ ≟ 0
+ // Initialize variables at
+ // the beginning (time = 0)
+ 
+ // Car
+ x = 32
+ 
+ // Flower
+ Fx = 10
+ Fy = 0
+ 
+ // Speed
+ spd = ⅓
+ 
+// Grass
+clr = 3
+pal(111008000507)
+
+// Flowers
+draw(78, Fx, Fy, 564)
+// Move the flowers down the screen
+Fy = Fy + spd
+if Fy > 80
+ // Random position
+ Fx = 64ξ
+ Fy = -4
+
+// Road
+rect(20, 0, 44, 64, 2)
+
+// Scrolling divider line
+for y < 9
+ // Shift by a fraction of the current time
+ s = spd * τ % 8 - 4
+ draw(91, 32, 8y + s, 991, 1)
+
+// Update the player car position
+// from the joystick
+x = x + joy.x
+
+// Don't go off road
+x = max(x, 20)
+x = min(x, 43)
+
+// Update the flower position
+
+// Player car
+pal(121008002107)
+draw(6, x, 40, 3652)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+### Breaker
+
+[*Breaker*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIBCAnApmA1mlAoA9PggMrwAOANmggMaQAm1ARgJ4IACAwmAM4CuYCgFEAZiLQ0ALj1y4AliIQAawCPAuBIQRyQcyXMFyAXtQBuYFPqZUZtCigQBeBAFZ1NCjwAUzgJTqygp4AzACMYQBMIQAMUQAsoSFBUQDsfrZyZJ5RADQAtCHh2QBsQcVBaQH09FSOCADeZJA8AFwIAB4swYUusT7ZCGhtkq0dnkX9IT4AvupMghQIi04NTSOdQd3OUX0DQ2ue3eE7JmgU+-l5kzMIFHInPLVB6gDukCgU9LUA2gC66iJvBDQBAAHgQsXUCAB9jkoIQAA5IQhXu96AA6MBVTwrFrtTrw2EAagQpXBwOJ8J2g2GeM8sX6RymfgIREgJ3eYDICB4Rmo0IQTAsNEwCAAFrpcFRJAgAOq1FEfQABBGjqWi2ghiXMKBQVUM1ZK0NKABLyt5K3WSNFsTXzC1W2SaGh8FDoEDSiCfEDUgXzBCNHl6SAgA3Sp32JxanX+kMIEBDWqjMNqjU+7Vok46tr9JPW1M6jNW5mEYsl0tl8sVytV-AshD0FBgZ43O5oGToKRZS6FEp5ZzZSm4STUzwAIlQGGwKBH2RC9Ny8OyqVw-M8ABk4bd7j46w3ngdkv0ilEELkXKv+vP+skAJzbh3Vh+Pp8l2tzYUAcxQkD4IE+ty9CCfpy4o0DI-KwmC0TqP+aCdiS4QprE8JQHIPCwfSCAqPgSQ5FoOw9vBiHIZAqHof0WE4Qy-RyDs5T3s+DGMa+QqYGBgKCnIwoIIAUETIma9AvLoop+k0-TerxHHCpCzxCe0-RsLx0aLDujZ0hhWYICw-SxOEziTJCSKaKukCQCK-KRrQkDaqhchBjYiwKAgngAD7qqecaWm0zlwjK24ek5zlsKeObeWCRppMpmhGroYpvEYQaSPMLBInxqJougcCeJJmA+AA3Ny36-gcvgpZG6anMmABUTj5EipyOS5bm0M6aqhbKfm-gFQWxnqLBteFKVRTF7J6DQSUpQq6IZVlLF5QVP70MVEWLGVBZsNVJ4hEiLKMbtj61pU1RoLgMmSMJ-pifGimYkdglnXJmk8SJ9kwZ4TWqhpuaqrmIT9OqxIffJKbfSmv0IhF7aSG9J67J5QOnt9f3A3qn3I5aWkIEuizqk4cByIt-1ApALBqpdcMICUMMfXeiw7Xt9MVq+8wnbJF2w-0GZPZG6j1qp8T9P6pPPVaEzXkc-hNMmhJOAWbT5YL1oyxVyXqJoTCFTQ1BtDzCiKE4gtNRs6iOc59C695AB8hEIyjkKywgG25Dw74gJ4ZtiA7CCy3NPCFYtRT6arRDqz+muacbigK1TvVwlEdvK7Uzlrc5+W+wtYz6bTGhEBQTTMMzWiR5LX0x1byRx4s9tOISIT5WttT5Fnws436N1UGiBuQlH+tt2gHfFzDh3tyDp5ld9kKbq2J5OFtiy83u4QHhTx6ns4k88BeC4Ire8toVDWOF829wIIApkQIMeTfzUVN5zUOQyjgACugPAPJIkAIKuYCh6KI7Lc8YASkWKcNCSI05FXCJSfKd8oYjgAOIAEEACyQgEAAHkABqQgABKv8kT-10PlZ+hoDKHzZDgCgnIsrzAFr3Dqnx65Wwrl7BOjta5X39oHBmXDyy1jQJ1d88BjqOUmmiKgIAECAH0ic+6gwGLWSL4KBw4RwAE1vyym0NOeC-QNhpHwZIQhrZiEIHkIoTwqhtzQMfs-V+79P7f1-vlPRQA)
+is a brick breaking game with win and lose conditions. It shows how to implement multiple lives,
+uses the top screen, and introduces some advanced nano syntax.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+#nanojam Breaker
+
+if ¬τ
+ // initialize variables
+ clr = 5
+ cls(5)
+ pal(311121004311307)
+ clip(0, -12, 63, 63)
+ paddle = {pos: xy(32, 54), ext: xy(6, 1)}
+ ball   = {pos: xy(32, 50), ext: xy(2, 2), vel: xy(-1,-1)}
+ lives = 3
+ world = []
+ for j < 4
+  for i < 8
+   world.add({pos: xy(8i + 3, 4j + 8), ext: xy(4, 2)})
+
+// overlap size for brick hit
+let W = world₀.ext.x + ball.ext.x
+let H = world₀.ext.y + ball.ext.y
+
+// current and next ball position
+let cur = ball.pos
+let nxt = xy(cur.x + ball.vel.x, cur.y + ball.vel.y)
+
+///////////////////////////////////////////////////////
+// draw lives
+rect(0,-12,63,-5,8)
+text("Breaker",14,-8,7)
+for (L < lives) draw(27, 60 - 5L, -8, 79) 
+
+///////////////////////////////////////////////////////
+// background line graphics
+for i < 10
+ line(0, 32 + 48noise(4, τ/300, i), 63, 32 + 48noise(4, τ/300, 2, i), 3)
+
+//////////////////////////////////////////////////
+// bricks
+for brick ∊ world
+ with pos, ext ∊ brick
+  with x, y ∊ pos
+   draw(44, x, y, 4251)
+  
+   // Look for ball collisions
+   if (|x - nxt.x| < W) and (|y - cur.y| < H)
+    // Hit horizontally
+    world.rem(brick); sound(25)
+    ball.vel.x *= -1
+   elif (|x - cur.x| < W) and (|y - nxt.y| < H)
+    // Hit vertically
+    world.rem(brick); sound(25)
+    ball.vel.y *= -1
+   
+//////////////////////////////////////////////////
+// paddle
+with pos, ext ∊ paddle
+ with x, y ∊ pos
+  line(x - ext.x, y + ext.y + 1, x + ext.x, y + ext.y + 1, 8)
+  rect(x - ext.x, y - ext.y, x + ext.x, y + ext.y, 7)
+  x = mid(x + joy.x, ext.x, 63 - ext.x) 
+  
+//////////////////////////////////////////////////
+// ball
+with pos, ext, vel ∊ ball
+ draw(43, pos.x, pos.y, 192)
+ pos.x += vel.x; pos.y += vel.y
+
+ // bounce x
+ diff = pos.x - 32
+ if |diff| > 32 - ext.x
+  vel.x *= -sgn(diff * vel.x); sound(61)
+
+ // bounce y
+ if pos.y - ext.y < 0
+  vel.y = |vel.y|; sound(61)
+  
+ // lose ball
+ if pos.y + ext.y > 70
+  vel.x = +1; vel.y = -1
+  pos.x = paddle.pos.x
+  pos.y = paddle.pos.y - paddle.ext.y - ball.ext.y
+  lives -= 1
+  draw(27, 60 - 5lives, -8, 89); pset(7)
+  if lives ≥ 0   
+   sound(79); text("Press to Launch")
+   wait
+  else
+   sound(28); text("GAME OVER")
+   wait; reset
+  
+ if overlap(ball, paddle) and vel.y > 0
+  vel.y *= -1; sound(61)
+
+//////////////////////////////////////////////////
+// end game
+if world.len ≟ 0
+ sound(75); text("You Win", 32, 32)
+ wait; reset
+ 
+if (¬τ) text("Press to Launch"); wait
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+### Star Attack
+
+[*Star Attack*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIDKAXMAnBBBFaDGA1gFACWAZgoCPACg+kQIAMRCAnggLwIDMATEwPR9sAGxIBTEAGcmYISHYIA2gG8AHgC4AjPXoAaFpt0IJagCwBfPas0nDzU4ePd6FhFY0AOW2oBsD02YBdIiIBZDR0KTJITAkEAB4EbxN+QQBhSDgABwBXFFEEMAQAInQIABMMooQ8SCFsuDlIOVEwPAALBHRIAHcUhCjMQolwvXKEFDbxauY8IXySFAQ5shQmDo42sAk2gAoJAEomTIlRFB2khABaBB3zkwQAagRAZUJKfYQAKgQOgFJEk32egkegA5qVmDtnm19ociKwOKwntBIMwAHTMOHyOBgFQ7Ex6ZiHeEIOAkEDnWyw0IABSEYGYohibRImSIZVK3R2nHcei0BL0SQ0VMEMjy6HAeQKIBI2JQJCa-VKcFEUgI8kAUMSAbUJqH9uIBoYmCoSwInEkWiBQQgAgiAqyJjssCcsCo2JPAijVEqd3MAUmACshwQ5BuTpUVwQWn2ACbHsH0WHCdGEhpvEwEKEABILcaTIzMzIAQlTeRUZyKACEAPIVgCy+aKeh4De4egBqe2PVT3TAC1T6BVp1T0g9Vw4GiYQZD8SuyQQacE1JIhAtIFE3QQmUgEgW8rk3UmjTIFAkeD74lTk9HThjvvogD7gc9xjj3J6+7y3oA)
+is a side-scrolling space game where you have to dodge aliens...until you lose. There's no way
+to win in this version. Maybe you can fix that.
+
+This program uses an array of aliens. Each alien is represented by a table of its `x` position,
+`y` position, and sprite index `s`. This lets the game use a loop to avoid repeating the
+code for each alien. You could have any number of aliens using this basic structure.
+
+I got a little fancy with the star field. So, don't worry if you don't understand that
+part. But you can copy it to use in your own games anyway.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+#nanojam Star Attack
+if τ ≟ 0
+ y = 32
+ // Aliens
+ aln = [{x:100, y:10, s:4}, {x:140, y:40, s:20}, {x:180, y:60, s:4}]
+
+// Stars
+for s < 64
+ // Compute a "random" column on each row
+ // for a star, and then cycle it left
+ h = hash(s)
+ pset(64 - ((64 + ⅓τ) * h % 64), s, gray(⅓h))
+
+y = y + joy.y
+y = max(4, y)
+y = min(60, y)
+
+// Player ship
+draw(38, 10, y, 641)
+
+// alternate animation frames
+k = ⌊⅛τ % 2⌋
+
+// Aliens
+for a ∈ aln
+ draw(a.s + k, a.x, a.y, 645)
+ if (a.x - 10)² + (a.y - y)² < 16
+  // Hit the ship!
+  text("BOOM!", 32, 32, 4)
+  show
+  wait
+  reset
+  
+ a.x -= 1
+ if a.x < -4
+  // Pick a new position when off screen
+  a.x = 120 + 50ξ
+  a.y = 4 + 56ξ
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+Tweetjam
+---------------------------------------------------------------------------------------------
+
+Because the nano syntax is very consise, it is possible to squeeze some full games down into
+a single page of code, or even a tweet. These aren't as readable as the nice examples shown
+in the previous section, but they present a fun challenge for advanced programmers.
+I give the code _before_ nano's automatic minification here to make them a little easier
+to understand.
 
 ### Space Dash
 
@@ -83,13 +445,6 @@ draw(3,x,50,641)
 if(τ≥9³)text("YOU WIN");wait;τ=0
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You're probably wondering where the main loop is. Every nano program is implicitly within an
-infinite `for` loop with variable `τ` that starts at zero, a clear screen command, and
-showing the framebuffer.
-
-A program always begins with `#nanojam` and the title of the game, which is used for the automatic
-title screen and the cartridge label.
-
 The first real line of *Space Dash* initializes the `x` position of the player spaceship. The
 second line of code is the game-over animation. Line 3 resets the random number generator `ξ`
 every frame with `srand()` so that it can treat "random numbers" as stable game-level data.
@@ -98,6 +453,42 @@ I see an opportunity to save two more characters in this program. Can you find i
 *more*? With the remaining room, maybe you could remove the end planet to recover enough
 characters to add a third type of enemy, while staying in character limit of a single
 tweet. Now you're thinking like a nano programmer.
+
+
+### Pong Revisited
+
+Here's our original game, squeezed down into 261 characters: [*Pong*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIAKkQHMBQBLAZgCgBrAR4AEoBXAXgDcKBmAJgG4BnCgbQAYAaDgXUYAe7MlzL8AXhQC9jAO4UAPRhyQATgiwAeehgQAjCvTxSAtFhKMAnoYCsegNQNGAE1VhZeACyeuAwEa4FHBYzni0vn72AA5gzn4AdAJcNgCcJFyWXACMFgAuAKYCOXjMflw+liS6uHgAPpYmVDXaAGQ1-iZkTZ4k8iYKelX4VABUegB8lqMk9vbMgIEEgNEEfoyUNAzKanhaABwkru54yZlc21hcDFxHlfsenmFk9hTiXFSPspeZV9j4ZGMAbN1JCYpN88GRNBwSJIpEA)
+revisited.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+#nanojam Pong
+// Ball = (u,v)
+// Velocity = (z,w)
+// Score = s
+// Player = x
+
+// Reset
+if(¬τ)u=v=32;s=[0,0];x=[u,u];z=½;w=¼
+
+for i<2
+ b=2(½-i);y=25b+32
+ // Paddle and score
+ draw(44,xᵢ=mid(3,xᵢ+padᵢ.x,59),y,1);text(sᵢ,4,y)
+ // Paddle bounce
+ if(|y-v|<2&|xᵢ-u|<4)w=-¼b
+ // Score
+ if(v*b>y*b)++s₁₋ᵢ;u=v=32
+
+// Line
+for(i<8)draw(91,8i,32,91)
+
+// Ball
+draw(43,u+=z,v+=w,9191)
+
+// Wall bounce
+if(u>64)z=-½
+if(u<0)z=½
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 ### Plasma
@@ -116,180 +507,7 @@ for y<64
 The same setup is great for computing fractals and ray marching in 3D.
 
 
-Friendly
------------------------------------------------------------------------------------
-
-Are you just getting started with nano and mystified by the apparent sorcery of 
-the optimized examples? No problem. Here are some friendlier examples to get you
-going without trying to squeeze the whole program into a few characters.
-
-### Rainbow
-
-[*Rainbow*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIBKYCWIBGkDuAoAxgDYBOAvAIwBMuuA9LQgCLFjYJgJGQCuAJgtwDO6AOYIALgAsApnQa9pAMzDdC4hAAcwhaePHSA5IITZJqfbi2EAFAEoCqYvmvkADABpyAVncAWT-b4js7k-uQAbO5egcEuAByelH4xTtaUHt7JNPRMLGz6IAjEooK4ipDECKgAPG64CDkAyrqckIQVCMDkCBhggtL8kIVS0giS3LKa2taSggBu1qi0bp4B9g0MzKzsCLyoggDWVcNmxvhtFfVBqb4+4QkAzK4AtKgB9XIIAMLc6iOc0hA+kqPHUQlEEhkCEOAE9Wu1iJZplQUs5bu57u5KOQAkA)
-is a simple scene of a sky after a summer shower.
- 
-~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
-#nanojam Rainbow
-clr=12
-
-// Draw a cloud using the
-// default palette's white
-pal()
-circ(10,15,4,1)
-circ(14,16,5)
-circ(18,12,4)
-circ(20,15,4)
-
-// Draw ten rings
-for i<10
- // Set color #1 based on the hue
- pal(hsv(i/10,1,1))
- // Draw a disk in this color
- circ(45,68,30-i,1)
- 
-// Cut the center out using the sky color
-pal(12)
-circ(45,68,21,1)
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-### Colors
-
-[*Colors*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIDCkA2kBOBnANARgCgAzTBATwB4A2AFgIRIwQA9q6EEALAVwFMBeZgHpa9BFjAAXfmSEBmAExiAbmFT8FAWlmKxAByy9JACmY4yOTlmXGevHBMk5VqHGbIBKD0A) loops
-over every pixel `(x,y)` on the screen and computes a hue, saturation, and value for it. It then uses the `hsv` command
-to find the closest nano color to those and sets the pixel value.
-
-The nano hues vary from 0 to 1, so to create a rainbow I used the horizontal pixel position divided by 64. I scaled
-`y` by 32 so that the top half of the screen would fade in from white (zero saturation)
-and the bottom half would fade out to black (zero value).
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
-#nanojam Colors,1
-for y<64
- for x<64
-  hue=x/64
-  sat=y/32
-  val=2-y/32
-  pset(x,y,hsv(hue,sat,val,x,y))
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-### Driver
-
-[*Driver*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIAiAnAlgNwKYoFBoDMFAR4EH0iABlwQHpqEBJENAFzTABs0AvLBDMdGABG7LAGcEYZlVoJmAC15CsAczQgmIFQgAUrOLwC8CcgEoqMugGEBVAB6GAzACYLNOgDF2kAO44qHg4AjJQIHgCehqGWCADKAA5YWAAmVGLxyYaAyoQWsgDiKGBiYrgAxuwoTrjxHDpB9eTkAByN5ACs5ADs5riyXr44JcmFPjqdTQA0gVPhE20AbAAs5rIAspDYcooIBN5+KBLJviBbvGKlKEkguBGGEQDU6amEYeEAfC0xAEoQR4jxkDELDQkGuYQcS0AfcABSIAWkWuF6dC+kDAqUupWYOmc5AmuMWiwmSwmzh6sliF0g7E4WgQyUwaGSOAQNKwuAIkBQCHCAB4AJwxWLyQjMBBCcKSHaFTEgk6QIgKXilACuKEuIFF+jZCDEhieACpiABSJrwqjDMCjPlBCYuCZNcKPCZ860TIJkugAVQyUl4ioQ8XYYHCzNKAgDgOBoKRUsgiH90Eg4TErFKAGtcA47PdE+EAHR2RGyJCggDkopUkAQ8qIKFRqQccDAdh0dhJZkzhjg6lbE0Wjg9CG9yV9px2e2ZAKBrGjMYACkGQ1yw3gauw6s4Qs1GpuuuYLaN5hM24tcY55m1SUA) 
-is a peaceful drive down an empty highway with flowers on both sides. Can you figure out how to add oncoming traffic to make it more
-challenging?
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
-#nanojam Driver
-if τ≟0
- // Initialize variables at
- // the beginning (time = 0)
- 
- // Car
- x=32
- 
- // Flower
- Fx=10
- Fy=0
- 
- // Speed
- spd=⅓
- 
-// Grass
-clr=3
-pal(111008000507)
-
-// Flowers
-draw(78,Fx,Fy,564)
-// Move the flowers down the screen
-Fy=Fy+spd
-if Fy>80
- // Random position
- Fx=64ξ
- Fy=-4
-
-// Road
-rect(20,0,44,64,2)
-
-// Scrolling divider line
-for y<9
- // Shift by a fraction of the current time
- s=spd*τ%8-4
- draw(91,32,8y+s,991,1)
-
-// Update the player car position
-// from the joystick
-x=x+joy.x
-
-// Don't go off road
-x=max(x,20)
-x=min(x,43)
-
-// Update the flower position
-
-// Player car
-pal(121008002107)
-draw(6,x,40,3652)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-### Star Attack
-
-[*Star Attack*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIDKAXMAnBBBFaDGA1gFACWAZgoCPAg+kQAMRCAngLwDMATAwPRfYA2JAKYgAzgzB8QzANoBvAB4AuAIy1aAGkYqNIxQBYAvuoUq9GrWfW72tIyeUAOc4oBsO-QYC6RIj2Rp0MTJITBEAHhc9bl4AYUg4AAcAVxRBBDAEACJ0CAATeMyEPEg+JLgQBEgKwTA8AAsEdEgAd2iEYMwMkQD1dJBchBQ64SLGPD40khQECbIUBjrmOrAROoAKEQBKBgSRQRQ1yIBaNcO9AGpAZUJKTYAqOoBSSM2rdQBzHMY1y7rN7aIWIxztBIIwAHSMAHMOBgeRrPSabYsOAkECHcz-PwABT4YEYglCdRICSIuRyzTWrAc6lUmnUkWUmN4ElS6HAqT6JBhKBIVXaOTggjEBGYgChiQDahJQHuxANDEPj8WAEwiCIXSgAgiCQgBhksAUsBgkTnAjqfXyE0Q+l6ACs2wQ5AQa1NR1UmwATedHRCjow3WFlC4GAg-AAJKaDYYIVbEgCEgdS8gOmQAQgB5FMAWWjmXUHBz7HUelt7QEJIQCGaYCmgfQQv2gfEYPkR2YygY9tNYSOUTL2JIhHSCBAgmaCASkBEU15FWawwqkDIFBEeBrwkDppbNnOVtogD7gNcQ5gXK0uPdAA) is
-a side-scrolling space game where you have to dodge aliens...until you lose. There's no way to win in this version. Maybe
-you can fix that...
-
-This program uses an array of aliens. Each alien is represented by a table of its `x` position,
-`y` position, and sprite index `s`. This lets the game use a loop to avoid repeating the
-code for each alien. You could have any number of aliens using this basic structure.
-
-I got a little fancy with the star field. So, don't worry if you don't understand that
-part. But you can copy it to use in your own games anyway.
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
-#nanojam Star Attack
-if τ≟0
- y=32
- // Aliens
- aln=[{x:100,y:10,s:4},{x:140,y:40,s:20},{x:180,y:60,s:4}]
-
-// Stars
-for s<64
- // Compute a "random" column on each row
- // for a star, and then cycle it left
- h=hash(s)
- pset(64-((64+⅓τ)*h%64),s,gray(⅓h))
-
-y=y+joy.y
-y=max(4,y)
-y=min(60,y)
-
-// Player ship
-draw(38,10,y,641)
-
-// alternate animation frames
-k=⌊⅛τ%2⌋
-
-// Aliens
-for a∈aln
- draw(a.s+k,a.x,a.y,645)
- if (a.x-10)²+(a.y-y)²<16
-  // Hit the ship!
-  text("BOOM!",32,32,4)
-  show
-  wait
-  reset
-  
- a.x-=1
- if a.x<-4
-  // Pick a new position when off screen
-  a.x=120+50ξ
-  a.y=4+56ξ
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-
-Twitter
------------------------------------------------------------------------------------
+### Online
 
 Search Twitter for <a href="https://twitter.com/search?l=&q=%23nanojam%20since%3A2018-01-01&src=typd">#nanojam</a>
 to see the latest games others have posted, such as:
