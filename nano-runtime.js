@@ -193,7 +193,7 @@ function clip(x1,y1,x2,y2) {
     if (x1 === undefined) {
         if (y1 === undefined && x2 === undefined && y2 === undefined) {
             // No arguments
-            x1 = 0; y1 = 0; x2 = _SCREEN_WIDTH - 1; y2 = SCREEN_HEIGHT - 1;
+            x1 = 0; y1 = 0; x2 = _SCREEN_WIDTH - 1; y2 = _SCREEN_HEIGHT - 1;
         } else {
             x1 = _clipX1;
         }

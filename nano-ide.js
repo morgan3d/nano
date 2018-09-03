@@ -2019,7 +2019,7 @@ function reloadRuntime(oncomplete) {
         Runtime._spriteSheet   = spritePixelData;
         Runtime._fontSheet     = fontPixelData;
         Runtime.rgb            = rgb;
-        Runtime.play           = playSoundNum;
+        Runtime.sound          = playSoundNum;
         Runtime._setFramebufferSize = setFramebufferSize;
         Runtime._submitFrame    = submitFrame;
         if (SCREEN_WIDTH) { setFramebufferSize(SCREEN_WIDTH); }
