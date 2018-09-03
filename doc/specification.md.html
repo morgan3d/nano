@@ -446,8 +446,9 @@ if(τ≥9³)text("YOU WIN");wait;τ=0
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The first real line of *Space Dash* initializes the `x` position of the player spaceship. The
-second line of code is the game-over animation. Line 3 resets the random number generator `ξ`
-every frame with `srand()` so that it can treat "random numbers" as stable game-level data.
+second line of code is the game-over animation. The next line resets the random number
+generator `ξ` every frame with `srand()` so that it can treat "random numbers" as stable
+game-level data.
 
 I see an opportunity to save two more characters in this program. Can you find it? Can you find
 *more*? With the remaining room, maybe you could remove the end planet to recover enough
@@ -999,7 +1000,7 @@ The Symbols panel marked with "ξ½≤" at the top of the editor brings up a vir
 for entering these symbols. The tool tips on those buttons also explain the use of each.
 
 The editor automatically replaces certain typed sequences with their corresponding character
-as well. The list of replacements is:
+as well ("autocorrect"). The list of replacements is:
 
     Sequence    | Replacement
    -------------|--------------
@@ -1033,9 +1034,14 @@ as well. The list of replacements is:
     `\eq`       |`≟` 
     `\not`      |`¬` 
     `\leq`      |`≤` 
+    `<=`        |`≤`
     `\geq`      |`≥` 
+    `>=`        |`≥`
     `>>`        |`▻` 
     `<<`        |`◅` 
+    `\bitand`   |`∩`
+    `\bitor`    |`∪`
+    `\bitxor`   |`⊕`
     `\pi`       |`π` 
     `\infty`    |`∞` 
     `\nil`      |`∅` 
@@ -1043,6 +1049,11 @@ as well. The list of replacements is:
     `\third`    |`⅓` 
     `\quarter`  |`¼` 
     `\fifth`    |`⅕`
+    `sixth`     |`⅙`
+    `seventh`   |`⅐`
+    `eighth`    |`⅛`
+    `ninth`     |`⅑`
+    `tenth`     |`⅒'`
     `\lfloor`   |`⌊`
     `\rfloor`   |`⌋`
     `\lceil`    |`⌈`
@@ -1582,6 +1593,7 @@ its license, which permits any use.
 # Change Log
 
 2018 Sep 1:
+ - Rewrote manual with more friendly examples
  - Fixed `let` and `const` compilation
  - Added `lerp`
  - Fixed `tri`
