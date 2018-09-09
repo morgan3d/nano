@@ -405,8 +405,8 @@ div#soundsWindow .button {
 
 div#cartridgesWindow {
     width:            500px;
-    height:           200px;
-    top:              180px;
+    height:           300px;
+    top:               80px;
     left:             140px;
 }
 
@@ -443,6 +443,10 @@ div#cartridgesWindow {
 
 }
 
+.cartridge.readonly {
+    background-image: url('cartridge-RO.png');
+}
+
 .cartridge .label {
     color:            rgba(255,255,255,0.9);
     position:         relative;
@@ -465,6 +469,7 @@ div#cartridgesWindow {
     text-shadow:      rgba(0,0,0,0.7) 0 0 4px;
     -webkit-text-shadow:rgba(0,0,0,0.7) 0 0 4px;
 }
+
 
 /**************************************************/
 

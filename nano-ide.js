@@ -1553,12 +1553,12 @@ function makeCartridgeWindowContents() {
     }
     
     let c = cartridgeArray[0];
-    let s = '<div id="cartridge0" style="filter: sepia(100%) saturate(300%) hue-rotate(-45deg); position: absolute; top: ' + c.y + 'px; left:' + c.x + 'px" class="cartridge" onmousedown="onCartridgeClick(0) || event.stopPropagation()"><div class="label">(NEW CART)</div></div>';
+    let s = '<div id="cartridge0" style="filter: sepia(100%) saturate(300%) hue-rotate(-45deg); position: absolute; top: ' + c.y + 'px; left:' + c.x + 'px" class="cartridge readonly" onmousedown="onCartridgeClick(0) || event.stopPropagation()"><div class="label">(NEW CART)</div></div>';
 
     let foundActive = false;
     for (let i = 1; i < cartridgeArray.length; ++i) {
         let c = cartridgeArray[i];
-        s += '<div id="cartridge' + i + '" style="filter: sepia(' + c.hue + '%) brightness(' + c.brightness + '); position: absolute; top: ' + c.y + 'px; left:' + c.x + 'px" class="cartridge" onmousedown="onCartridgeClick(' + i + ') || event.stopPropagation()"><div class="label">' + c.title + '</div></div>';
+        s += '<div id="cartridge' + i + '" style="filter: sepia(' + c.hue + '%) brightness(' + c.brightness + '); position: absolute; top: ' + c.y + 'px; left:' + c.x + 'px" class="cartridge' + (c.readOnly ? ' readonly' : '') + '" onmousedown="onCartridgeClick(' + i + ') || event.stopPropagation()"><div class="label">' + c.title + '</div></div>';
         foundActive = foundActive || (c.fileID === activeCartridge.fileID);
     }
     document.getElementById('allCarts').innerHTML = s;
@@ -2343,7 +2343,7 @@ window.onbeforeunload = function (event) {
 
 
 (function() {
-    if (deployed) { initialSource = tests.spacedash; }
+    if (deployed) { initialSource = starterCartArray[0]; }
 
     // Code has been specified to the emulator; start with it and push the start button
     var code = getQueryString('code');
