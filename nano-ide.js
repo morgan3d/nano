@@ -756,7 +756,7 @@ function makeSoundsWindow() {
     document.getElementById('sounds').innerHTML = s;
 }
 
-makeSoundsWindow();
+setTimeout(makeSoundsWindow, 0);
 makeSymbolsWindow();
 
 /** SymbolsWindow callback */
