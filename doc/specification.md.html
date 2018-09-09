@@ -74,7 +74,7 @@ nano automatically wraps the whole program with a title screen, main loop, and s
 inside of the main loop. This lets you get straight to the interesting parts of the program.
 Here's the full source code:
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++ linenumbers
 #nanojam Pong
 
 if τ ≟ 0
@@ -132,7 +132,7 @@ draw(43, ball.x, ball.y, 9191)
 [*Rainbow*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIBKYCWIBGkDuAoAxgDYBOCAvAgIwBMuuA9PQgCLFjYJgJGQCuAJgl4BndAHMEAFwAWAUwZN+sgGZhehSQgAOYQrMmTZAcmEJs01Idw7CACgCUBVMXy3KABgA0VAKzeALN6UjvjOrpSBVABs3j4hYW4AHEHUAfEuttRevml0jCxsHIYgCMTiwrjKkKSoCAA8VO64CPkAyvrckITVCMCUCBhgwrKCkCUysgjSvPLaurbSwgButrVMHkFB9o4tTKzsnAj8qMIA1gjoUham+F18xM2hGf5+CFHJCADM7ggAtBdbZoKBAAYV4mgm3FkIEMpD4mhE4iukzOAE9Ot1eA8bG5qOlXC9vO9vNRKFsgA)
 is a simple scene of a sky after a summer shower.
  
-~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+~~~~~~~~~~~~~~~~~~~~~~~~~~ C++ linenumbers
 #nanojam Rainbow
 clr = 12
 
@@ -168,7 +168,7 @@ The nano hues vary from 0 to 1, so to create a rainbow I used the horizontal pix
 `y` by 32 so that the top half of the screen would fade in from white (zero saturation)
 and the bottom half would fade out to black (zero value).
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++ linenumbers
 #nanojam Colours,1
 for y < 64
  for x < 64
@@ -185,7 +185,7 @@ for y < 64
 is a peaceful drive down an empty highway with flowers on both sides. Can you figure out how to add oncoming traffic to make it more
 challenging?
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+~~~~~~~~~~~~~~~~~~~~~~~~~~ C++ linenumbers
 #nanojam Driver
 if τ ≟ 0
  // Initialize variables at
@@ -244,7 +244,7 @@ draw(6, x, 40, 3652)
 is a brick breaking game with win and lose conditions. It shows how to implement multiple lives,
 uses the top screen, and introduces some advanced nano syntax.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++ linenumbers
 #nanojam Breaker
 
 if ¬τ
@@ -360,7 +360,7 @@ code for each alien. You could have any number of aliens using this basic struct
 I got a little fancy with the star field. So, don't worry if you don't understand that
 part. But you can copy it to use in your own games anyway.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++ linenumbers
 #nanojam Star Attack
 if τ ≟ 0
  y = 32
@@ -421,7 +421,7 @@ The player flies a space ship
 through enemy fighters to reach their home planet. It has a loading screen, background
 animation, controls, collision detection, and end-game scene.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++ linenumbers
 #nanojam SPACE DASH
 if(¬τ)x=32
 // Game-over explosion
@@ -461,7 +461,7 @@ tweet. Now you're thinking like a nano programmer.
 Here's our original game, squeezed down into 261 characters: [*Pong*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIAKkQHMBQBLAZgCgBrAR4AEoBXAXgDcKBmAJgG4BnCgbQAYAaDgXUYAe7MlzL8AXhQC9jAO4UAPRhyQATgiwAeehgQAjCvTxSAtFhKMAnoYCsegNQNGAE1VhZeACyeuAwEa4FHBYzni0vn72AA5gzn4AdAJcNgCcJFyWXACMFgAuAKYCOXjMflw+liS6uHgAPpYmVDXaAGQ1-iZkTZ4k8iYKelX4VABUegB8lqMk9vbMgIEEgNEEfoyUNAzKanhaABwkru54yZlc21hcDFxHlfsenmFk9hTiXFSPspeZV9j4ZGMAbN1JCYpN88GRNBwSJIpEA)
 revisited.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++ linenumbers
 #nanojam Pong
 // Ball = (u,v)
 // Velocity = (z,w)
@@ -497,7 +497,7 @@ if(u<0)z=½
 [*Plasma*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIAKAbMBnOYA0BGAUAGaQBOCAngDwBsALPgsWQB430IKATwALzkDUgEeAA3ADducAJYATABRQJ6AKYyAzNkDahACbmGzZ2wAegM0CAlHwC92AAx5TDBAAclAFxk7y2ABboRMwOqEIpbYMrgAtCKmAHr+2CLYOpympkA) is a little graphics doodle instead of a game. It shows field of animated value
 noise. The two loops iterate over each pixel, computing its value independently.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++ linenumbers
 #nanojam Plasma,1
 for y<64
  for x<64
@@ -1591,6 +1591,11 @@ its license, which permits any use.
 
 
 # Change Log
+
+2018 Sep 9:
+ - Optimized loading cartridge list from Google Drive
+ - Made the save button pink when unsaved
+ - Reduced IDE margins to fit smaller screens
 
 2018 Sep 1:
  - Rewrote manual with more friendly examples

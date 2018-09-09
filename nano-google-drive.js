@@ -12,22 +12,22 @@ function googleDriveGetUserInfo(callback) {
 }
 
 /**
-   Retrieve a list of File resources created by this app that have NOT been deleted.
+   Retrieve a list of File resources that have key=value and have NOT been deleted.
 
  Based on https://developers.google.com/drive/v2/reference/files/list
  */
-function googleDriveRetrieveAllFiles(callback) {
+function googleDriveRetrieveAllFiles(key, value, callback) {
     gapi.client.drive.files.list({
         // The spaces should be 'drive' for the whole drive or 'appDataFolder' to just
         // see in this app's hidden, private space
         spaces: 'drive',
         //q:"mimeType = 'application/vnd.google-apps.folder'",
         //q:'name="nano ᴊᴀᴍᴍᴇʀ"',
-        q: "trashed=false and properties has { key='nano' and value='true' }",
-        fields: 'nextPageToken, files(id, name)',
+        q: "trashed=false and properties has { key='" + key + "' and value='" + value + "' }",
+        fields: 'nextPageToken, files(id, name, appProperties)',
         pageSize: 100
     }).then(function(data) {
-       callback(data.result.files);
+        callback(data.result.files);
    });
 }
 
@@ -120,10 +120,15 @@ function googleDriveDeleteFile(fileId, callback) {
 
     Set trash = true to move the file to trash.
   */
-function googleDriveSaveTextFile(filename, fileContents, callback, fileId, trash) {
+function googleDriveSaveTextFile(filename, key, value, appProperties, fileContents, callback, fileId, trash) {
     const boundary = '-------X314159265358979323846';
     const delimiter = "\r\n--" + boundary + "\r\n";
     const close_delim = "\r\n--" + boundary + "--";
+
+    console.log(fileContents);
+    if (typeof fileContents !== 'string') {
+        throw 'File contents was not a string: ' + fileContents;
+    }
 
     if (fileContents.indexOf(boundary) !== -1) {
         // The source is trying to hack the transfer protocol
@@ -135,8 +140,10 @@ function googleDriveSaveTextFile(filename, fileContents, callback, fileId, trash
         name:      filename,
         mimeType:  contentType,
         fields:    'id',
-        properties: {nano: 'true'}
+        appProperties: appProperties,
+        properties: {}
     };
+    metadata.properties[key] = value;
 
     if (trash) {
         // Setting it to false seems to also act as true,

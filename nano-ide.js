@@ -1,5 +1,9 @@
 /* By Morgan McGuire @CasualEffects http://casual-effects.com GPL 3.0 License*/
 
+// 'IDE', 'Emulator', or 'Minimal'. Emulator will use the minimal style if the page is too
+// small for it.
+var displayMode = 'IDE';
+
 // Must match nano-runtime.js
 var SCREEN_WIDTH, SCREEN_HEIGHT, BAR_HEIGHT, BAR_SPACING, FRAMEBUFFER_HEIGHT;
 
@@ -1090,10 +1094,23 @@ function download(url, name) {
     }, 0);
 }
 
+
 function getTitle(src) {
     var match = src.match(/^#nanojam[ \t]+(..+?)((?:,)([ \t]*\d+[ \t]*))?\n/);
     if (match) {
         return match[1].trim();
+    } else {
+        return 'Untitled';
+    }
+}
+
+
+function getFlags(src) {
+    var match = src.match(/^#nanojam[ \t]+(..+?)((?:,)([ \t]*\d+[ \t]*))?\n/);
+    if (match && (match[3] !== undefined)) {
+        return parseInt(match[3].trim()) || 0;
+    } else {
+        return 0;
     }
 }
 
@@ -1164,7 +1181,9 @@ function onImportFile(event) {
     var reader = new FileReader();
     reader.onload = function () {
 	editor.setValue(reader.result);
-        activeCartridge.filename = getFilename(getTitle(reader.result));
+        activeCartridge.title = getTitle(reader.result);
+        activeCartridge.filename = getFilename();
+        activeCartridge.flags = getFlags(reader.result);
         activeCartridge.readOnly = true;
         activeCartridge.googleDriveFileID = undefined;
         setChanged(true);
@@ -1275,19 +1294,37 @@ function updateCartridgeArrayPositions() {
 }
 
 
-function addToCartridgeArray(title, filename, fileID, code, readOnly) {
+function addToCartridgeArray(title, filename, fileID, flags, code, readOnly) {
+    // Code may be empty if it has not been loaded yet.
+    
+    if (typeof flags !== 'number') {
+        console.error('Flags was not a number: ' + flags);
+    }
+
+    if (readOnly && ! code) {
+        console.error('Read-only cartridge without code: ' + title);
+    }
+
+    if (! fileID && ! code) {
+        console.error('Non-Google Drive cartridge without code: ' + title);
+    }
+
     for (var i = 0; i < cartridgeArray.length; ++i) {
         if (fileID && (cartridgeArray[i].fileID === fileID)) { console.error("Duplicate cart! (" + title + ")"); }
     }
-    
+
     cartridgeArray.push({
         filename: filename,
         
         // On Google Drive, undefined if built-in
         fileID: fileID,
         
-        readOnly: readOnly,
+        flags: flags,
         
+        readOnly: readOnly,
+
+        // Optional; if not present and fileID
+        // is set, this will be loaded on demand
         code: code,
         
         title: title,
@@ -1307,47 +1344,78 @@ function executeWithSaveCheck(message, callback) {
 function computeCartridgeArray() {
     cartridgeArray = [];
     
-    addToCartridgeArray('(NEW CART)', '', 0, '#nanojam (NEW CART)\n', true);
-    for (var i = 0; i < starterCartArray.length; ++i) {
-        var code = starterCartArray[i];
-        var title = getTitle(code);
-        var filename = getFilename(title);
-        addToCartridgeArray(title, filename, 0, code, true);
+    addToCartridgeArray('(NEW CART)', '', 0, 0, '#nanojam Untitled\n', true);
+    for (let i = 0; i < starterCartArray.length; ++i) {
+        let code = starterCartArray[i];
+        let title = getTitle(code);
+        let filename = getFilename(title);
+        let flags = getFlags(code);
+        addToCartridgeArray(title, filename, flags, 0, code, true);
     }
     
     cartridgeArrayScrollIndex = Math.min(cartridgeArray.length, cartridgeArrayScrollIndex);
 
-    googleDriveRetrieveAllFiles(function(files) {
+    googleDriveRetrieveAllFiles('nano', 'true', function(files) {
         var remaining = files.length;
 
         if (remaining === 0) {
             // Nothing to load
             makeCartridgeWindowContents();
         } else {
-
-            // Google Drive rate limits querries, so we have to slow down the fetch rate
-            // in this loop slightly to avoid hitting the quota.
-            // In order to do that (in a backwards-compatible way to IE11),
-            // we fire these asynchronously.
-
             files.forEach(function (file, index) {
-                setTimeout(function () {
-                    googleDriveGetTextFile(file.id, function(fileID, contents, filename) {
-                        if (contents) {
-                            var title = getTitle(contents);
-                            var filename = getFilename(title);
-                            addToCartridgeArray(title, filename, fileID, contents, false);
-                        } else {
-                            console.log('Could not load Google Drive file "' + filename + '" with fileID ' + fileID);
-                        }
-                        
-                        --remaining;
-                        if (remaining <= 0) {
-                            makeCartridgeWindowContents();
-                        }
-                    }, file.name);
-                }, 200 * index);
+                if (file.appProperties) {
+                    // Do not load contents at index time, since doing so slows down loading
+                    // because we must rate limit queries and each one also costs a new
+                    // network connection.
+                    addToCartridgeArray(file.appProperties.title, file.name, file.id, parseInt(file.flags) || 0, '', false);
+                    --remaining;
+                } else {
+                    // Backwards-compatible path for pre 9/9/2018 carts: fetch the actual file
+                    //
+                    // Google Drive rate limits queries, so we have to slow down the fetch rate
+                    // in this loop slightly to avoid hitting the quota.
+                    // In order to do that (in a backwards-compatible way to IE11),
+                    // we fire these asynchronously.
+                    document.getElementById('allCarts').innerHTML = 'Upgrading your cartridges to the new Google Drive format...';
+
+                    setTimeout(function () {
+                        googleDriveGetTextFile(file.id, function(fileID, contents, filename) {
+                            if (contents) {
+                                var title, filename, flags;
+                                // Legacy path
+                                title = getTitle(contents);
+                                filename = getFilename(title);
+                                flags = getFlags(contents);
+                                addToCartridgeArray(title, filename, fileID, flags, '', false);
+
+                                // Save in new format
+                                googleDriveSaveTextFile(filename,
+                                                        'nano', true,
+                                                        {
+                                                            title : title,
+                                                            flags : flags
+                                                        },
+                                                        contents, undefined, fileID);
+                                
+                            } else {
+                                console.log('Could not load Google Drive file "' + filename + '" with fileID ' + fileID);
+                            }
+ 
+                            --remaining;
+                            if (remaining <= 0) {
+                                makeCartridgeWindowContents();
+                            }
+                        }, file.name);
+                    }, 300 * index);
+                } // if legacy
             }); // forEach
+
+            // Only needed because the legacy path delays processing.  If all new files, only
+            // this path will be used.
+            if (remaining <= 0) {
+                makeCartridgeWindowContents();
+            }
+
         } // if
     });
 }
@@ -1399,13 +1467,22 @@ function onDeleteButton() {
     if (confirm('Move "' + c.title + '" into the Trash in your Google Drive?')) {
         showWaitDialog();
         eraseCartridgeWindowContents();
-        googleDriveSaveTextFile(c.filename, c.code, function () {
-            setTimeout(function () {
-                hideWaitDialog();
-                computeCartridgeArray();
-            }, 2000);
-        }, c.fileID, true);
-    }
+        googleDriveSaveTextFile(c.filename,
+                                'nano', true,
+                                {
+                                    title : c.title,
+                                    flags : c.flags            
+                                },
+                                c.code,
+                                function () {
+                                    setTimeout(function () {
+                                        hideWaitDialog();
+                                        computeCartridgeArray();
+                                    }, 2000);
+                                },
+                                c.fileID,
+                                true);
+    } // if
 }
 
 
@@ -1418,21 +1495,23 @@ function onCloneButton() {
         var src = cartridgeArray[cartridgeArrayScrollIndex];
 
         // Generate a new title
-        var newTitle = generateNewTitle(getTitle(src.code));
-
+        var newTitle = generateNewTitle(src.title);
         var newFilename = getFilename(newTitle);
+        var newCode = replaceTitle(src.code, newTitle);
 
         // Replace the title in the code
         var dst = {
-            code:     replaceTitle(src.code, newTitle),
             title:    newTitle,
             filename: newFilename,
-            fileID:   undefined
+            flags:    src.flags,
+            fileID:   undefined,
+            readOnly: false,
+            code:     newCode
         };
         
         // Load the new cartridge
+        updateAndSaveCartridge(newTitle, newFilename, newCode, dst, undefined);
         setActiveCartridge(dst);
-        updateAndSaveCartridge(newTitle, newFilename, activeCartridge);
     });
     
 }
@@ -1465,20 +1544,20 @@ function makeCartridgeWindowContents() {
         }
     });
 
-    for (var i = 0; i < cartridgeArray.length; ++i) {
-        var c = cartridgeArray[i];
+    for (let i = 0; i < cartridgeArray.length; ++i) {
+        let c = cartridgeArray[i];
         c.hue = nameHue(c.title);
         c.brightness = nameBrightness(c.title);
         c.x = 225 + Math.floor((Math.sin(i * 10) + 1) * 8);
         c.y = (i + 1) * cartridgeArrayScrollIncrement + Math.floor(Math.random() * 12);
     }
     
-    var c = cartridgeArray[0];
-    var s = '<div id="cartridge0" style="filter: sepia(100%) saturate(300%) hue-rotate(-45deg); position: absolute; top: ' + c.y + 'px; left:' + c.x + 'px" class="cartridge" onmousedown="onCartridgeClick(0) || event.stopPropagation()"><div class="label">(NEW CART)</div></div>';
+    let c = cartridgeArray[0];
+    let s = '<div id="cartridge0" style="filter: sepia(100%) saturate(300%) hue-rotate(-45deg); position: absolute; top: ' + c.y + 'px; left:' + c.x + 'px" class="cartridge" onmousedown="onCartridgeClick(0) || event.stopPropagation()"><div class="label">(NEW CART)</div></div>';
 
-    var foundActive = false;
-    for (var i = 1; i < cartridgeArray.length; ++i) {
-        var c = cartridgeArray[i];
+    let foundActive = false;
+    for (let i = 1; i < cartridgeArray.length; ++i) {
+        let c = cartridgeArray[i];
         s += '<div id="cartridge' + i + '" style="filter: sepia(' + c.hue + '%) brightness(' + c.brightness + '); position: absolute; top: ' + c.y + 'px; left:' + c.x + 'px" class="cartridge" onmousedown="onCartridgeClick(' + i + ') || event.stopPropagation()"><div class="label">' + c.title + '</div></div>';
         foundActive = foundActive || (c.fileID === activeCartridge.fileID);
     }
@@ -1499,6 +1578,7 @@ function onSaveButton() {
 
     activeCartridge.code = editor.getValue();
     var newTitle = getTitle(activeCartridge.code);
+    var newFlags = getFlags(activeCartridge.code);
     var newFilename = getFilename(newTitle);
 
     if (! newFilename) {
@@ -1529,7 +1609,7 @@ function onSaveButton() {
     if (activeCartridge.fileID && (newFilename !== activeCartridge.filename) && (activeCartridge.title.toLowerCase().indexOf('untitled') === -1)) {
         showRenameDialog(newTitle, newFilename);
     } else {
-        updateAndSaveCartridge(newTitle, newFilename, activeCartridge);
+        updateAndSaveCartridge(newTitle, newFilename, activeCartridge.code, activeCartridge, undefined);
     }
 }
 
@@ -1540,20 +1620,29 @@ function eraseCartridgeWindowContents() {
 }
 
 
-function updateAndSaveCartridge(newTitle, newFilename, cartridge, callback) {
+function updateAndSaveCartridge(newTitle, newFilename, code, cartridge, callback) {
     cartridge.title = newTitle;
     cartridge.filename = newFilename;
+    cartridge.code = code;
 
     eraseCartridgeWindowContents();
-    googleDriveSaveTextFile(cartridge.filename, cartridge.code, function (file) {
-        cartridge.fileID = file.id;
-        cartridge.readOnly = false;
-        setChanged(false);
-        computeCartridgeArray();
-        // Scroll the cartrige window to the currently loaded one
-        // TODO
-        if (callback) { callback(); }
-    }, cartridge.fileID);
+    googleDriveSaveTextFile(cartridge.filename,
+                            'nano', true,
+                            {
+                                title : cartridge.title,
+                                flags : getFlags(cartridge.code)
+                            },
+                            cartridge.code,
+                            function (file) {
+                                cartridge.fileID = file.id;
+                                cartridge.readOnly = false;
+                                setChanged(false);
+                                computeCartridgeArray();
+                                // Scroll the cartrige window to the currently loaded one
+                                // TODO
+                                if (callback) { callback(); }
+                            },
+                            cartridge.fileID);
 }
 
 
@@ -1677,14 +1766,35 @@ var activeCartridge = {
     fileID:            undefined,
     readOnly:          undefined,
     changedSinceSaved: undefined,
+    // Used as a cache
+    code:              undefined,
+    flags:             undefined
 };
 
 
 function setActiveCartridge(cartridge) {
+    function completeLoad(fileID, contents, filename) {
+        activeCartridge.code = contents;
+        editor.setValue(activeCartridge.code);
+        editor.gotoLine(1);
+        setChanged(false);
+        hideWaitDialog();
+    }
+
+    if (! activeCartridge.code && ! activeCartridge.fileID) {
+        alert('Error: cartridge.code not available but cartridge was not on Google Drive');
+        return;
+    }
+
     activeCartridge = cartridge;
-    editor.setValue(activeCartridge.code);
-    editor.gotoLine(1);
-    setChanged(false);
+
+    if (! activeCartridge.code) {
+        // Fetch the file from Google Drive
+        showWaitDialog();
+        googleDriveGetTextFile(activeCartridge.fileID, completeLoad);
+    } else {
+        completeLoad(activeCartridge.fileID, activeCartridge.code, activeCartridge.filename);
+    }
 }
 
 
@@ -2239,7 +2349,9 @@ window.onbeforeunload = function (event) {
     var code = getQueryString('code');
     if (code) {
         activeCartridge.code = LZString.decompressFromEncodedURIComponent(code);
-        activeCartridge.filename = getFilename(getTitle(initialSource));
+        activeCartridge.title = getTitle(initialSource);
+        activeCartridge.filename = getFilename(activeCartridge.title);
+        activeCartridge.flags = getFlags(initialSource);
         activeCartridge.readOnly = true;
         activeCartridge.googleDriveFileID = undefined;
         setTimeout(toggleEditor, 750);

@@ -1076,7 +1076,7 @@ var [rnd, srand] = (function() {
 
     function srand(seed) {
         if (seed === undefined || seed === 0) { seed = 4.7499362e+13; }
-        if (seed < 10000) { seed += seed * 1.3529423483002e15; }
+        if (seed < 2**16) { seed += seed * 1.3529423483002e15; }
         state0U = Math.abs(seed / 2**24) >>> 0;
 
         // Avoid all zeros

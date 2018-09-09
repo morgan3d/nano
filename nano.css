@@ -128,7 +128,6 @@ a {
     width: 500px;
     border-radius: 13px;
     box-shadow:       0px 4px 15px 0px rgba(0, 0, 0, 0.4);
-
 }
 /*****************************************************/
 
@@ -238,8 +237,8 @@ div.ide {
     border:           1px solid #999;
     background:       #ddd;
     border-radius:    13px;
-    margin-left:      20px;
-    margin-top:       30px;
+    margin-left:      0px;
+    margin-top:       25px;
     margin-right:     15px;
     overflow:         hidden;
     box-shadow:       0px 4px 13px 0px rgba(0, 0, 0, 0.3);
@@ -473,7 +472,7 @@ div#paletteWindow {
     width:            388px;
     height:           236px;
     top:              250px;
-    left:             650px;
+    right:            20px;
 }
 
 /* command boxes */
@@ -625,8 +624,8 @@ div.emulator {
     z-index:          5;
     position:         absolute;
     right:            0px;
-    top:              24px;
-    width:            420px;
+    top:              20px;
+    width:            410px;
 }
 
 .noEditor div.emulator {
@@ -643,7 +642,7 @@ div.emulator div.case {
     position:         absolute;
     top:              0px;
     left:             0px;
-    width:            420px;
+    width:            410px;
     height:           613px;
     background-image: url("nano.png");
     background-size:  100% 100%;
@@ -675,5 +674,9 @@ canvas#screen {
     filter: blur(0.1px);
     /* The negative z translation is needed to fix z-order conflicts on Safari */
     /*transform: translateZ(-15px) perspective(1000px) rotateX(5deg); */
+}
+
+#saveButtonContainer:not(.disabled) span#saveButtonLabel {
+    background: linear-gradient(to bottom, #fff2f2 1%,#ffe0e0 18%,#ffd6d6 85%,#f4b7b7 100%) !important;
 }
 
