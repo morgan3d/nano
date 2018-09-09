@@ -233,7 +233,7 @@ div.disabled span.label, div.disabled:active span.label {
 
 div.ide {
     position:         absolute;
-    min-width:        385px;
+    min-width:        415px;
     border:           1px solid #999;
     background:       #ddd;
     border-radius:    13px;
