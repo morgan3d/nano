@@ -1310,7 +1310,10 @@ function addToCartridgeArray(title, filename, fileID, flags, code, readOnly) {
     }
 
     for (var i = 0; i < cartridgeArray.length; ++i) {
-        if (fileID && (cartridgeArray[i].fileID === fileID)) { console.error("Duplicate cart! (" + title + ")"); }
+        if (fileID && (cartridgeArray[i].fileID === fileID)) {
+            console.log("Warning: Duplicate cart! (" + title + ")");
+            return;
+        }
     }
 
     cartridgeArray.push({
@@ -1415,7 +1418,6 @@ function computeCartridgeArray() {
             if (remaining <= 0) {
                 makeCartridgeWindowContents();
             }
-
         } // if
     });
 }
@@ -1568,6 +1570,19 @@ function makeCartridgeWindowContents() {
         // remove its reference.
         activeCartridge.fileID = undefined;
     }
+
+    if (justLoggedIn) {
+        justLoggedIn = false;
+        let lastFileID = window.localStorage.getItem('lastFileID');
+        if (lastFileID) {
+            for (let i = 0; i < cartridgeArray.length; ++i) {
+                if (cartridgeArray[i].fileID === lastFileID) {
+                    setActiveCartridge(cartridgeArray[i]);
+                    break;
+                }
+            }
+        }
+    }
     
     setTimeout(updateCartridgeArrayPositions, 10);
 }
@@ -1609,7 +1624,7 @@ function onSaveButton() {
     if (activeCartridge.fileID && (newFilename !== activeCartridge.filename) && (activeCartridge.title.toLowerCase().indexOf('untitled') === -1)) {
         showRenameDialog(newTitle, newFilename);
     } else {
-        updateAndSaveCartridge(newTitle, newFilename, activeCartridge.code, activeCartridge, undefined);
+        updateAndSaveCartridge(newTitle, newFilename, activeCartridge.code, activeCartridge, saveIDEState);
     }
 }
 
@@ -1657,6 +1672,7 @@ function showRenameDialog(newTitle, newFilename) {
         updateAndSaveCartridge(newTitle, newFilename, activeCartridge, function () {
             hideRenameDialog();
             hideWaitDialog();
+            saveIDEState();
         });    
     };
 
@@ -1667,6 +1683,7 @@ function showRenameDialog(newTitle, newFilename) {
         updateAndSaveCartridge(newTitle, newFilename, activeCartridge, function () {
             hideRenameDialog();
             hideWaitDialog();
+            saveIDEState();
         });    
     };
 }
@@ -1772,13 +1789,19 @@ var activeCartridge = {
 };
 
 
-function setActiveCartridge(cartridge) {
+function saveIDEState() {
+    window.localStorage.setItem('lastFileID', activeCartridge.fileID);
+}
+
+
+function setActiveCartridge(cartridge, noSaveIDE) {
     function completeLoad(fileID, contents, filename) {
         activeCartridge.code = contents;
         editor.setValue(activeCartridge.code);
         editor.gotoLine(1);
         setChanged(false);
         hideWaitDialog();
+        if (! noSaveIDE) { saveIDEState(); }
     }
 
     if (! activeCartridge.code && ! activeCartridge.fileID) {
@@ -2340,7 +2363,7 @@ window.onbeforeunload = function (event) {
     }
 };
 
-
+let justLoggedIn = true;
 
 (function() {
     if (deployed) { initialSource = starterCartArray[0]; }
@@ -2354,13 +2377,12 @@ window.onbeforeunload = function (event) {
         activeCartridge.flags = getFlags(initialSource);
         activeCartridge.readOnly = true;
         activeCartridge.googleDriveFileID = undefined;
-        setTimeout(toggleEditor, 750);
-        
+        setTimeout(toggleEditor, 300);
     } else {
         activeCartridge.code = initialSource;
     }
 
-    setActiveCartridge(activeCartridge);
+    setActiveCartridge(activeCartridge, true);
 
     var buttons = 'WASD1ZX';
     for (var i = 0; i < buttons.length; ++i) {

@@ -1,4 +1,5 @@
 var starterCartArray = [
+    // First cart becomes the program shown on start
 `#nanojam Star Attack
 if τ ≟ 0
  y = 32
