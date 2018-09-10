@@ -1523,8 +1523,34 @@ some programs reach the full 60fps at "high resolution".
 Future flags will affect the rendering of the title screen and cartridge label.
 
 
-Implementation
+Advanced
 ====================================================================================
+
+Offline and Self-Hosting
+------------------------------------------------------------------------------------
+
+nano is self-contained and open source. It will be hosted online indefinitely at github.
+You may also host a specific version on your own server or run nano offline (which
+can be handy for airplane flights and schools with unreliable internet connections).
+To do so, download the files from http://morgan3d.github.io and in the directory that
+you've expanded them to, run the following at the command line:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ bash
+python3 -m http.server 9120
+
+# Linux cand MacOS:
+open http://localhost:9120/index.html
+
+# Windows:
+start http://localhost:9120/index.html
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Google Drive support will still work in this context. If you are running offline, 
+obviously connecting to Google Drive is impossible, so you will be restricted to
+importing and exporting nano programs from the local file system.
+
+Implementation
+------------------------------------------------------------------------------------
 
 The current implementation compiles the nano source code to JavaScript for execution, and
 passes through many JavaScript expressions even if not defined by the nano specification.
@@ -1552,7 +1578,8 @@ The following are permanent limitations:
 value becomes `"undefined"`.
 
 
-# Credits
+Credits
+====================================================================================
 
 The nano's influences include Atari 2600, Commodore VIC-20, PICO-8, APL, Python, Shadertoy, and
 Arduboy.  The 3x5 nano font is original, but was informed by by Yuji Oshimoto's 04B-24 freeware

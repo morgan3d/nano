@@ -27,12 +27,16 @@ div#header {
     left:0;
     height: 16px;
     font-size: 11px;
-    background: #ddd;
-    color:#000;
+    background: #000;
+    color:#ccc;
     width:100%;
     text-align: center;
     padding-top: 4px;
     z-index: 19;
+}
+
+#header a {
+    color:#8060ff !important;
 }
 
 .noEditor .idePart {
@@ -47,7 +51,7 @@ a {
     position: absolute;
     top: 0px;
     padding-top: 1px;
-    right: 8px;
+    right: 44px;
     color:#000;
     font-size:11px;
     z-index: 20;
@@ -98,6 +102,36 @@ a {
     -webkit-animation-iteration-count:infinite;
     -webkit-animation-timing-function:ease-in-out;
     -webkit-animation-direction: alternate;
+}
+
+/*****************************************************/
+
+#uiModeMenuButton {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    z-index: 21;
+    width: 60px;
+    height: 30px;
+    text-shadow:      rgba(0,0,0,0.7) 0 0 4px;
+
+    background-image: url('gear.png');
+    background-size: 50%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#uiModeMenu {
+    position: absolute;
+    z-index: 21;
+    top: 30px;
+    right: 0px;
+    background: #FFF;
+    padding-top: 5px;
+    color: #000;
+    visibility: hidden;
+    border: 1px solid #000;
+    box-shadow:       0px 4px 15px 0px rgba(0, 0, 0, 0.4);
 }
 
 /*****************************************************/
@@ -608,20 +642,6 @@ div#paletteWindow {
     width: 302px;
 }
 
-#hideButton {
-    position: absolute;
-    right:8px;
-    top: 5px;
-    color: #CCC;
-    border-radius: 0 6px 0 0;
-    padding-left: 2px;
-    padding-right: 2px;
-    height: 14px;
-    font-size: 18px;
-    baseline-shift: super;
-    cursor: pointer;
-    text-shadow:       1px 3px 2px rgba(0, 0, 0, 0.15);
-}
 
 /**************************************************/
 

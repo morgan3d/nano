@@ -1,24 +1,13 @@
 /* By Morgan McGuire @CasualEffects http://casual-effects.com GPL 3.0 License*/
 
 // 'IDE', 'Emulator', or 'Minimal'. Emulator will use the minimal style if the page is too
-// small for it.
+// small for it. See also setUIMode.
 var displayMode = 'IDE';
 
 // Must match nano-runtime.js
 var SCREEN_WIDTH, SCREEN_HEIGHT, BAR_HEIGHT, BAR_SPACING, FRAMEBUFFER_HEIGHT;
 
 function clamp(x, lo, hi) { return Math.min(Math.max(x, lo), hi); }
-
-function toggleEditor() {
-    var body = document.getElementsByTagName("body")[0];
-    body.classList.toggle('noEditor');
-
-    if (body.classList.contains('noEditor')) {
-        // No point in showing the emulator if it isn't running,
-        // so start it
-        onPlayButton();
-    }
-}
 
 function afterImageLoad(url, callback) {
     var image = new Image();
@@ -419,6 +408,55 @@ function getQueryString(field) {
     return string ? string[1] : null;
 }
 
+
+function setUIMode(d) {
+    displayMode = d;
+    if (displayMode === 'Emulator' || displayMode === 'Minimal') {
+    }
+
+    var body = document.getElementsByTagName("body")[0];
+    if (displayMode === 'IDE') {
+        body.classList.remove('noEditor');
+    } else {
+        // Minimal and Emulator
+        
+        body.classList.add('noEditor');
+        // Nothing to do except play in this mode, so hit play automatically
+        onPlayButton();
+    }
+    
+    onResize();
+}
+
+
+function onResize() {
+    switch (displayMode) {
+    case 'IDE':
+        // Nothing to do
+        break;
+        
+    case 'Emulator':
+        // TODO: Switch to minimal layout if too small
+        break;
+        
+    case 'Minimal':
+        // TODO: Size appropriately for the display
+        break;
+    }
+}
+
+window.addEventListener("resize", onResize, false);
+
+
+function onUIModeMenuButton(event) {
+    let menu = document.getElementById('uiModeMenu');
+    if (menu.style.visibility === 'visible') {
+        menu.style.visibility = 'hidden';
+    } else {
+        menu.style.visibility = 'visible';
+    }
+    event.stopPropagation();
+}
 
 function getImageData(image) {
     var tempCanvas = document.createElement('canvas');
@@ -2369,6 +2407,15 @@ let justLoggedIn = true;
 (function() {
     if (deployed) { initialSource = starterCartArray[0]; }
 
+    // Hide the UI mode menu if anyone clicks off of it while it is open
+    window.addEventListener('click',
+                            function () {
+                                let menu = document.getElementById('uiModeMenu');
+                                if (menu.style.visibility !== 'hidden') {
+                                    menu.style.visibility = 'hidden';
+                                }
+                            });
+
     // Code has been specified to the emulator; start with it and push the start button
     var code = getQueryString('code');
     if (code) {
@@ -2378,7 +2425,9 @@ let justLoggedIn = true;
         activeCartridge.flags = getFlags(initialSource);
         activeCartridge.readOnly = true;
         activeCartridge.googleDriveFileID = undefined;
-        setTimeout(toggleEditor, 300);
+        setTimeout(function () {
+            setUIMode('Emulator');
+        }, 300);
     } else {
         activeCartridge.code = initialSource;
     }
