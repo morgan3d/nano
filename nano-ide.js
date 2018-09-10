@@ -1798,7 +1798,8 @@ function setActiveCartridge(cartridge, noSaveIDE) {
     function completeLoad(fileID, contents, filename) {
         activeCartridge.code = contents;
         editor.setValue(activeCartridge.code);
-        editor.gotoLine(1);
+        editor.gotoLine(0, 0, false);
+        editor.scrollToLine(0, false, false, undefined);
         setChanged(false);
         hideWaitDialog();
         if (! noSaveIDE) { saveIDEState(); }
