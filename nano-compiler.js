@@ -585,10 +585,10 @@ function nanoToJS(src, noWrapper) {
         // numbers, making the product unclear. 
         src = src.replace(/([^A-Za-zαβγδζηθιλμρσϕφχψωΩ])([0-9]+|[επτξ∞½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₎])[ \t]*([\(\[A-Za-zαβγδζηιθλμρσϕχψωΔΩτεπξ∞])/g, '$1$2 * $3');
         
-        // Fix any instances of "or" that got accentially turned
+        // Fix any instances of text operatorsthat got accentially turned
         // into implicit multiplication. If there are other text
         // operators in the future, they can be added to this pattern.
-        src = src.replace(/\*[\t ]*(or)(\b|\d|$)/g, ' $1$2');
+        src = src.replace(/\*[\t ]*(or|and|not)(\b|\d|$)/g, ' $1$2');
 
         // Replace fractions
         src = src.replace(/[½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒]/g, function (match) { return fraction[match]; });

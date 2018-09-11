@@ -39,7 +39,7 @@ div#header {
     color:#8060ff !important;
 }
 
-.noEditor .idePart {
+.noIDE .idePart {
     visibility: hidden;
 }
 
@@ -653,15 +653,18 @@ div.emulator {
     width:            410px;
 }
 
-.noEditor div.emulator {
+.noIDE div.emulator {
     left: 0px;
 }
 
-.noEditor #emulatorHelp {
+.noIDE #emulatorHelp {
     left: 50px;
     width: 320px;
 }
 
+body.minimalUI #emulatorHelp {
+    visibility: hidden;
+}
 
 div.emulator div.case {
     position:         absolute;
@@ -673,11 +676,32 @@ div.emulator div.case {
     background-size:  100% 100%;
 }
 
+body.minimalUI {
+    background: #594e92;
+}
+
+body.minimalUI div.emulator div.case {
+    background-image: none;
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    top: -60px;
+}
+
+img.minimalControls {
+    visibility: hidden;
+}
+
+body.minimalUI img.minimalControls {
+    visibility: visible;
+}
 
 canvas#bar {
     position: absolute;
     top:67px;
-    left:82px;
+    left:77px;
     width:256px;
     height:32px;
     background: #000;
@@ -691,7 +715,7 @@ canvas#bar {
 canvas#screen {
     position: absolute;
     top:115px;
-    left:82px;
+    left:77px;
     width:256px;
     height:256px;
     background: #000;
@@ -699,6 +723,11 @@ canvas#screen {
     filter: blur(0.1px);
     /* The negative z translation is needed to fix z-order conflicts on Safari */
     /*transform: translateZ(-15px) perspective(1000px) rotateX(5deg); */
+}
+
+/* Inset the screens in minimal mode */
+.minimalUI canvas#bar, .minimalUI canvas#screen {
+    box-shadow: 1px 2px 1px 0px rgba(255,255,255,0.3), -1px -2px 1px 0px rgba(0,0,0,0.3);
 }
 
 #saveButtonContainer:not(.disabled) span#saveButtonLabel {

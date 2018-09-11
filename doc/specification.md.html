@@ -25,7 +25,7 @@ Virtual Hardware Features:
 - 60 fps
 - 96 built-in sprites
 - 80 built-in sound effects
-- Seven-button gamepad
+- Nine-button gamepad
 - External 2nd gamepad for multiplayer
 
 Online Software Features:
@@ -561,12 +561,16 @@ Player 1
 : Directions: WASD or arrow keys
   <br> A button: Z or Space
   <br> B button: X or Enter 
+  <br> C button: E
+  <br> D button: R
   <br> start button: 1
 
 Player 2 ("external gamepad")
 : Directions: IJKL
-  <br> A button: G or ;
-  <br> B button: H or .
+  <br> A button: G or .
+  <br> B button: H or ;
+  <br> C button: O
+  <br> D button: P
   <br> start button: 7
 
 Pressing the "run" button on the editor automatically transfers keyboard focus to the emulator.
@@ -1077,9 +1081,12 @@ Field | Values   | Meaning
 `aa`  | 0 or 1   | 1 if the A button was just pressed this frame
 `b`   | 0 or 1   | 1 if the B button is currently pressed
 `bb`  | 0 or 1   | 1 if the B button was just pressed this frame
+`c`   | 0 or 1   | 1 if the C button is currently pressed
+`cc`  | 0 or 1   | 1 if the C button was just pressed this frame
+`d`   | 0 or 1   | 1 if the D button is currently pressed
+`dd`  | 0 or 1   | 1 if the D button was just pressed this frame
 `s`   | 0 or 1   | 1 if the start button is currently pressed
 `ss`  | 0 or 1   | 1 if the start button was just pressed this frame
-
 
 
 Flow Control
@@ -1545,9 +1552,10 @@ open http://localhost:9120/index.html
 start http://localhost:9120/index.html
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Google Drive support will still work in this context. If you are running offline, 
-obviously connecting to Google Drive is impossible, so you will be restricted to
-importing and exporting nano programs from the local file system.
+Google Drive support will still work in this context for local files but not ones hosted on a
+different website (this is a Google Drive security restriction). If you are running offline or
+hosted on another website, then will be restricted to importing and exporting nano programs
+from the local file system.
 
 Implementation
 ------------------------------------------------------------------------------------
@@ -1625,6 +1633,7 @@ its license, which permits any use.
  - Made the save button pink when unsaved
  - Reduced IDE margins to fit smaller screens
  - IDE auto-loads the previous program from Google Drive on start
+ - Added C and D buttons to gamepad
 
 2018 Sep 1:
  - Rewrote manual with more friendly examples

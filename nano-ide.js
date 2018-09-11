@@ -59,8 +59,10 @@ if(τ>31)cls(clr=0);i=j=x=v=∅
 
 
 var tests = {
-    // Multiple single-line statements stacked up
     IF: `#nanojam IF,1
+if (|m.x - a.pos.x| < 3) and (|m.y - a.pos.y| < 3)
+ x=1
+
 for x≤1
  if(0)1;if(2)3`,
 
@@ -356,7 +358,7 @@ var initialSource =
     //tests.nanoReset;
     //tests.rgb;
     //tests.text;
-    tests.triangles;
+    //tests.triangles;
     //tests.spacedash;
     //tests.nest;
     //tests.scope;
@@ -374,7 +376,7 @@ var initialSource =
     //tests.FCN;
     //tests.sort;
     //tests.ping;
-    //tests.IF;
+    tests.IF;
     //tests.FOR;
     //tests.input;
     //tests.agent;
@@ -411,36 +413,61 @@ function getQueryString(field) {
 
 function setUIMode(d) {
     displayMode = d;
-    if (displayMode === 'Emulator' || displayMode === 'Minimal') {
-    }
-
-    var body = document.getElementsByTagName("body")[0];
+    let body = document.getElementsByTagName("body")[0];
     if (displayMode === 'IDE') {
-        body.classList.remove('noEditor');
+        body.classList.remove('noIDE');
+        body.classList.remove('minimalUI');
     } else {
         // Minimal and Emulator
-        
-        body.classList.add('noEditor');
+        body.classList.add('noIDE');
         // Nothing to do except play in this mode, so hit play automatically
-        onPlayButton();
+
+        // TODO:
+        //onPlayButton();
     }
-    
+
     onResize();
 }
 
 
 function onResize() {
+    let body = document.getElementsByTagName("body")[0];
+    
     switch (displayMode) {
     case 'IDE':
         // Nothing to do
         break;
         
     case 'Emulator':
-        // TODO: Switch to minimal layout if too small
+        // If not too small, remove minimalUI from body
+        // TODO
+        body.classList.remove('minimalUI');
+        
+        // If too small, fall through to minimal
+        // TODO
+
         break;
         
     case 'Minimal':
-        // TODO: Size appropriately for the display
+        // TODO: figure out FRAMEBUFFER_HEIGHT from the code before
+        // entering this mode.
+
+        // TODO: Choose horizontal or vertical layout based on screen size
+        
+        let windowHeightDevicePixels = window.innerHeight * devicePixelRatio;
+
+        // What is the largest multiple FRAMEBUFFER_HEIGHT that is less than windowHeightDevicePixels?
+        let scale = Math.floor(windowHeightDevicePixels / FRAMEBUFFER_HEIGHT) * FRAMEBUFFER_HEIGHT;
+
+        // TODO: reserve space for the controls
+
+        // TODO: set a scale transformation to move the screen + bar size and position
+        // appropriately
+        
+        console.log(scale);
+
+        // TODO: Make emulator elements hidden when this is set
+        body.classList.add('minimalUI');
         break;
     }
 }
@@ -2264,8 +2291,8 @@ emulatorKeyboardInput.addEventListener('keyup', onEmulatorKeyUp, true);
 function ascii(x) { return x.charCodeAt(0); }
 
 /** Used by _submitFrame() to map axes and buttons to event key codes when sampling the keyboard controller */
-var keyMap = [{'-x':[ascii('A'), 37],         '+x':[ascii('D'), 39],          '-y':[ascii('W'), 38], '+y':[ascii('S'), 40],          a:[ascii('Z'), 32],   b:[ascii('X'), 13], s:[ascii('1'), ascii('1')]},
-              {'-x':[ascii('J'), ascii('J')], '+x':[ascii('L'), ascii('L')],  '-y':[ascii('I')],     '+y':[ascii('K'), ascii('K')],  a:[ascii('G'), 186],  b:[ascii('H'), ascii('.')], s:[ascii('7'), ascii('7')]}];
+var keyMap = [{'-x':[ascii('A'), 37],         '+x':[ascii('D'), 39],          '-y':[ascii('W'), 38], '+y':[ascii('S'), 40],          a:[ascii('Z'), 32],          b:[ascii('X'), 13],   c:[ascii('E'), ascii('E')], d:[ascii('R'), ascii('R')], s:[ascii('1'), ascii('1')]},
+              {'-x':[ascii('J'), ascii('J')], '+x':[ascii('L'), ascii('L')],  '-y':[ascii('I')],     '+y':[ascii('K'), ascii('K')],  a:[ascii('G'), ascii('.')],  b:[ascii('H'), 186],  c:[ascii('O'), ascii('O')], d:[ascii('P'), ascii('P')], s:[ascii('7'), ascii('7')]}];
 
 var prevRealGamepadState = [];
 
@@ -2335,7 +2362,7 @@ function submitFrame() {
     
     refreshPending = true;
 
-    var axes = 'xy', buttons = 'abs';
+    var axes = 'xy', buttons = 'abcds';
 
     // HTML gamepad indices of corresponding elements of the buttons array
     var buttonIndex = [0, 1, 9];
@@ -2434,7 +2461,7 @@ let justLoggedIn = true;
 
     setActiveCartridge(activeCartridge, true);
 
-    var buttons = 'WASD1ZX';
+    var buttons = 'WASD1ZXER';
     for (var i = 0; i < buttons.length; ++i) {
         var b = buttons[i];
         var buttonElement = document.getElementById(b + 'button');
