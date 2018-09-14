@@ -145,7 +145,7 @@ function processForTest(test, noDeclareSet) {
         // j is the location of the first operator
         // k is the location of the second operator
         
-        initExpr   = test.substring(0, j).trim();
+        initExpr = test.substring(0, j).trim();
         if (op === '<') {
             initExpr = '_Math.floor(' + initExpr + ') + 1';
         }
@@ -312,7 +312,7 @@ Mutate the lines in place
 
 */
 function processBlock(lineArray, startLineIndex, declareSet, noDeclareSet, inFunction) {
-
+    // indentation index of the previous line, indentation index of the block start
     let prevIndent, originalIndent, i;
     
     for (i = startLineIndex; i < lineArray.length; ++i) {
@@ -322,7 +322,6 @@ function processBlock(lineArray, startLineIndex, declareSet, noDeclareSet, inFun
         // Ignore empty lines
         if (indent < 0) { continue; }
 
-        
         if (prevIndent === undefined) {
             // initialize on the first non-empty line
             prevIndent = indent;
@@ -345,9 +344,10 @@ function processBlock(lineArray, startLineIndex, declareSet, noDeclareSet, inFun
 
         if ((i === 0) && (indent > 0)) {
             throw makeError('First line must not be indented', i);
-        } else if (indent > prevIndent + 1) {
+        } /* This requirement was removed on 2018-09-13:
+            else if (indent > prevIndent + 1) {
             throw makeError('Indentation must not increase by more than one space per line', i);
-        }
+        }*/
 
         ///////////////////////////////////////////////////////////////////////
 

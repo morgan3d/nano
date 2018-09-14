@@ -2,20 +2,18 @@ var starterCartArray = [
     // First cart becomes the program shown on start
 `#nanojam Star Attack
 if τ ≟ 0
- y = 32
- // Aliens
- aln = [{x:100, y:10, s:4}, {x:140, y:40, s:20}, {x:180, y:60, s:4}]
+  y = 32
+  // Aliens
+  aln = [{x:100, y:10, s:4}, {x:140, y:40, s:20}, {x:180, y:60, s:4}]
 
 // Stars
 for s < 64
- // Compute a "random" column on each row
- // for a star, and then cycle it left
- h = hash(s)
- pset(64 - ((64 + ⅓τ) * h % 64), s, gray(⅓h))
+  // Compute a "random" column on each row
+  // for a star, and then cycle it left
+  h = hash(s)
+  pset(64 - ((64 + ⅓τ) * h % 64), s, gray(⅓h))
 
-y = y + joy.y
-y = max(4, y)
-y = min(60, y)
+y = mid(4, y + joy.y, 60)
 
 // Player ship
 draw(38, 10, y, 641)
@@ -25,19 +23,19 @@ k = ⌊⅛τ % 2⌋
 
 // Aliens
 for a ∈ aln
- draw(a.s + k, a.x, a.y, 645)
- if (a.x - 10)² + (a.y - y)² < 16
-  // Hit the ship!
-  text("BOOM!", 32, 32, 4)
-  show
-  wait
-  reset
+  draw(a.s + k, a.x, a.y, 645)
+  if (a.x - 10)² + (a.y - y)² < 16
+    // Hit the ship!
+    text("BOOM!", 32, 32, 4)
+    show
+    wait
+    reset
   
  a.x -= 1
  if a.x < -4
-  // Pick a new position when off screen
-  a.x = 120 + 50ξ
-  a.y = 4 + 56ξ`,
+   // Pick a new position when off screen
+   a.x = 120 + 50ξ
+   a.y = 4 + 56ξ`,
 
 
 `#nanojam SPACE DASH
@@ -65,18 +63,18 @@ if(τ≥9³)text("YOU WIN");wait;τ=0`,
 `#nanojam Breaker
 
 if ¬τ
- // initialize variables
- clr = 5
- cls(5)
- pal(311121004311307)
- clip(0, -12, 63, 63)
- paddle = {pos: xy(32, 54), ext: xy(6, 1)}
- ball   = {pos: xy(32, 50), ext: xy(2, 2), vel: xy(-1,-1)}
- lives = 3
- world = []
- for j < 4
-  for i < 8
-   world.add({pos: xy(8i + 3, 4j + 8), ext: xy(4, 2)})
+  // initialize variables
+  clr = 5
+  cls(5)
+  pal(311121004311307)
+  clip(0, -12, 63, 63)
+  paddle = {pos: xy(32, 54), ext: xy(6, 1)}
+  ball   = {pos: xy(32, 50), ext: xy(2, 2), vel: xy(-1,-1)}
+  lives = 3
+  world = []
+  for j < 4
+    for i < 8
+      world.add({pos: xy(8i + 3, 4j + 8), ext: xy(4, 2)})
 
 // overlap size for brick hit
 let W = world₀.ext.x + ball.ext.x
@@ -95,70 +93,70 @@ for (L < lives) draw(27, 60 - 5L, -8, 79)
 ///////////////////////////////////////////////////////
 // background line graphics
 for i < 10
- line(0, 32 + 48noise(4, τ/300, i), 63, 32 + 48noise(4, τ/300, 2, i), 3)
+  line(0, 32 + 48noise(4, τ/300, i), 63, 32 + 48noise(4, τ/300, 2, i), 3)
 
 //////////////////////////////////////////////////
 // bricks
 for brick ∊ world
- with pos, ext ∊ brick
-  with x, y ∊ pos
-   draw(44, x, y, 4251)
+  with pos, ext ∊ brick
+    with x, y ∊ pos
+      draw(44, x, y, 4251)
   
-   // Look for ball collisions
-   if (|x - nxt.x| < W) and (|y - cur.y| < H)
-    // Hit horizontally
-    world.rem(brick); sound(25)
-    ball.vel.x *= -1
-   elif (|x - cur.x| < W) and (|y - nxt.y| < H)
-    // Hit vertically
-    world.rem(brick); sound(25)
-    ball.vel.y *= -1
+      // Look for ball collisions
+      if (|x - nxt.x| < W) and (|y - cur.y| < H)
+        // Hit horizontally
+        world.rem(brick); sound(25)
+        ball.vel.x *= -1
+      elif (|x - cur.x| < W) and (|y - nxt.y| < H)
+        // Hit vertically
+        world.rem(brick); sound(25)
+        ball.vel.y *= -1
    
 //////////////////////////////////////////////////
 // paddle
 with pos, ext ∊ paddle
- with x, y ∊ pos
-  line(x - ext.x, y + ext.y + 1, x + ext.x, y + ext.y + 1, 8)
-  rect(x - ext.x, y - ext.y, x + ext.x, y + ext.y, 7)
-  x = mid(x + joy.x, ext.x, 63 - ext.x) 
+  with x, y ∊ pos
+    line(x - ext.x, y + ext.y + 1, x + ext.x, y + ext.y + 1, 8)
+    rect(x - ext.x, y - ext.y, x + ext.x, y + ext.y, 7)
+    x = mid(x + joy.x, ext.x, 63 - ext.x) 
   
 //////////////////////////////////////////////////
 // ball
 with pos, ext, vel ∊ ball
- draw(43, pos.x, pos.y, 192)
- pos.x += vel.x; pos.y += vel.y
+  draw(43, pos.x, pos.y, 192)
+  pos.x += vel.x; pos.y += vel.y
 
- // bounce x
- diff = pos.x - 32
- if |diff| > 32 - ext.x
-  vel.x *= -sgn(diff * vel.x); sound(61)
+  // bounce x
+  diff = pos.x - 32
+  if |diff| > 32 - ext.x
+    vel.x *= -sgn(diff * vel.x); sound(61)
 
- // bounce y
- if pos.y - ext.y < 0
-  vel.y = |vel.y|; sound(61)
+  // bounce y
+  if pos.y - ext.y < 0
+    vel.y = |vel.y|; sound(61)
   
- // lose ball
- if pos.y + ext.y > 70
-  vel.x = +1; vel.y = -1
-  pos.x = paddle.pos.x
-  pos.y = paddle.pos.y - paddle.ext.y - ball.ext.y
-  lives -= 1
-  draw(27, 60 - 5lives, -8, 89); pset(7)
-  if lives ≥ 0   
-   sound(79); text("Press to Launch")
-   wait
-  else
-   sound(28); text("GAME OVER")
-   wait; reset
+  // lose ball
+  if pos.y + ext.y > 70
+    vel.x = +1; vel.y = -1
+    pos.x = paddle.pos.x
+    pos.y = paddle.pos.y - paddle.ext.y - ball.ext.y
+    lives -= 1
+    draw(27, 60 - 5lives, -8, 89); pset(7)
+    if lives ≥ 0   
+      sound(79); text("Press to Launch")
+      wait
+    else
+      sound(28); text("GAME OVER")
+      wait; reset
   
  if overlap(ball, paddle) and vel.y > 0
-  vel.y *= -1; sound(61)
+   vel.y *= -1; sound(61)
 
 //////////////////////////////////////////////////
 // end game
 if world.len ≟ 0
- sound(75); text("You Win", 32, 32)
- wait; reset
+  sound(75); text("You Win", 32, 32)
+  wait; reset
  
 if (¬τ) text("Press to Launch"); wait`,
 
