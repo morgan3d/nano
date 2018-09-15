@@ -31,11 +31,11 @@ for a ∈ aln
     wait
     reset
   
- a.x -= 1
- if a.x < -4
-   // Pick a new position when off screen
-   a.x = 120 + 50ξ
-   a.y = 4 + 56ξ`,
+  a.x -= 1
+  if a.x < -4
+    // Pick a new position when off screen
+    a.x = 120 + 50ξ
+    a.y = 4 + 56ξ`,
 
 
 `#nanojam SPACE DASH

@@ -60,6 +60,7 @@ if(τ>31)cls(clr=0);i=j=x=v=∅
 
 
 var initialSource =
+    tests.starattack;
     //tests.nanoBoot;
     //tests.nanoReset;
     //tests.rgb;
@@ -76,7 +77,7 @@ var initialSource =
     //tests.variables;
     //tests.runner;
     //tests.hash;
-    tests.plasma;
+    //tests.plasma;
     //tests.plasma2;
     //tests.manySprites;
     //tests.FCN;
@@ -2087,7 +2088,7 @@ function submitFrame() {
     
     // Sample the keys
     for (let player = 0; player < 2; ++player) {
-        var map = keyMap[player], pad = Runtime.pad[player],
+        let map = keyMap[player], pad = Runtime.pad[player],
             realGamepad = gamepadArray[player], prevRealGamepad = prevRealGamepadState[player];
 
         for (let a = 0; a < axes.length; ++a) {

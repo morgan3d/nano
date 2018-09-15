@@ -203,6 +203,43 @@ for i<2
  circ(44,22+y,4,14+j.a);circ(50,14+y,4,14+j.b)
  circ(30,16+y,2.7,14+j.s)
  line(15,16+y,15+6j.x,16+6j.y+y,1)`,
+
+    starattack: `#nanojam Star Attack
+if τ ≟ 0
+  y = 32
+  // Aliens
+  aln = [{x:100, y:10, s:4}, {x:140, y:40, s:20}, {x:180, y:60, s:4}]
+
+// Stars
+for s < 64
+  // Compute a "random" column on each row
+  // for a star, and then cycle it left
+  h = hash(s)
+  pset(64 - ((64 + ⅓τ) * h % 64), s, gray(⅓h))
+
+y = mid(4, y + joy.y, 60)
+
+// Player ship
+draw(38, 10, y, 641)
+
+// alternate animation frames
+k = ⌊⅛τ % 2⌋
+
+// Aliens
+for a ∈ aln
+  draw(a.s + k, a.x, a.y, 645)
+  if (a.x - 10)² + (a.y - y)² < 16
+    // Hit the ship!
+    text("BOOM!", 32, 32, 4)
+    show
+    wait
+    reset
+  
+  a.x -= 1
+  if a.x < -4
+    // Pick a new position when off screen
+    a.x = 120 + 50ξ
+    a.y = 4 + 56ξ`,
     
     spacedash: `#nanojam SPACE DASH
 if(¬τ)x=32

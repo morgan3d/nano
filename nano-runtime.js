@@ -294,8 +294,8 @@ abcdefghijklmnopqrstuvwxy
 
 
 var clr = 0;
-var joy = Object.seal({x:0, y:0, θ:0, a:0, b:0, s:0, aa:0, bb:0, ss:0});
-var pad = [joy, Object.seal({x:0, y:0, θ:0, a:0, b:0, s:0, aa:0, bb:0, ss:0})];
+var joy = Object.seal({x:0, y:0, θ:0, a:0, b:0, c:0, d:0, s:0, aa:0, bb:0, cc:0, dd:0, ss:0});
+var pad = [joy, Object.seal({x:0, y:0, θ:0, a:0, b:0, c:0, d:0, s:0, aa:0, bb:0, cc:0, dd:0, ss:0})];
 
 var hashview = new DataView(new ArrayBuffer(8));
 
