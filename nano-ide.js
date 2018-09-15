@@ -1132,7 +1132,7 @@ function executeWithSaveCheck(message, callback) {
 }
 
 
-/** Pulls cartridges from Google Drive */
+/** Pulls cartridges from Google Drive and starter cart array */
 function computeCartridgeArray() {
     cartridgeArray = [];
     
@@ -1147,6 +1147,11 @@ function computeCartridgeArray() {
     
     cartridgeArrayScrollIndex = Math.min(cartridgeArray.length, cartridgeArrayScrollIndex);
 
+    if (! hasGoogleDrive) {
+        makeCartridgeWindowContents();
+        return;
+    }
+    
     googleDriveRetrieveAllFiles('nano', 'true', function(files) {
         var remaining = files.length;
 
@@ -1214,10 +1219,11 @@ function computeCartridgeArray() {
 var authorizeDiv = document.getElementById('authorize-div');
 var signoutButton = document.getElementById('signout-button');
 var cartridgeViewer = document.getElementById('cartridgeViewer');
+var hasGoogleDrive = false;
 
 function onSignIn() {
+    hasGoogleDrive = true;
     authorizeDiv.classList.add('hidden');
-    cartridgeViewer.classList.remove('hidden');
     signoutButton.classList.remove('hidden');
     eraseCartridgeWindowContents();
     computeCartridgeArray();
@@ -1230,12 +1236,14 @@ function onSignIn() {
 
 
 function onSignOut() {
-    cartridgeViewer.classList.add('hidden');
+    hasGoogleDrive = false;
+    justSignedIn = false;
     authorizeDiv.classList.remove('hidden');
     signoutButton.classList.add('hidden');
     document.getElementById('user-name').innerHTML = '';
     // Blank GIF
     document.getElementById('user-photo').src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    computeCartridgeArray();
 }
 
 
@@ -1360,7 +1368,7 @@ function makeCartridgeWindowContents() {
         activeCartridge.fileID = undefined;
     }
 
-    if (justLoggedIn) {
+    if (hasGoogleDrive && justLoggedIn) {
         justLoggedIn = false;
         let lastFileID = window.localStorage.getItem('lastFileID');
         if (lastFileID) {
@@ -2238,6 +2246,9 @@ let justLoggedIn = true;
             })(b);
         } // for each button
     } // for each control
-    
+
+    // Load starter carts
+    computeCartridgeArray();
+
 })();
 
