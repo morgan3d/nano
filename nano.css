@@ -690,11 +690,11 @@ body.minimalUI div.emulator div.case {
     top: -60px;
 }
 
-img.minimalControls {
+.minimalControls {
     visibility: hidden;
 }
 
-body.minimalUI img.minimalControls {
+body.minimalUI .minimalControls {
     visibility: visible;
 }
 

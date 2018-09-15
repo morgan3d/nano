@@ -128,9 +128,7 @@ function setUIMode(d) {
         // Minimal and Emulator
         body.classList.add('noIDE');
         // Nothing to do except play in this mode, so hit play automatically
-
-        // TODO:
-        //onPlayButton();
+        onPlayButton();
     }
 
     onResize();
