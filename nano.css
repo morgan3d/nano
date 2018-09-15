@@ -14,7 +14,7 @@ body {
     font-family: Helvetica, Arial;
     font-size: 13px;
     margin: 0;
-    background: #383050;
+    background: #000;
     color: #ddd;
     height:100%;
     width: 100%;               
@@ -61,7 +61,7 @@ a {
     width: 1px !important; height: 1px !important; position: absolute !important; left: -10000px !important; top: -1000px !important;
 }
 
-.emulator .case, .emulator .case .emulatorButton {
+.emulator .case, .emulatorButton {
     touch-action: none;
     /* Disable text selection */
     -webkit-touch-callout: none;
@@ -81,7 +81,7 @@ a {
     cursor: pointer;
     position: absolute;
     /* show bounds for debugging */
-    /*  border: 1px solid #f00; */
+    /* border: 1px solid #f00;*/
 }
 
 
@@ -108,8 +108,8 @@ a {
 
 #uiModeMenuButton {
     position: absolute;
-    top: 0px;
-    right: 0px;
+    top: 9px;
+    right: -3px;
     z-index: 21;
     width: 60px;
     height: 30px;
@@ -124,7 +124,7 @@ a {
 #uiModeMenu {
     position: absolute;
     z-index: 21;
-    top: 30px;
+    top: 35px;
     right: 0px;
     background: #FFF;
     padding-top: 5px;
@@ -676,8 +676,17 @@ div.emulator div.case {
     background-size:  100% 100%;
 }
 
-body.minimalUI {
-    background: #594e92;
+
+div#background {
+    position: fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background: #383050;
+}
+
+body.minimalUI div#background {
+    background: #594e92 !important;
+    border-radius: 20px;
 }
 
 body.minimalUI div.emulator div.case {
@@ -719,15 +728,13 @@ canvas#screen {
     width:256px;
     height:256px;
     background: #000;
-    /* Slightly soften and tilt to make the embedded image look more real*/
-    filter: blur(0.1px);
-    /* The negative z translation is needed to fix z-order conflicts on Safari */
-    /*transform: translateZ(-15px) perspective(1000px) rotateX(5deg); */
+    /* Slightly soften to make the embedded image look more real*/
+    /* filter: blur(0.1px); */
 }
 
 /* Inset the screens in minimal mode */
 .minimalUI canvas#bar, .minimalUI canvas#screen {
-    box-shadow: 1px 2px 1px 0px rgba(255,255,255,0.3), -1px -2px 1px 0px rgba(0,0,0,0.3);
+    box-shadow: 0.5px 2px 1px 0px rgba(255,255,255,0.3), -1px -2px 1px 0px rgba(0,0,0,0.3);
 }
 
 #saveButtonContainer:not(.disabled) span#saveButtonLabel {

@@ -76,14 +76,14 @@ var initialSource =
     //tests.variables;
     //tests.runner;
     //tests.hash;
-    //tests.plasma;
+    tests.plasma;
     //tests.plasma2;
     //tests.manySprites;
     //tests.FCN;
     //tests.sort;
     //tests.ping;
     //tests.IF;
-    tests.keyrepeat;
+    //tests.keyrepeat;
     //tests.FOR;
     //tests.input;
     //tests.agent;
@@ -127,6 +127,7 @@ function setUIMode(d) {
     } else {
         // Minimal and Emulator
         body.classList.add('noIDE');
+        
         // Nothing to do except play in this mode, so hit play automatically
         onPlayButton();
     }
@@ -137,16 +138,22 @@ function setUIMode(d) {
 
 function onResize() {
     let body = document.getElementsByTagName("body")[0];
-    
+    let emulator = document.getElementById('emulator');
+
     switch (displayMode) {
     case 'IDE':
-        // Nothing to do
+        // Remove explicit styles set by Javascript
+        // for the minimal UI.
+        emulator.removeAttribute('style');
         break;
         
     case 'Emulator':
         // If not too small, remove minimalUI from body
         // TODO
         body.classList.remove('minimalUI');
+        // Remove explicit styles set by Javascript
+        // for the minimal UI.
+        emulator.removeAttribute('style');
         
         // If too small, fall through to minimal
         // TODO
@@ -154,24 +161,21 @@ function onResize() {
         break;
         
     case 'Minimal':
-        // TODO: figure out FRAMEBUFFER_HEIGHT from the code before
-        // entering this mode.
-
-        // TODO: Choose horizontal or vertical layout based on screen size
-        
-        let windowHeightDevicePixels = window.innerHeight * devicePixelRatio;
 
         // What is the largest multiple FRAMEBUFFER_HEIGHT that is less than windowHeightDevicePixels?
-        let scale = Math.floor(windowHeightDevicePixels / FRAMEBUFFER_HEIGHT) * FRAMEBUFFER_HEIGHT;
+        let scale = Math.max(0, Math.min((window.innerHeight - 40) / 300, (window.innerWidth - 270) / 280));
 
-        // TODO: reserve space for the controls
-
-        // TODO: set a scale transformation to move the screen + bar size and position
-        // appropriately
+        if (scale * window.devicePixelRatio < 2) {
+            // Round to nearest even multiple of the actual pixel size
+            // let windowHeightDevicePixels = window.innerHeight * devicePixelRatio;
+            // Math.floor(windowHeightDevicePixels / FRAMEBUFFER_HEIGHT) * FRAMEBUFFER_HEIGHT
+        }
         
-        console.log(scale);
-
-        // TODO: Make emulator elements hidden when this is set
+        emulator.style.transform = 'scale(' + scale + ')';
+        emulator.style.left = Math.round((window.innerWidth - emulator.offsetWidth) / 2) + 'px';
+        emulator.style.top = '8px';
+        
+        // Hide emulator elements
         body.classList.add('minimalUI');
         break;
     }
@@ -1801,6 +1805,9 @@ function setFramebufferSize(w) {
         Runtime._screen = new Uint8Array(SCREEN_WIDTH * FRAMEBUFFER_HEIGHT)
         Runtime._updateImageDataUint32 = new Uint32Array(updateImageData.data.buffer);
     }
+
+    // The layout may need updating as well
+    onResize();
 }
 
 /** Returns javascript source or throws an exception */
@@ -2033,8 +2040,8 @@ function getIdealGamepads() {
             gamepadArray.push(mypad);
             
             if (gamepadArray.length > prevRealGamepadState.length) {
-                prevRealGamepadState.push({axes:[0, 0], buttons:[false, false, //0-2
-                                                                 undefined, undefined, undefined, undefined, undefined, undefined, // 3-8
+                prevRealGamepadState.push({axes:[0, 0], buttons:[false, false, false, false,//0-3
+                                                                 undefined, undefined, undefined, undefined, // 5-8
                                                                  false // 9
                                                                 ]});
             }
@@ -2071,19 +2078,19 @@ function submitFrame() {
     
     refreshPending = true;
 
-    var axes = 'xy', buttons = 'abcds';
+    let axes = 'xy', buttons = 'abcds';
 
     // HTML gamepad indices of corresponding elements of the buttons array
-    var buttonIndex = [0, 1, 9];
+    let buttonIndex = [0, 1, 9];
     
-    var gamepadArray = getIdealGamepads();
+    let gamepadArray = getIdealGamepads();
     
     // Sample the keys
-    for (var player = 0; player < 2; ++player) {
+    for (let player = 0; player < 2; ++player) {
         var map = keyMap[player], pad = Runtime.pad[player],
             realGamepad = gamepadArray[player], prevRealGamepad = prevRealGamepadState[player];
 
-        for (var a = 0; a < axes.length; ++a) {
+        for (let a = 0; a < axes.length; ++a) {
             var axis = axes[a];
             var pos = '+' + axis, neg = '-' + axis;
             var n0 = map[neg][0], n1 = map[neg][1], p0 = map[pos][0], p1 = map[pos][1];
@@ -2170,46 +2177,51 @@ let justLoggedIn = true;
 
     setActiveCartridge(activeCartridge, true);
 
-    var buttons = 'WASD1ZXER';
-    for (var i = 0; i < buttons.length; ++i) {
-        var b = buttons[i];
-        var buttonElement = document.getElementById(b + 'button');
-        buttonElement.onmousedown = buttonElement.ontouchstart = (function(b) {
-            return function (event) {
-                if (! emulatorButtonState[b]) {
-                    // fake an event
-                    onEmulatorKeyDown({keyCode:ascii(b), stopPropagation:Math.abs, preventDefault:Math.abs});
-                }
-                emulatorButtonState[b] = 1;
-                event.preventDefault();
-                event.stopPropagation();
-            };
-        })(b);
-
-        buttonElement.onmouseenter = buttonElement.onmousemove = (function(b) {
-            return function (event) {
-                if (event.buttons !== 0) {
+    // Set button callbacks
+    let buttons = 'WASD1ZXER';
+    for (let i = 0; i < buttons.length; ++i) {
+        let b = buttons[i];
+        let emulatorButtonArray = document.getElementsByClassName(b + 'button');
+        for (let j = 0; j < emulatorButtonArray.length; ++j) {
+            let buttonElement = emulatorButtonArray[j];
+            
+            buttonElement.onmousedown = buttonElement.ontouchstart = (function(b) {
+                return function (event) {
                     if (! emulatorButtonState[b]) {
                         // fake an event
                         onEmulatorKeyDown({keyCode:ascii(b), stopPropagation:Math.abs, preventDefault:Math.abs});
                     }
                     emulatorButtonState[b] = 1;
-                }
-            };
-        })(b);
-
-        buttonElement.onmouseup = buttonElement.onmouseleave = buttonElement.ontouchend = (function(b) {
-            return function (event) {
-                if (emulatorButtonState[b]) {
-                    // fake an event
-                    onEmulatorKeyUp({keyCode:ascii(b), stopPropagation:Math.abs, preventDefault:Math.abs});
-                }
-                emulatorButtonState[b] = 0;
-                event.preventDefault();
-                event.stopPropagation();
-            };
-        })(b);
-}
+                    event.preventDefault();
+                    event.stopPropagation();
+                };
+            })(b);
+            
+            buttonElement.onmouseenter = buttonElement.onmousemove = (function(b) {
+                return function (event) {
+                    if (event.buttons !== 0) {
+                        if (! emulatorButtonState[b]) {
+                            // fake an event
+                            onEmulatorKeyDown({keyCode:ascii(b), stopPropagation:Math.abs, preventDefault:Math.abs});
+                        }
+                        emulatorButtonState[b] = 1;
+                    }
+                };
+            })(b);
+            
+            buttonElement.onmouseup = buttonElement.onmouseleave = buttonElement.ontouchend = (function(b) {
+                return function (event) {
+                    if (emulatorButtonState[b]) {
+                        // fake an event
+                        onEmulatorKeyUp({keyCode:ascii(b), stopPropagation:Math.abs, preventDefault:Math.abs});
+                    }
+                    emulatorButtonState[b] = 0;
+                    event.preventDefault();
+                    event.stopPropagation();
+                };
+            })(b);
+        } // for each button
+    } // for each control
     
 })();
 

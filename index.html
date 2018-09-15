@@ -30,17 +30,29 @@
   </script>
  
   <body>
+    <div id="background"> </div>
+    
     <div id="uiModeMenuButton" onclick="onUIModeMenuButton(event)"> </div>
     <div id="uiModeMenu" class="noselect">
       <div onclick="setUIMode('IDE')"><img src="ui-ide.png" width="64" height="32" style="padding: 1px 8px; border-bottom: 1px solid #000"></div>
       <div onclick="setUIMode('Emulator')"><img src="ui-emulator.png" width="64" height="32" style="padding: 1px 8px; border-bottom: 1px solid #000"></div>
-      <!-- <div onclick="setUIMode('Minimal')"><img src="ui-minimal.png" width="64" height="32" style="padding: 1px 8px"></div> -->
+      <div onclick="setUIMode('Minimal')"><img src="ui-minimal.png" width="64" height="32" style="padding: 1px 8px"></div>
     </div>
-
-    <img src="D-pad.png" style="position: absolute; left:15px; top:50px;" width="102px" id="minimalDPad" class="minimalControls">
-    <img src="buttons.png" style="position: absolute; right:0px; top:45px;" id="minimalButtons" width="130px" class="minimalControls">
-    <img src="start-button.png" style="position: absolute; right:43px; top:260px" width="41px" id="minimalStartButton" class="minimalControls">
-    <div style="background: #333; position: absolute; left:130px; right:130px; top: 0px; bottom: 0px" class="minimalControls"> </div>
+    
+    <div style="background-image: url('D-pad.png'); background-size: cover; position: absolute; left:12px; top:48px; width: 117px; height: 119px" id="minimalDPad" class="minimalControls">
+      <div class="Wbutton emulatorButton" style="left: 39px; top:0px; width:30px; height:40px"> </div>
+      <div class="Abutton emulatorButton" style="left: -1px; top:41px; width:39px; height:30px"> </div>
+      <div class="Sbutton emulatorButton" style="left: 39px; top:72px; width:30px; height:40px"> </div>
+      <div class="Dbutton emulatorButton" style="left: 70px; top:41px; width:40px; height:30px"> </div>
+    </div>
+    <div style="background-image: url('buttons.png'); background-size: cover; position: absolute; right:0px; top:45px; width: 130px; height: 124px" id="minimalButtons" class="minimalControls">
+      <div class="Rbutton emulatorButton" style="left: 41px; top:4px; width:38px; height:38px"> </div>
+      <div class="Ebutton emulatorButton" style="left: 5px; top:36px; width:38px; height:38px"> </div>
+      <div class="Zbutton emulatorButton" style="left: 78px; top:36px; width:38px; height:38px"> </div>
+      <div class="Xbutton emulatorButton" style="left: 41px; top:69px; width:38px; height:38px"> </div>
+    </div>
+    <img src="start-button.png" style="position: absolute; right:43px; bottom:60px" width="41px" id="minimalStartButton" class="1button minimalControls">
+    <div style="background: #333; border-radius: 15px 15px 0 0; position: absolute; left:134px; right:134px; top: 0px; bottom: 0px" class="minimalControls"> </div>
 
     <div id="header" class="idePart">
       <div style="position: absolute; top:-1px; left:4px">
@@ -163,16 +175,16 @@
       <input type="button" id="emulatorKeyboardInput" style="z-index:-1;position:absolute;width:10px;top:200px;left:200px">
         <canvas id="bar" width=256 height=32></canvas>
         <canvas id="screen" width=256 height=256></canvas>
-        <div id="Zbutton" class="emulatorButton" style="left: 301px; top:475px; width:38px; height:38px"> </div>
-        <div id="Xbutton" class="emulatorButton" style="left: 337px; top:444px; width:38px; height:38px"> </div>
-        <div id="Ebutton" class="emulatorButton" style="left: 266px; top:444px; width:38px; height:38px"> </div>
-        <div id="Rbutton" class="emulatorButton" style="left: 301px; top:412px; width:38px; height:38px"> </div>
-        <div id="1button" class="emulatorButton" style="left: 192px; top:417px; width:30px; height:30px"> </div>
+        <div class="Zbutton emulatorButton" style="left: 301px; top:475px; width:38px; height:38px"> </div>
+        <div class="Xbutton emulatorButton" style="left: 337px; top:444px; width:38px; height:38px"> </div>
+        <div class="Ebutton emulatorButton" style="left: 266px; top:444px; width:38px; height:38px"> </div>
+        <div class="Rbutton emulatorButton" style="left: 301px; top:412px; width:38px; height:38px"> </div>
+        <div class="1button emulatorButton" style="left: 192px; top:417px; width:30px; height:30px"> </div>
 
-        <div id="Wbutton" class="emulatorButton" style="left: 77px; top:410px; width:28px; height:40px"> </div>
-        <div id="Sbutton" class="emulatorButton" style="left: 77px; top:475px; width:28px; height:40px"> </div>
-        <div id="Abutton" class="emulatorButton" style="left: 40px; top:447px; width:40px; height:28px"> </div>
-        <div id="Dbutton" class="emulatorButton" style="left: 105px; top:447px; width:40px; height:28px"> </div>
+        <div class="Wbutton emulatorButton" style="left: 77px; top:410px; width:28px; height:40px"> </div>
+        <div class="Sbutton emulatorButton" style="left: 77px; top:475px; width:28px; height:40px"> </div>
+        <div class="Abutton emulatorButton" style="left: 40px; top:447px; width:40px; height:28px"> </div>
+        <div class="Dbutton emulatorButton" style="left: 105px; top:447px; width:40px; height:28px"> </div>
       </div>
     </div>
 
