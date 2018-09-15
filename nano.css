@@ -17,7 +17,8 @@ body {
     background: #000;
     color: #ddd;
     height:100%;
-    width: 100%;               
+    width: 100%;
+    -webkit-touch-callout:none;
 }
 
 div#header {
@@ -108,8 +109,8 @@ a {
 
 #uiModeMenuButton {
     position: absolute;
-    top: 9px;
-    right: -3px;
+    top: 10px;
+    right: 0px;
     z-index: 21;
     width: 60px;
     height: 30px;

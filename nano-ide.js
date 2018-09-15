@@ -133,6 +133,20 @@ function setUIMode(d) {
         onPlayButton();
     }
 
+    if (displayMode === 'Minimal') {
+        // Full-screen the UI
+        //(body.requestFullscreen || body.webkitRequestFullscreen || body.mozRequestFullScreen || body.msRequestFullscreen || Math.cos)();
+        if (body.requestFullscreen) {
+            body.requestFullscreen();
+        } else if (body.webkitRequestFullscreen) {
+            body.webkitRequestFullscreen();
+        } else if (body.mozRequestFullScreen) {
+            body.mozRequestFullScreen();
+        } else if (body.msRequestFullscreen) {
+            body.msRequestFullscreen();
+        }
+    }
+
     onResize();
 }
 
@@ -1960,6 +1974,9 @@ var screenshotKey = 117; // F6
 var gifCaptureKey = 119; // F8
 
 function onEmulatorKeyDown(event) {
+    event.stopPropagation();
+    event.preventDefault();
+
     // On browsers that support it, ignore
     // synthetic repeat events
     if (event.repeat) { return; }
@@ -1967,8 +1984,6 @@ function onEmulatorKeyDown(event) {
     var key = event.which || event.keyCode;
     emulatorKeyState[key] = true;
     emulatorKeyJustPressed[key] = true;
-    event.stopPropagation();
-    event.preventDefault();
 
     if ((key === 116) || (key === 19)) {
         // Pass F5 and Ctrl-break to the IDE
@@ -2001,8 +2016,8 @@ function onEmulatorKeyUp(event) {
 }
 
 var emulatorKeyboardInput = document.getElementById('emulatorKeyboardInput');
-emulatorKeyboardInput.addEventListener('keydown', onEmulatorKeyDown, true);
-emulatorKeyboardInput.addEventListener('keyup', onEmulatorKeyUp, true);
+emulatorKeyboardInput.addEventListener('keydown', onEmulatorKeyDown, false);
+emulatorKeyboardInput.addEventListener('keyup', onEmulatorKeyUp, false);
 
 /** Returns the ascii code of this character */
 function ascii(x) { return x.charCodeAt(0); }
