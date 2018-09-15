@@ -41,6 +41,8 @@ div#header {
 }
 
 .noIDE .idePart {
+    /* Using hidden alone leaves a border on screen. */
+    display:none;
     visibility: hidden;
 }
 
