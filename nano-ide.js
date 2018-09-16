@@ -2204,6 +2204,7 @@ let justLoggedIn = true;
 
     setActiveCartridge(activeCartridge, true);
 
+
     // Set button callbacks
     let buttons = 'WASD1ZXER';
     for (let i = 0; i < buttons.length; ++i) {
@@ -2212,8 +2213,9 @@ let justLoggedIn = true;
         for (let j = 0; j < emulatorButtonArray.length; ++j) {
             let buttonElement = emulatorButtonArray[j];
             
-            buttonElement.onmousedown = buttonElement.ontouchstart = (function(b) {
+            buttonElement.onmousedown = (function(b) {
                 return function (event) {
+                    //console.log(this, 'onmousedown');
                     if (! emulatorButtonState[b]) {
                         // fake an event
                         onEmulatorKeyDown({keyCode:ascii(b), stopPropagation:Math.abs, preventDefault:Math.abs});
@@ -2236,8 +2238,9 @@ let justLoggedIn = true;
                 };
             })(b);
             
-            buttonElement.onmouseup = buttonElement.onmouseleave = buttonElement.ontouchend = (function(b) {
+            buttonElement.onmouseup = buttonElement.onmouseleave = (function(b) {
                 return function (event) {
+                    //console.log(this, 'onmouseup');
                     if (emulatorButtonState[b]) {
                         // fake an event
                         onEmulatorKeyUp({keyCode:ascii(b), stopPropagation:Math.abs, preventDefault:Math.abs});
@@ -2253,5 +2256,87 @@ let justLoggedIn = true;
     // Load starter carts
     computeCartridgeArray();
 
+
 })();
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Mobile button support
+
+let activeTouchTracker = {};
+
+function onTouchStart(event) {
+    // Add the new touches
+    for (let i = 0; i < event.changedTouches.length; ++i) {
+        let touch = event.changedTouches[i];
+        activeTouchTracker[touch.identifier] = {identifier: touch.identifier, x: touch.clientX, y: touch.clientY, lastOver:null};
+    }
+    
+    // Now trigger a move on the touches for the button processing
+    onTouchMove(event);
+}
+
+
+function onTouchMove(event) {
+    for (let i = 0; i < event.changedTouches.length; ++i) {
+        let touch = event.changedTouches[i];
+        let tracker = activeTouchTracker[touch.identifier];
+
+        if (tracker) {
+            let currentElement = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (currentElement !== tracker.lastElement) {
+                // We abuse/reuse the event as if it were a mouse event,
+                // which conveniently causes it to be cancelled/stop propagating
+                
+                event.repeat = false;
+                
+                // The element changed
+                if (tracker.lastElement && tracker.lastElement.onmousedown) {
+                    //console.log('left ', tracker.lastElement);
+                    tracker.lastElement.onmouseup(event);
+                    tracker.lastElement = null;
+                }
+                
+                if (currentElement && currentElement.classList.contains('emulatorButton')) {
+                    //console.log('entered ', currentElement);
+                    tracker.lastElement = currentElement;
+                    if (currentElement.onmousedown) {
+                        currentElement.onmousedown(event);
+                    }
+                } else {
+                    tracker.lastElement = null;
+                }
+
+            }
+        }
+    }
+}
+
+
+function onTouchEnd(event) {
+    // Add the new touches
+    for (let i = 0; i < event.changedTouches.length; ++i) {
+        let touch = event.changedTouches[i];
+        let tracker = activeTouchTracker[touch.identifier];
+        if (tracker) {
+            // Send the button up event
+            let target = tracker.lastElement;
+            if (target && target.onmouseup) {
+                target.onmouseup(event);
+            }
+
+            // Delete is relatively slow (https://jsperf.com/delete-vs-undefined-vs-null/16),
+            // but there are far more move events than end events and the table is more
+            // convenient and faster for processing move events than an array.
+            delete activeTouchTracker[touch.identifier];
+        }
+    }
+}
+
+document.addEventListener('touchstart', onTouchStart);
+document.addEventListener('touchmove', onTouchMove);
+document.addEventListener('touchend', onTouchEnd);
+document.addEventListener('touchcancel', onTouchEnd);
+
+    
