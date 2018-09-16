@@ -1100,7 +1100,7 @@ function addToCartridgeArray(title, filename, fileID, flags, code, readOnly) {
 
     for (var i = 0; i < cartridgeArray.length; ++i) {
         if (fileID && (cartridgeArray[i].fileID === fileID)) {
-            console.log("Warning: Duplicate cart! (" + title + ")");
+            console.log("Warning: Duplicate cart! (" + title + ", ID = " + fileID + ")");
             return;
         }
     }
@@ -1142,7 +1142,7 @@ function computeCartridgeArray() {
         let title = getTitle(code);
         let filename = getFilename(title);
         let flags = getFlags(code);
-        addToCartridgeArray(title, filename, flags, 0, code, true);
+        addToCartridgeArray(title, filename, 0, flags, code, true);
     }
     
     cartridgeArrayScrollIndex = Math.min(cartridgeArray.length, cartridgeArrayScrollIndex);
