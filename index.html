@@ -14,8 +14,7 @@
       if (navigator.userAgent.indexOf('Firefox') >= 0) { document.title = 'nano ᴊᴀᴍᴍᴇꝛ'; }
     </script>
 
-  </head>
-  <script>
+      <script>
     function makeButton(label, title, onclick, id) {
       document.write('<div ' + (id ? 'id="' + id + 'Container" ' : '') + ' onmousedown="event.stopPropagation()" class="button" onclick="' + (onclick || '') + '(event)" title="' + (title || label) + '"><label><span class="label" ' + (id ? 'id="' + id + 'Label"' : '') + '>' + label + '</span></label></div>');
     }
@@ -29,6 +28,8 @@
        document.write('<div class="button" title="' + title + '" style="' + (style ? style : '') + '" onmousedown="event.stopPropagation()"><label><input id="' + id + 'Button" autocomplete="off" type="checkbox" onclick="onToggle(this)"><span class="label">' + labelHTML + '</span></label></div>');
     }
   </script>
+
+  </head>
  
   <body>
     <div id="background"> </div>
@@ -95,9 +96,8 @@
         <li>Renamed <code>flip</code> to <code>show</code></li>
         <li>Draw <code>xform</code></li>
         <li><code>clip</code> region</li>
-        <br/>
-        <a href="doc/specification.md.html#changes">more...</a></li>
       </ul>
+      <a href="doc/specification.md.html#changes">more...</a>
     </div>
     <div style="position: absolute; right: 60px; top: 620px; color:#666; font-size: 80%" id="emulatorHelp">
       <center>
@@ -126,7 +126,7 @@
                 makeButton('<img src="reload-icon.png" width=12>', 'Start/Restart (F5)', 'onRestartButton');
                 makeRadio('<span style="top:-2px;position:relative">▶</span>', 'playButton', false, 'title="Run (Ctrl+F5)"');
                 makeRadio('<b style="font-size:80%">||</b>', 'pauseButton', false, 'title="Pause (Ctrl+Break)"');
-                makeRadio('<span style="font-size:120%;top:-4px;position:relative">■<span>', 'stopButton', true, 'title="Stop (Shift+F5)"');
+                makeRadio('<span style="font-size:120%;top:-4px;position:relative">■</span>', 'stopButton', true, 'title="Stop (Shift+F5)"');
               </script>
             </td>
             <td style="text-align:center">

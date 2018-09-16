@@ -399,15 +399,15 @@ function redrawSelectedSprite() {
     
     if (Runtime && Runtime._draw && Runtime._spriteSheet) {
         let N = SCREEN_WIDTH * FRAMEBUFFER_HEIGHT;
-        let screen = new Uint8Array(N);
-        screen.fill(fill);
+        let screenData = new Uint8Array(N);
+        screenData.fill(fill);
         
-        Runtime._draw(selectedSpriteIndex, 6, 6, localPalette, xform, rot, screen, 0, 0, 63, 63);
+        Runtime._draw(selectedSpriteIndex, 6, 6, localPalette, xform, rot, screenData, 0, 0, 63, 63);
         // Expand the paletted image to RGB values
         // Overwrite the entire image for simplicity, even though we only need the upper 12x12
         let data = Runtime._updateImageDataUint32;
         for (var i = 0; i < N; ++i) {
-            data[i] = screenPalette[screen[i]];
+            data[i] = screenPalette[screenData[i]];
         }
 
         // Copy screen to context (reusing the updateImage context from the main engine)
@@ -421,7 +421,7 @@ function redrawSelectedSprite() {
         sctx.drawImage(updateImage, 0, 0, 14, 14, 4, 4, 14*4, 14*4);
     }
 
-    var cmd = 'draw(' + selectedSpriteIndex + ',32,32';
+    let cmd = 'draw(' + selectedSpriteIndex + ',32,32';
 
     cmd += ',' + swizzle.replace(/^0+([^0])/, '$1');
 
@@ -859,8 +859,8 @@ var DragLib = function() {
     }
 }();
 
-var screen = document.getElementById("screen");
-var ctx = screen.getContext("2d");
+var nanoScreen = document.getElementById("screen");
+var ctx = nanoScreen.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 ctx.webkitImageSmoothingEnabled = false;
 
@@ -996,7 +996,7 @@ function onStopButton() {
     coroutine = null;
     mode = 'stop';
     cancelAnimationFrame(lastAnimationRequest);
-    ctx.clearRect(0, 0, screen.width, screen.height);
+    ctx.clearRect(0, 0, nanoScreen.width, nanoScreen.height);
     barCtx.clearRect(0, 0, bar.width, bar.height);
 }
 
@@ -2001,7 +2001,7 @@ function onEmulatorKeyDown(event) {
         onDocumentKeyDown(event);  
     } if (key === screenshotKey) {
         // Screenshot
-        download(screen.toDataURL(), 'screenshot.png');
+        download(nanoScreen.toDataURL(), 'screenshot.png');
     } else if (key == gifCaptureKey) {
         if (gifRecording) {
             // Save
@@ -2010,7 +2010,7 @@ function onEmulatorKeyDown(event) {
             gifRecording = null;
         } else {
             document.getElementById('recording').classList.remove('hidden');
-            gifRecording = new GIF({workers:3, quality:30, width:screen.width, height:screen.height});
+            gifRecording = new GIF({workers:3, quality:30, width:nanoScreen.width, height:nanoScreen.height});
             gifRecording.frameNum = 0;
             gifRecording.on('finished', function (blob) {
                 window.open(URL.createObjectURL(blob));
@@ -2087,7 +2087,7 @@ function submitFrame() {
                      0, 0, bar.width,    bar.height);
     ctx.drawImage(updateImage,
                   0, BAR_HEIGHT + BAR_SPACING, SCREEN_WIDTH, SCREEN_HEIGHT,
-                  0, 0,                        screen.width, screen.height);
+                  0, 0,                        nanoScreen.width, nanoScreen.height);
 
     if (gifRecording) {
         // Only record alternating frames to reduce file size
