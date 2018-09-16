@@ -21,6 +21,10 @@ body {
     -webkit-touch-callout:none;
 }
 
+body.minimalUI {
+    overflow: hidden;
+}
+
 div#header {
     position: absolute;
     top:0;
@@ -83,8 +87,9 @@ a {
 .emulatorButton {
     cursor: pointer;
     position: absolute;
+    transform: rotate(45deg);
     /* show bounds for debugging */
-    /* border: 1px solid #f00;*/
+    /*border: 1px solid #f00;*/
 }
 
 

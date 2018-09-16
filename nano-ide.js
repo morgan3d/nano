@@ -58,7 +58,6 @@ if(τ>31)cls(clr=0);i=j=x=v=∅
 τ%=40`;
 
 
-
 var initialSource =
     tests.starattack;
     //tests.nanoBoot;
@@ -131,10 +130,10 @@ function setUIMode(d) {
         body.classList.add('noIDE');
         
         // Nothing to do except play in this mode, so hit play automatically
-        onPlayButton();
+        if (deployed) { onPlayButton(); }
     }
 
-    if (displayMode === 'Minimal') {
+    if (displayMode === 'Minimal' && deployed) {
         // Full-screen the UI
         //(body.requestFullscreen || body.webkitRequestFullscreen || body.mozRequestFullScreen || body.msRequestFullscreen || Math.cos)();
         if (body.requestFullscreen) {
