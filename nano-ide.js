@@ -122,6 +122,7 @@ function getQueryString(field) {
 function setUIMode(d) {
     displayMode = d;
     let body = document.getElementsByTagName("body")[0];
+
     if (displayMode === 'IDE') {
         body.classList.remove('noIDE');
         body.classList.remove('minimalUI');
@@ -1001,6 +1002,8 @@ function onStopButton() {
 
 
 function onPlayButton() {
+    if (mode === 'play') { return; }
+    
     document.getElementById('playButton').checked = 1;
     setControlEnable('pause', true);
     

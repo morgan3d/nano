@@ -164,18 +164,19 @@ if (¬τ) text("Press to Launch"); wait`,
     
 `#nanojam Colours,1
 for y < 64
- for x < 64
-  hue = x / 64
-  sat = y / 32
-  val = 2 - y / 32
-  pset(x, y, hsv(hue, sat, val, x, y))`,
+  for x < 64
+    hue = x / 64
+    sat = y / 32
+    val = 2 - y / 32
+    pset(x, y, hsv(hue, sat, val, x, y))`,
 
     
 `#nanojam Plasma,1
 for y<64
- for x<64
-  ψ=y+τ;v=mid(noise(3,⅛²x,⅛²ψ,¼³τ)+½,0,1)
-  pset(x,y,hsv(⅗v+½,(1-v)^⅗,v,x,ψ))`,
+  for x<64
+    ψ = y + τ
+    v = mid(noise(3, ⅛²x, ⅛²ψ, ¼³τ) + ½, 0, 1)
+    pset(x, y, hsv(⅗v+½, (1-v)^⅗, v, x, ψ))`,
 
     
 `#nanojam Rainbow
