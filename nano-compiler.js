@@ -312,8 +312,20 @@ Mutate the lines in place
 
 */
 function processBlock(lineArray, startLineIndex, declareSet, noDeclareSet, inFunction) {
+    // Indentation of the previous block. Only used for indentation error checking
+    let prevBlockIndent = 0;
+    
     // indentation index of the previous line, indentation index of the block start
-    let prevIndent, originalIndent, i;
+    let prevIndent, originalIndent;
+
+    // current line index
+    let i;
+
+    if (startLineIndex > 0) {
+        // There MUST be some valid code on the previous line, since otherwise
+        // processBlock would not have been invoked
+        prevBlockIndent = lineArray[startLineIndex - 1].search(/\S/);
+    }
     
     for (i = startLineIndex; i < lineArray.length; ++i) {
         // trim right whitespace
@@ -329,7 +341,14 @@ function processBlock(lineArray, startLineIndex, declareSet, noDeclareSet, inFun
         }
 
         // Has the block ended?
-        if (indent < originalIndent) { return i; }
+        if (indent < originalIndent) {
+            // Indentation must not be more than the previous block
+            // or that would indicate inconsistent indentation
+            if (indent > prevBlockIndent) {
+                throw makeError('Inconsistent indentation', i);
+            }
+            return i;
+        }
         
         ///////////////////////////////////////////////////////////////////////
         // Check for some illegal situations while we're processing
@@ -344,10 +363,7 @@ function processBlock(lineArray, startLineIndex, declareSet, noDeclareSet, inFun
 
         if ((i === 0) && (indent > 0)) {
             throw makeError('First line must not be indented', i);
-        } /* This requirement was removed on 2018-09-13:
-            else if (indent > prevIndent + 1) {
-            throw makeError('Indentation must not increase by more than one space per line', i);
-        }*/
+        }
 
         ///////////////////////////////////////////////////////////////////////
 

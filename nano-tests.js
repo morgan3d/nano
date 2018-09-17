@@ -1,5 +1,12 @@
 
 var tests = {
+    indent: `#nanojam indent,1
+for i < 6
+  if i > 3
+    pset(i,i,i)
+ text(i)
+`,
+    
     IF: `#nanojam IF,1
 if (|m.x - a.pos.x| < 3) and (|m.y - a.pos.y| < 3)
  x=1

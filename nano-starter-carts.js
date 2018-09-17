@@ -149,8 +149,8 @@ with pos, ext, vel ∊ ball
       sound(28); text("GAME OVER")
       wait; reset
   
- if overlap(ball, paddle) and vel.y > 0
-   vel.y *= -1; sound(61)
+  if overlap(ball, paddle) and vel.y > 0
+    vel.y *= -1; sound(61)
 
 //////////////////////////////////////////////////
 // end game
