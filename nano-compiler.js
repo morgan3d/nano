@@ -411,7 +411,11 @@ function processBlock(lineArray, startLineIndex, declareSet, noDeclareSet, inFun
             let prefix = match[1];
             let test = match[2];
             let bodyNoDeclareSet = setClone(noDeclareSet);
-            lineArray[i] = prefix + 'for ' + processForTest(test, bodyNoDeclareSet) + ' { ' + (inFunction ? maybeYieldFunction : maybeYieldGlobal);
+            try {
+                lineArray[i] = prefix + 'for ' + processForTest(test, bodyNoDeclareSet) + ' { ' + (inFunction ? maybeYieldFunction : maybeYieldGlobal);
+            } catch (e) {
+                throw makeError(e, i);
+            }
             i = processBlock(lineArray, i + 1, declareSet, bodyNoDeclareSet, inFunction) - 1;
             lineArray[i] += '}';
             

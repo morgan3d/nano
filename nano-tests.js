@@ -1,5 +1,131 @@
-
 var tests = {
+    debug:`#nanojam Blaster,1
+
+if ¬τ
+  // Init
+  clr = 0
+  ship = {pos:xy(32, 56)}
+  score = 0
+  
+  bombArray = []
+  explosionArray = []
+  
+  shipMissileArray = []
+  lastFired = 0
+  seed = ξ
+  shieldArray = [] 
+  for s < 3
+    let x = 20s + 12
+    let y = 47 - 2(s ∩ 1)
+    for -4 ≤ i ≤ 4
+      for j < 4
+        if |2j - (|i|)| < 4
+          shieldArray.add(xy(x + i, y + j))
+  
+  alienArray = []
+  color = [20414, 41909, 232211, 261225]
+  for j < 4
+    for i < 4
+      alienArray.add({pos:xy(16i+11.5, 8j + 2), sprite: 16(j ∩ 1) + 4, pal:colorⱼ})
+
+
+fcn makeExplosion(x, y)
+  explosionArray.add({pos:xy(x, y), time:τ})
+  
+//////////////////////////////////////////////////
+// score
+clip(0, -12, 63, 63)
+cls(0)
+text(score, 32, -8, 5)
+clip()
+
+
+// background stars
+seed = ξ
+srand()
+for i < 50
+  pset(64ξ, 64ξ, 5)
+  pset(64ξ, 64ξ, 31)
+srand(seed)
+
+// aliens
+let animate = (τ / 16) ∩ 1
+let move = xy(⅛(((τ / 128) ∩ 1) - ½), (τ ∩ 127) ≟ 0)
+for a ∊ alienArray
+  pal(a.pal)
+  draw(a.sprite + animate, a.pos.x, a.pos.y, 4321)
+  a.pos.x += move.x
+  a.pos.y += move.y
+  if (ξ > 0.9995) bombArray.add(xy(a.pos.x, a.pos.y + 4))
+
+
+// shields
+for (s ∊ shieldArray) pset(s.x, s.y, 11)
+
+// bombs
+pal(208)
+for b ∊ bombArray
+  with x,y∊b
+    y += ⅓
+    draw(43, x, y, 192)
+ 
+    // off screen
+    if (y > 68) bombArray.rem(b)
+ 
+    // Check shields
+    for s ∊ shieldArray
+      if (s.x - x)² + (s.y - y)² < 3²
+        makeExplosion(x, y)
+        shieldArray.rem(s)
+        bombArray.rem(b)
+        sound(25)
+ 
+// missiles
+pal(7)
+for m ∊ shipMissileArray
+  line(m.x, m.y - 1, m.x, m.y + 2, 1)
+  m.y -= 1
+ 
+  // off screen
+  if (m.y < -3) shipMissileArray.rem(m)
+ 
+  // hit shield
+  for s ∊ shieldArray
+    if m.x ≟ s.x and |m.y - s.y| < 2
+      sound(21)
+      shieldArray.rem(s)
+      shipMissileArray.rem(m)
+      score = max(0, score - 1)
+      break
+      
+  // hit alien
+  for a ∊ alienArray
+    if max(|m.x - a.pos.x|, |m.y - a.pos.y|) < 3
+      shipMissileArray.rem(m)
+      alienArray.rem(a)
+      makeExplosion(x, y)    
+      sound(25)
+      score += 100
+      break
+
+for e ∊ explosionArray
+  with time, pos ∊ e
+    Δt = τ - time
+    if (Δt > 30) explosionArray.rem(e)
+    circ(pos.x, pos.y, Δt, 2)
+    
+ 
+pal(1012)
+draw(3, ship.pos.x, ship.pos.y, 122)
+pal()
+
+// Controls
+ship.pos.x = mid(3, ship.pos.x + joy.x, 60)
+if joy.aa and (lastFired + 10 < τ)
+  shipMissileArray.add(xy(ship.pos.x, ship.pos.y -4))
+  sound(18)
+  lastFired = τ`,
+
     indent: `#nanojam indent,1
 for i < 6
   if i > 3
