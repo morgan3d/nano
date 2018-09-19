@@ -989,7 +989,7 @@ Name   | Value
 `pad`  | array gamepad of tables 
 `joy`  | shorthand for `pad₀`
 `ξ`    | random number on [0, 1), resampled every time the expression is used
-
+v
 The main-loop variable `τ` is time, as integer number of frames. It may be reassigned 
 to reset time and is a built-in object, but is not an operator.
 
@@ -1631,6 +1631,9 @@ its license, which permits any use.
  - `joy.aa` and other just-pressed values no longer repeat
  - Permitted arbitrary indentation conventions
  - Changed tab to two space indentation by default
+ - Added errors for inconsistent indentation
+ - Added errors for passing the wrong type to some functions
+ - Fixed `hash` to be on the range [0, 1]
 
 2018 Sep 9:
  - Optimized loading cartridge list from Google Drive

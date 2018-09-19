@@ -337,7 +337,7 @@ function hash(x, y) {
         h ^= ((hy >> 16) & 0xffff) | ((hy & 0xffff) << 16);
     }
     
-    return Math.abs(h) / 0x7fffffff;
+    return Math.abs(h) / 0xffffffff;
 }
 
 function _lerp(a,b,t) { return a * (1 - t) + b * t; }
