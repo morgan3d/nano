@@ -25,12 +25,14 @@ Object.prototype.assignFields = function(dst, src, fields) {
 
 
 function _arrayKill(i) {
+    if (typeof i !== 'number') { throw 'Array.kill called with a value (' + i + ') that is not a number'; }
     var L = this.length;
     this[i] = this[L - 1];
     this.length = L - 1;
 }
 
 function _arrayDel(i) {
+    if (typeof i !== 'number') { throw 'Array.del called with a value (' + i + ') that is not a number'; }
     this.splice(i, 1);
 }
 
