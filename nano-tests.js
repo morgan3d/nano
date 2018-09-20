@@ -400,6 +400,12 @@ text("01 2x 39!,.-=+", 32, 38, 6)`,
     
     line: `#nanojam line,1
 line(5,20,30,50,3)`,
+
+    circles:`#nanojam circles,1
+for i < 4
+  for j < 4
+     circ(16i + 8, 16j + 8, i + 4j, 1)
+`,
     
     clock:`#nanojam clock,1
 clr=1

@@ -574,6 +574,7 @@ function tri(Ax, Ay, Bx, By, Cx, Cy, colormap) {
 function circ(x, y, radius, colormap) {
     x = x * _scaleX + _offsetX; y = y * _scaleY + _offsetY;
     colormap |= 0;
+    radius = Math.round(radius) | 0;
     var fill = colormapToColor(colormap); colormap = (colormap / 10) | 0;
     var border = colormapToColor(colormap);
 
@@ -600,13 +601,16 @@ function circ(x, y, radius, colormap) {
             _hline(x - oy, y + ox, x + oy, fill);
             _hline(x - oy, y - ox, x + oy, fill);
 
-            if (err <= 0) {
+            // -4 gives better shape for small circles
+            if (err <= -4) {
                 ++oy;
                 err += dy;
                 dy += 2;
             }
+
+            // intentionally no "else" to allow diagonal jumps
             
-            if (err > 0) {
+            if (err > -4) {
                 --ox;
                 dx += 2;
                 err += dx - radius * 2;
@@ -636,16 +640,16 @@ function circ(x, y, radius, colormap) {
             _pset(x - oy, y - ox, border);
             _pset(x + oy, y - ox, border);
 
-            if (err <= 0) {
+            if (err <= -4) {
                 ++oy;
                 err += dy;
                 dy += 2;
             }
-            
-            if (err > 0) {
+
+            if (err > -4) {
                 --ox;
                 dx += 2;
-                err += dx - radius * 2;
+                err -= radius * 2 - dx;
             }
         } // while
     } // if border

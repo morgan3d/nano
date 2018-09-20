@@ -125,7 +125,6 @@ function googleDriveSaveTextFile(filename, key, value, appProperties, fileConten
     const delimiter = "\r\n--" + boundary + "\r\n";
     const close_delim = "\r\n--" + boundary + "--";
 
-    console.log(fileContents);
     if (typeof fileContents !== 'string') {
         throw 'File contents was not a string: ' + fileContents;
     }

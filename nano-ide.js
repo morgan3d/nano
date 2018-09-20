@@ -61,7 +61,8 @@ if(τ>31)cls(clr=0);i=j=x=v=∅
 var initialSource =
     //tests.starattack;
     //tests.indent;
-    tests.debug;
+    //tests.debug;
+    tests.circles;
     //tests.nanoBoot;
     //tests.nanoReset;
     //tests.rgb;
