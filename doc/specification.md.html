@@ -1516,7 +1516,7 @@ Title Flags
 ---------------------------------------------------------
 
 The first line of a nano program must be `#nanojam` followed by the game title and an optional
-comma and integer flags. You can construct flags by bitwise-OR of property bits:
+comma and integer flags. You can construct flags by adding property bits:
 
 Property         | Flag
 -----------------|---------:
@@ -1524,7 +1524,10 @@ No title screen  | 1
 Run at 128x128   | 2
 Run at 256x256   | 4
 
-The default is a title screen and all 64x64 graphics. Keep in mind that 128x128 graphics render
+For example, `#nanojam mygame,5` (= 1 + 4) runs with no title screen at 256x256 resolution.
+
+The default is a title screen and all 64x64 graphics with cartridge color automatically
+selected based on the game name. Keep in mind that 128x128 graphics render
 4x slower due to the increased pixel count and 256x256 runs 16x slower; it may be hard to make
 some programs reach the full 60fps at "high resolution".
 
@@ -1627,6 +1630,9 @@ its license, which permits any use.
 
 
 # Change Log
+
+Changes for both the specification and implementation:
+
 2018 Sep 15:
  - `joy.aa` and other just-pressed values no longer repeat
  - Permitted arbitrary indentation conventions
@@ -1634,6 +1640,8 @@ its license, which permits any use.
  - Added errors for inconsistent indentation
  - Added errors for passing the wrong type to some functions
  - Fixed `hash` to be on the range [0, 1]
+ - Fixed circle rendering with fractional radius
+ - Fixed single-line `fcn` definitions
 
 2018 Sep 9:
  - Optimized loading cartridge list from Google Drive

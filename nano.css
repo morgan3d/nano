@@ -490,18 +490,36 @@ div#cartridgesWindow {
 }
 
 .cartridge .label {
-    color:            rgba(255,255,255,0.9);
     position:         relative;
-    filter:           blur(0.09px);
-    top:              10px;
-    left:             18px;
+    top:              9px;
+    left:             19px;
     width:            144px;
     height:           29px;
     border-radius:    1px 1px 5px 5px;
     padding-top:      5px;
-    /* background:       linear-gradient(135deg, #feccb1 0%,#f17432 50%,#ea5507 51%,#fb955e 100%);*/
-    background:       url('cart-back00.png');
     background-size:  cover;
+}
+
+.cartridge .n00 {
+    background-image:       url('cart-back00.png');
+}
+
+.cartridge .n01 {
+    background-image:       url('cart-back01.png');
+}
+
+.cartridge .label.n02 {
+    background-image:  url('cart-back02.png') !important;
+}
+
+.cartridge .title {
+    position:         absolute;
+    top: 15px;
+    left: 18px;
+    width:            144px;
+    height:           29px;
+    color:            rgba(255,255,255,0.9);
+    filter:           blur(0.09px);
     font-size:        18px;
     font-style:       italic;
     font-weight:      bold;

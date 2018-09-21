@@ -1050,7 +1050,7 @@ function onPlayButton() {
 /** Generated when logging in*/
 var cartridgeArray;
 var cartridgeArrayScrollIndex = 0;
-var cartridgeArrayScrollIncrement = 30;
+var cartridgeArrayScrollIncrement = 40;
 
 function onCartridgeArrayScrollDown() {
     cartridgeArrayScrollIndex = Math.min(cartridgeArrayScrollIndex + 1, cartridgeArray.length - 1);
@@ -1329,7 +1329,7 @@ function makeCartridgeWindowContents() {
     }
     
     function nameHue(name) {
-        return (name === undefined) ? 0.0 : Math.floor((Math.cos(0.2 * name.length) + 1) * 10);
+        return (name === undefined) ? 0.0 : Math.floor((Math.cos(0.2 * name.length + name.charCodeAt(0)) + 1) * 360);
     }
 
     cartridgeArray.sort(function (a, b) {
@@ -1351,6 +1351,7 @@ function makeCartridgeWindowContents() {
     for (let i = 0; i < cartridgeArray.length; ++i) {
         let c = cartridgeArray[i];
         c.hue = nameHue(c.title);
+        console.log(c.hue);
         c.brightness = nameBrightness(c.title);
         c.x = 225 + Math.floor((Math.sin(i * 10) + 1) * 8);
         c.y = (i + 1) * cartridgeArrayScrollIncrement + Math.floor(Math.random() * 12);
@@ -1362,7 +1363,7 @@ function makeCartridgeWindowContents() {
     let foundActive = false;
     for (let i = 1; i < cartridgeArray.length; ++i) {
         let c = cartridgeArray[i];
-        s += '<div id="cartridge' + i + '" style="filter: sepia(' + c.hue + '%) brightness(' + c.brightness + '); position: absolute; top: ' + c.y + 'px; left:' + c.x + 'px" class="cartridge' + (c.readOnly ? ' readonly' : '') + '" onmousedown="onCartridgeClick(' + i + ') || event.stopPropagation()"><div class="label">' + c.title + '</div></div>';
+        s += '<div id="cartridge' + i + '" style="filter: sepia(' + Math.floor(c.hue / 36) + '%) brightness(' + c.brightness + '); position: absolute; top: ' + c.y + 'px; left:' + c.x + 'px" class="cartridge' + (c.readOnly ? ' readonly' : '') + '" onmousedown="onCartridgeClick(' + i + ') || event.stopPropagation()"><div class="label n00" style="filter: hue-rotate(' + c.hue + 'deg)"></div><div class="title">' + c.title + '</div></div>';
         foundActive = foundActive || (c.fileID === activeCartridge.fileID);
     }
     document.getElementById('allCarts').innerHTML = s;
