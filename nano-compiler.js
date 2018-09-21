@@ -681,7 +681,7 @@ function nanoToJS(src, noWrapper) {
             return match;
         } else {
             exponent = parseInt(exponent);
-            console.log("replacing " + match + " exponent = " + exponent);
+
             if (exponent === 0) {
                 return br + ' identifier**(0)';
             } else if (exponent < 0) {

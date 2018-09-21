@@ -1942,6 +1942,7 @@ function mainLoopStep(time) {
         onStopButton();
         setErrorStatus('line ' + clamp(1, e.lineNumber, programNumLines) + ': ' + e.message);
         console.log(e);
+        console.dir(e);
     }
    
 
