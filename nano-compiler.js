@@ -111,7 +111,27 @@ function processWithHeader(test, noDeclareSet) {
     equivalent test.  Mutates the noDeclareSet to include the index or element variable that
     will be bound within the loop's body. */
 function processForTest(test, noDeclareSet) {
-    var match = test.match(RegExp('^\\s*(' + identifierPattern + ')\\s*∊(.*)$'));
+
+    // Extra code from a FOR-WITH loop
+    let supplement = '';
+
+    // In the case of a FOR-WITH loop of the form 'x,y ∊ a ∊ array ...', this becomes in
+    // JavaScript 'for ( array stuff) for (x,y stuff) ...', that is, the outer FOR loop has no
+    // brackets and a single expression, and that expression is the FOR loop that the
+    // implicit WITH expands to.
+    let match = test.match(RegExp('^\\s*(\\S.*)∊\\s*(' + identifierPattern + ')\\s*∊(.*)$'));
+    if (match) {
+        // match[1] = member variables
+        // match[2] = with container expr/for variable
+        // match[3] = for container expr
+
+        // Rewrite the tested expr
+        supplement = ' for ' + processWithHeader(match[1] + '∊' + match[2], noDeclareSet);
+        test = match[2] + '∊' + match[3]
+    }
+        
+    match = test.match(RegExp('^\\s*(' + identifierPattern + ')\\s*∊(.*)$'));
+    
     if (match) {
         // Generate variables
         var container = gensym('cntnr'), keys = gensym('keys'), index = gensym('index'), cur = match[1], containerExpr = match[2];
@@ -122,7 +142,7 @@ function processForTest(test, noDeclareSet) {
         // or array. Iterates over elements of arrays, keys of table, chars of string.
         return '(let ' + container + ' = _clone(' + containerExpr + '), ' + keys + ' = Object.keys(' + container + '), ' + 
             index + ' = 0, ' + cur + ' = ' + container + '[' + keys + '[0]]; ' +
-            index + ' < ' + keys + '.length; ' + cur + ' = ' + container + '[' + keys + '[++' + index + ']])';
+            index + ' < ' + keys + '.length; ' + cur + ' = ' + container + '[' + keys + '[++' + index + ']])' + supplement;
     }
 
     // Range FOR loop

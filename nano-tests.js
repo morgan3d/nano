@@ -1,6 +1,10 @@
 var tests = {
     debug:`#nanojam abc,1
-fcn foo() return 3
+if ¬τ
+  array = [xy(10,20), xy(50,40), xy(30,50)]
+ 
+for x,y ∊ pos ∊ array
+  text('' + x + ',' + y, x, y, 1)
 `,
 
     indent: `#nanojam indent,1

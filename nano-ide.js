@@ -1351,7 +1351,6 @@ function makeCartridgeWindowContents() {
     for (let i = 0; i < cartridgeArray.length; ++i) {
         let c = cartridgeArray[i];
         c.hue = nameHue(c.title);
-        console.log(c.hue);
         c.brightness = nameBrightness(c.title);
         c.x = 225 + Math.floor((Math.sin(i * 10) + 1) * 8);
         c.y = (i + 1) * cartridgeArrayScrollIncrement + Math.floor(Math.random() * 12);

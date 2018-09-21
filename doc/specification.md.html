@@ -1098,7 +1098,7 @@ The flow control statements are:
 - `if` conditional with optional `else` and `elif` clauses
 - `while` loop
 - `until` loop
-- `for` loop
+- `for` loop, with optional `with` expansion
 - `loop` infinite loop
 - `break` and `cont` within loops
 - `reset` to restart the game
@@ -1146,6 +1146,25 @@ nano              | Java/C++
 `for 4≤i&lt;k`    | `for (i = 4; i &lt; k; ++i)`
 `for 4&lt;i&lt;k` | `for (i = 5; i &lt; k; ++i)`
 `for x∈S`         | `for (x : S)`
+
+You can pack a `for` and `with` statement together by chaining `∈` expressions, in what
+is called a `for`-`with` loop:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ JavaScript
+for x,y ∈ point ∈ set
+  ...
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+is the same as:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ JavaScript
+for point ∈ set
+  with x,y ∈ point
+    ...
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The `for`-loop variable (in this case, `point`) cannot be the same as any of the `with`
+variables (in this case, `x` and `y`).
 
 The comparison operators in a `for` loop declaration are an overloaded syntax for comparison
 operators (just as many languages overload the `=` operator for `for` loops).  They have
@@ -1642,6 +1661,7 @@ Changes for both the specification and implementation:
  - Fixed `hash` to be on the range [0, 1]
  - Fixed circle rendering with fractional radius
  - Fixed single-line `fcn` definitions
+ - Added `for`-`with` loops
 
 2018 Sep 9:
  - Optimized loading cartridge list from Google Drive
