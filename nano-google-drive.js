@@ -119,6 +119,9 @@ function googleDriveDeleteFile(fileId, callback) {
     - https://stackoverflow.com/questions/40600725/google-drive-api-v3-javascript-update-file-contents
 
     Set trash = true to move the file to trash.
+
+The callback will be invoked on an object with a .code property != 200 on failure and a .message
+explaining the problem.
   */
 function googleDriveSaveTextFile(filename, key, value, appProperties, fileContents, callback, fileId, trash) {
     const boundary = '-------X314159265358979323846';

@@ -203,18 +203,17 @@
     </div>
 
     <div id="cartridgesWindow" class="hidden toolWindow" onmousedown='DragLib.startMoving(this,event)' onmouseup='DragLib.stopMoving(this)'>
-      <div class="tool" style="padding-top: 3px; padding-left:0px; padding-right:0px">
-        <div id="authorize-div" class="noselect" style="padding-top:155px; padding-left: 10px; width: 215px">
+      <div class="tool noselect" style="padding-top: 3px; padding-left:0px; padding-right:0px">
+        <div id="cartridgeViewer" style="position: absolute; top:6px; left:5px; right:5px; bottom:6px; border-radius: 11px; overflow: hidden">
+          <div id="allCarts"></div>
+        <div id="authorize-div" style="position: absolute; top: 155px; left: 10px; width: 215px">
           <script>
-            makeButton('<img src="google-drive-icon.png" width=14 style="margin-bottom:-1px; margin-top:-1px"> Sign in', 'Sign in', 'handleAuthClick', 'signIn');
+            makeButton('<img src="google-drive-icon.png" width=14 style="margin-bottom:-1px; margin-top:-1px"> Sign in', 'Sign in', 'handleAuthClick', 'signIn');           
           </script>
           <p>
             Sign in to your Google account to save your nano&nbsp;ᴊᴀᴍᴍᴇʀ cartridges on Google&nbsp;Drive.
           </p>
         </div>
-
-        <div id="cartridgeViewer" style="position: absolute; top:6px; left:5px; right:5px; bottom:6px; border-radius: 11px; overflow: hidden">
-          <div id="allCarts"></div>
           <div style="position: absolute; bottom: 0px; left: 0px; text-align: center; width: 220px; margin:0px">
             <div class="button" onmousedown="event.stopPropagation()" onclick="onLoadButton()" id="loadButtonContainer"><label><span class="label">Load</span></label></div>
             <div class="button" onmousedown="event.stopPropagation()" onclick="onCloneButton()" id="cloneButtonContainer"><label><span class="label">Clone</span></label></div>

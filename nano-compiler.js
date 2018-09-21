@@ -230,6 +230,7 @@ function processLine(line, declareSet, noDeclareSet, inFunction) {
             let bodyDeclareSet = {};
             body = processLine(body, bodyDeclareSet, argStringToSet(args), true);
             line = before + 'function ' + name + '(' + args + ') { ' + setToVarDecl(bodyDeclareSet) + maybeYieldFunction + body + ' }';
+            return line;
 
         } else {
 

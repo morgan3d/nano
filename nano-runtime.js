@@ -26,7 +26,7 @@ Object.prototype.assignFields = function(dst, src, fields) {
 
 function _arrayKill(i) {
     if (typeof i !== 'number') { throw 'Array.kill called with a value (' + i + ') that is not a number'; }
-    var L = this.length;
+    let L = this.length;
     this[i] = this[L - 1];
     this.length = L - 1;
 }
@@ -37,8 +37,8 @@ function _arrayDel(i) {
 }
 
 function _arrayRem(x) {
-    var L = this.length;
-    for (var i = 0; i < L; ++i) {
+    let L = this.length;
+    for (let i = 0; i < L; ++i) {
         if (this[i] === x) {
             this.splice(i, 1);
             return;
@@ -48,7 +48,7 @@ function _arrayRem(x) {
 
 function _arrayFind(x, s) {
     s = s || 0;
-    for (var i = s; i < this.length; ++i) {
+    for (let i = s; i < this.length; ++i) {
         if (this[i] === x) { return i; }
     }
     return undefined;
@@ -57,7 +57,6 @@ function _arrayFind(x, s) {
 function _arrayAdd(x) {
     this.push(x);
 }
-
 
 function _greaterThan(a, b) {
     return a > b;

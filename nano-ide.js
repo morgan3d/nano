@@ -59,10 +59,10 @@ if(τ>31)cls(clr=0);i=j=x=v=∅
 
 
 var initialSource =
+    tests.debug;
     //tests.starattack;
     //tests.indent;
-    //tests.debug;
-    tests.circles;
+    //tests.circles;
     //tests.nanoBoot;
     //tests.nanoReset;
     //tests.rgb;
@@ -1451,12 +1451,17 @@ function updateAndSaveCartridge(newTitle, newFilename, code, cartridge, callback
                             },
                             cartridge.code,
                             function (file) {
-                                cartridge.fileID = file.id;
-                                cartridge.readOnly = false;
-                                setChanged(false);
-                                computeCartridgeArray();
-                                // Scroll the cartrige window to the currently loaded one
-                                // TODO
+                                if (file.error) {
+                                    console.log(file);
+                                    alert('Saving failed with Google Drive message "' + file.error.message + '" and HTTP code ' + file.error.code + '. \n\nPlease try again or download your program.');
+                                } else {
+                                    cartridge.fileID = file.id;
+                                    cartridge.readOnly = false;
+                                    setChanged(false);
+                                    computeCartridgeArray();
+                                    // Scroll the cartrige window to the currently loaded one
+                                    // TODO
+                                }
                                 if (callback) { callback(); }
                             },
                             cartridge.fileID);
