@@ -1940,7 +1940,18 @@ function mainLoopStep(time) {
     } catch (e) {
         // Runtime error
         onStopButton();
-        setErrorStatus('line ' + clamp(1, e.lineNumber, programNumLines) + ': ' + e.message);
+        if (e.lineNumber) {
+            setErrorStatus('line ' + clamp(1, e.lineNumber, programNumLines) + ': ' + e.message);
+        } else if (e.stack) {
+            let match = e.stack.match(/<anonymous>:(\d+)/);
+            if (match) {
+                setErrorStatus('near line ' + clamp(1, parseInt(match[1]) - 2, programNumLines) + ': ' + e.message);
+            } else {
+                setErrorStatus(e.message);
+            }
+        } else {
+            setErrorStatus(e.message);
+        }
         console.log(e);
         console.dir(e);
     }
