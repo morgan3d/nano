@@ -204,7 +204,11 @@ function handleSignoutClick(event) {
 
 function handleClientLoad() {
     // Load the API client and auth2 library
-    gapi.load('client:auth2', initClient);
+    try {
+        gapi.load('client:auth2', initClient);
+    } catch (e) {
+        console.log(e);
+    }
 }
 
 function initClient() {

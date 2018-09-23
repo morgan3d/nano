@@ -11,7 +11,7 @@ for s < 64
   // Compute a "random" column on each row
   // for a star, and then cycle it left
   h = hash(s)
-  pset(64 - ((64 + ⅓τ) * h % 64), s, gray(⅓h))
+  pset(64 - ((64 + τ) * h % 64), s, gray(⅓h))
 
 y = mid(4, y + joy.y, 60)
 
@@ -38,7 +38,7 @@ for a ∈ aln
     a.y = 4 + 56ξ`,
 
 
-`#nanojam SPACE DASH
+`#nanojam Space Dash
 if(¬τ)x=32
 // Game-over explosion
 if(τ<0)pal(8+3ξ);circ(x,50,99+τ,19);cont

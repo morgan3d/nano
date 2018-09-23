@@ -350,7 +350,7 @@ if (¬τ) text("Press to Launch"); wait
 
 ### Star Attack
 
-[*Star Attack*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIDKAXMAnBBBFaDGA1gFACWAZgoCPACg+kQIAMRCAnggLwIDMATEwPR9sAGxIBTEAGcmYISHYIA2gG8AHgC4AjPXoAaFpt0IJagCwBfPas0nDzU4ePd6FhFY0AOW2oBsD02YBdIiIBZDR0KTJITAkEAB4EbxN+QQBhSDgABwBXFFEEMAQAInQIABMMooQ8SCFsuDlIOVEwPAALBHRIAHcUhCjMQolwvXKEFDbxauY8IXySFAQ5shQmDo42sAk2gAoJAEomTIlRFB2khABaBB3zkwQAagRAZUJKfYQAKgQOgFJEk32egkegA5qVmDtnm19ociKwOKwntBIMwAHTMOHyOBgFQ7Ex6ZiHeEIOAkEDnWyw0IABSEYGYohibRImSIZVK3R2nHcei0BL0SQ0VMEMjy6HAeQKIBI2JQJCa-VKcFEUgI8kAUMSAbUJqH9uIBoYmCoSwInEkWiBQQgAgiAqyJjssCcsCo2JPAijVEqd3MAUmACshwQ5BuTpUVwQWn2ACbHsH0WHCdGEhpvEwEKEABILcaTIzMzIAQlTeRUZyKACEAPIVgCy+aKeh4De4egBqe2PVT3TAC1T6BVp1T0g9Vw4GiYQZD8SuyQQacE1JIhAtIFE3QQmUgEgW8rk3UmjTIFAkeD74lTk9HThjvvogD7gc9xjj3J6+7y3oA)
+[*Star Attack*](https://morgan3d.github.io/nano/index.html?code=MQOwhiD2BWYLYAIDKAXMAnBBBFaDGA1gFACWAZgoCPACg+kQIAMRCCAnggLwIDMATEwmAA2IDggDaAbwAeALgCM9egBoW85QGcZAFgC+S6fK3LVRpZp709BuQA5jMgGwbtOgLpEykTOoQAeBA5a-AAWosFg6sEAFOoAlPwADuoApihRgQgAtAhR6VoIANRUsQBUCKEApAFasWZKAOboYCxRgMqEwbHxbJxwJAAmUVoqhQjQkCwAdCxKTvF9TQDuUVw2SgoqM1py8QSigFDEgNqE1FU8gNDEHl4CCIAQRALC-PNgS2ATPkUESi9Sn1ObAKzxZjkHJfLIIBSxABNIyiLzY2RYUL84Ic-GYKGSUjSACIAEIAeXxAFkAITYpS8Ck8JQ1ADckUgCzRCAWYBIKFp6GSKRQ-FBmU4cn4wNB-kyQWYzFBgosIz+9EAfcDMuGifJFP4OBVAA)
 is a side-scrolling space game where you have to dodge aliens...until you lose. There's no way
 to win in this version. Maybe you can fix that.
 
@@ -373,7 +373,7 @@ for s < 64
   // Compute a "random" column on each row
   // for a star, and then cycle it left
   h = hash(s)
-  pset(64 - ((64 + ⅓τ) * h % 64), s, gray(⅓h))
+  pset(64 - ((64 + τ) * h % 64), s, gray(⅓h))
 
 y = y + joy.y
 y = max(4, y)
@@ -423,7 +423,7 @@ through enemy fighters to reach their home planet. It has a loading screen, back
 animation, controls, collision detection, and end-game scene.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++ linenumbers
-#nanojam SPACE DASH
+#nanojam Space Dash
 if(¬τ)x=32
 // Game-over explosion
 if(τ<0)pal(8+3ξ);circ(x,50,99+τ,19);cont

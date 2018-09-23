@@ -136,7 +136,7 @@ function setUIMode(d) {
         if (deployed) { onPlayButton(); }
     }
 
-    if (displayMode === 'Minimal' && deployed) {
+    if ((displayMode !== 'IDE') && deployed) {
         // Full-screen the UI
         //(body.requestFullscreen || body.webkitRequestFullscreen || body.mozRequestFullScreen || body.msRequestFullscreen || Math.cos)();
         if (body.requestFullscreen) {
@@ -151,11 +151,14 @@ function setUIMode(d) {
     }
 
     onResize();
+
+    // Reset keyboard focus
+    emulatorKeyboardInput.focus();
 }
 
 
 function onResize() {
-    let body = document.getElementsByTagName("body")[0];
+    let body = document.getElementsByTagName('body')[0];
     let emulator = document.getElementById('emulator');
 
     switch (displayMode) {
@@ -183,13 +186,15 @@ function onResize() {
         // What is the largest multiple FRAMEBUFFER_HEIGHT that is less than windowHeightDevicePixels?
         let scale = Math.max(0, Math.min((window.innerHeight - 40) / 300, (window.innerWidth - 270) / 280));
 
-        if (scale * window.devicePixelRatio < 2) {
-            // Round to nearest even multiple of the actual pixel size
-            // let windowHeightDevicePixels = window.innerHeight * devicePixelRatio;
-            // Math.floor(windowHeightDevicePixels / FRAMEBUFFER_HEIGHT) * FRAMEBUFFER_HEIGHT
+        if (scale * window.devicePixelRatio <= 2.5) {
+            // Round to nearest even multiple of the actual pixel size for small screens to
+            // keep per-pixel accuracy
+            scale = Math.floor(scale * window.devicePixelRatio) / window.devicePixelRatio;
         }
-        
-        emulator.style.transform = 'scale(' + scale + ')';
+
+        // Setting the scale transform triggers really slow rendering on Raspberry Pi unless we
+        // add the "translate3d" hack to trigger hardware acceleration.
+        emulator.style.transform = 'scale(' + scale + ') translate3d(0,0,0)';
         emulator.style.left = Math.round((window.innerWidth - emulator.offsetWidth) / 2) + 'px';
         emulator.style.top = '8px';
         
@@ -331,7 +336,6 @@ function rgb(r,g,b,x,y) {
 
     return closestIndex;
 }
-
 
 function redrawSelectedSprite() {
     var localPalette = [Runtime.TRANSPARENT, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -2275,7 +2279,6 @@ let justLoggedIn = true;
     // Load starter carts
     computeCartridgeArray();
 
-
 })();
 
 
@@ -2352,6 +2355,7 @@ function onTouchEnd(event) {
         }
     }
 }
+
 
 document.addEventListener('touchstart', onTouchStart);
 document.addEventListener('touchmove', onTouchMove);
