@@ -241,7 +241,7 @@ function processLine(line, declareSet, noDeclareSet, inFunction) {
 
         if (type === 'fcn') {
             // Process with a fresh declareSet and fresh noDeclareSet initialized to the args
-            match = rest.match(/\s*(\S+)?\s*\((.*)\)(.*)/);
+            match = rest.match(/\s*(\S+)?\s*\((.*?)\)(.*)/);
             if (! match) { throw 'Ill-formed single-line fcn'; }
             let name = match[1];
             let args = match[2] || '';
