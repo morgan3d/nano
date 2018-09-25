@@ -1480,11 +1480,12 @@ function showRenameDialog(newTitle, newFilename) {
 
     document.getElementById('saveRenameContainer').onclick = function () {
         showWaitDialog();
-        updateAndSaveCartridge(newTitle, newFilename, activeCartridge, function () {
-            hideRenameDialog();
-            hideWaitDialog();
-            saveIDEState();
-        });    
+        updateAndSaveCartridge(newTitle, newFilename, activeCartridge.code, activeCartridge,
+                               function () {
+                                   hideRenameDialog();
+                                   hideWaitDialog();
+                                   saveIDEState();
+                               });    
     };
 
     document.getElementById('saveCloneContainer').onclick = function () {
