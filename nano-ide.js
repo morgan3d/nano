@@ -1379,12 +1379,14 @@ function makeCartridgeWindowContents() {
 
     if (hasGoogleDrive && justLoggedIn) {
         justLoggedIn = false;
-        let lastFileID = window.localStorage.getItem('lastFileID');
-        if (lastFileID) {
-            for (let i = 0; i < cartridgeArray.length; ++i) {
-                if (cartridgeArray[i].fileID === lastFileID) {
-                    setActiveCartridge(cartridgeArray[i]);
-                    break;
+        if (uiMode === 'IDE') {
+            let lastFileID = window.localStorage.getItem('lastFileID');
+            if (lastFileID) {
+                for (let i = 0; i < cartridgeArray.length; ++i) {
+                    if (cartridgeArray[i].fileID === lastFileID) {
+                        setActiveCartridge(cartridgeArray[i]);
+                        break;
+                    }
                 }
             }
         }
@@ -2219,9 +2221,9 @@ let justLoggedIn = true;
         activeCartridge.flags = getFlags(initialSource);
         activeCartridge.readOnly = true;
         activeCartridge.googleDriveFileID = undefined;
-        setTimeout(function () {
-            setUIMode('Emulator');
-        }, 300);
+        //setTimeout(function () {
+        setUIMode('Emulator');
+        //}, 300);
     } else {
         activeCartridge.code = initialSource;
     }
@@ -2356,7 +2358,6 @@ function onTouchEnd(event) {
         }
     }
 }
-
 
 document.addEventListener('touchstart', onTouchStart);
 document.addEventListener('touchmove', onTouchMove);
