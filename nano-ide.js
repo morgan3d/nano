@@ -121,7 +121,7 @@ function getQueryString(field) {
 }
 
 
-function setUIMode(d) {
+function setUIMode(d, noAutoPlay) {
     displayMode = d;
     let body = document.getElementsByTagName("body")[0];
 
@@ -133,7 +133,7 @@ function setUIMode(d) {
         body.classList.add('noIDE');
         
         // Nothing to do except play in this mode, so hit play automatically
-        if (deployed) { onPlayButton(); }
+        if (deployed && ! noAutoPlay) { onPlayButton(); }
     }
 
     if ((displayMode !== 'IDE') && deployed) {
@@ -552,6 +552,7 @@ function makeSoundsWindow() {
     document.getElementById('sounds').innerHTML = s;
 }
 
+// Allow the rest of the loading to complete before trying to load all of the sounds
 setTimeout(makeSoundsWindow, 0);
 makeSymbolsWindow();
 
@@ -618,7 +619,9 @@ function loadSound(url) {
 
 
 function playSoundNum(n) {
-    playSound(soundArray[Math.max(0, Math.min(n | 0, soundArray.length - 1))], false);
+    if (soundArray.length > 0) {
+        playSound(soundArray[Math.max(0, Math.min(n | 0, soundArray.length - 1))], false);
+    }
 }
 
 
@@ -1162,7 +1165,7 @@ function computeCartridgeArray() {
     }
     
     googleDriveRetrieveAllFiles('nano', 'true', function(files) {
-        var remaining = files.length;
+        let remaining = files.length;
 
         if (remaining === 0) {
             // Nothing to load
@@ -1187,7 +1190,7 @@ function computeCartridgeArray() {
                     setTimeout(function () {
                         googleDriveGetTextFile(file.id, function(fileID, contents, filename) {
                             if (contents) {
-                                var title, filename, flags;
+                                let title, filename, flags;
                                 // Legacy path
                                 title = getTitle(contents);
                                 filename = getFilename(title);
@@ -1608,10 +1611,11 @@ function saveIDEState() {
 }
 
 
+/** noSaveIDE disables saving the IDE state during this call. Otherwise, the IDE is saved. */
 function setActiveCartridge(cartridge, noSaveIDE) {
     function completeLoad(fileID, contents, filename) {
         activeCartridge.code = contents;
-        editor.setValue(activeCartridge.code);
+        editor.setValue(contents);
         editor.gotoLine(0, 0, false);
         editor.scrollToLine(0, false, false, undefined);
         setChanged(false);
@@ -1657,12 +1661,13 @@ function minify(nanoSource, aggressive) {
         replace(/([,;.\[\]()])[ \t]*/g, '$1');    // Extra spaces after separators
 
     // More aggressive optimizations that hurt readability
-    if (aggressive) {
+    if (false && aggressive) { // TODO: currently makes illegal transformations
         // If two lines have the same indentation and the first does not contain
-        // a conditional flow control, then they can be merged to save the indentation.
+        // a conditional flow control, AND the following line is indented no more,
+        // then they can be merged to save the indentation.
         // Don't bother unless there is indentation.
         s = s.replace(/(\n +)([^ \n]+)\1(?=[^ \n])/g, function (match, indent1, line1) {
-            if (line1.match(/\b(if|while|for|fcn|loop|until|else|elif)\b/)) {
+            if (line1.match(/\b(if|while|with|for|fcn|loop|until|else|elif)\b/)) {
                 // Can't merge
                 return match;
             } else {
@@ -2223,12 +2228,9 @@ let justLoggedIn = true;
         activeCartridge.flags = getFlags(initialSource);
         activeCartridge.readOnly = true;
         activeCartridge.googleDriveFileID = undefined;
-        setUIMode('Emulator');
     } else {
         activeCartridge.code = initialSource;
     }
-
-    setActiveCartridge(activeCartridge, true);
 
     // Set button callbacks
     let buttons = 'WASD1ZXER';
@@ -2277,6 +2279,19 @@ let justLoggedIn = true;
             })(b);
         } // for each button
     } // for each control
+
+    setActiveCartridge(activeCartridge, true);
+    
+    if (code) {
+        // Jump to emulator if loaded from a URL cartridge. Must appear after
+        // setActiveCartridge so that the game is loaded and before makeCartridgeWindowContents
+        // so that it isn't overriden by the last cartridge from localStorage.
+        setUIMode('Emulator', true);
+
+        // Delay automatic starting until the framebuffer and other callbacks have been
+        // processed.
+        setTimeout(onPlayButton, 250);
+    }
 
     // Load starter carts
     computeCartridgeArray();
