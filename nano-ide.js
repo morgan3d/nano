@@ -1653,10 +1653,19 @@ function minify(nanoSource, aggressive) {
     let protectionMap = pack[1];
 
     // Simple optimizations that don't affect readability tremendously
-    s = s.replace(/\/\/.*$|\/\*[\s\S]*\*\//gm, ''). // Comments
-        replace(/\n[ \t]*$/gm, '').               // Blank lines
-        replace(/[ \t]+$/gm, '').                 // Trailing spaces
-        replace(/[ \t]*([▻◅!¬~⊕∪∩{}⌈⌉⌊⌋%-/*∈≤≥<>+≠≟=:,;.\[\]()])[ \t]*/g, '$1');    // Extra spaces around operators and separators
+
+    //  Comments
+    s = s.replace(/\/\/.*$|\/\*[\s\S]*\*\//gm, ''). 
+
+        // Blank lines
+        replace(/\n[ \t]*$/gm, '').
+
+        // Trailing spaces
+        replace(/[ \t]+$/gm, '').
+         
+        // Extra spaces around operators and separators. This may drive them
+        // into 'for', 'while', etc, but that actually parses correctly.
+        replace(/[ \t]*([▻◅!¬~⊕∪∩{}⌈⌉⌊⌋^%-/|*∊∈≤≥<>+≠≟=:,;.\[\]()])[ \t]*/g, '$1');
 
     // More aggressive optimizations that hurt readability
     if (false && aggressive) { // TODO: currently makes illegal transformations
