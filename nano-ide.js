@@ -108,7 +108,7 @@ if (! (_ch_isLocal && _ch_isChrome)) {
         try {
             _ch_audioContext = new AudioContext();
             _ch_audioContext.gainNode = _ch_audioContext.createGain();
-            _ch_audioContext.gainNode.gain.value = 0.6;
+            _ch_audioContext.gainNode.gain.value = 0.2;
             _ch_audioContext.gainNode.connect(_ch_audioContext.destination);
         } catch(e) {
             console.log(e);
@@ -610,6 +610,7 @@ function loadSound(url) {
         // Legacy and local Chrome path
         let s = new Audio();
         s.src = url;
+        s.volume = 0.2;
         s.preload = "auto";
         
         s.playing = false;
@@ -642,7 +643,7 @@ function playSound(sound, loop) {
             // A new source must be created every time that the sound is played
             sound.source = _ch_audioContext.createBufferSource();
             sound.source.buffer = sound.buffer;
-            sound.source.connect(_ch_audioContext.destination);
+            sound.source.connect(_ch_audioContext.gainNode);
             sound.source.loop = loop;
             sound.source.onended = function () {
                 sound.source = null;
@@ -660,13 +661,6 @@ function playSound(sound, loop) {
         }
     } else {
         // Legacy support
-        if (_ch_audioContext && ! sound.webAudioSound) {
-            // Force the sound through the Web Audio API for lower
-            // latency playback on Chrome. 
-            // Do this the first time, and then mark as webaudio for the future
-            sound.webAudioSound = _ch_audioContext.createMediaElementSource(sound);
-            sound.webAudioSound.connect(_ch_audioContext.destination);
-        }
         
         try {
             // Reset the sound
