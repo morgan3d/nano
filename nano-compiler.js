@@ -536,7 +536,7 @@ var maybeYieldGlobal = ' {if (!(__yieldCounter = (__yieldCounter + 1) & 1023)) {
 var maybeYieldFunction = ''; // TODO
 
 /** Returns the new string and a map */
-function protectQuotedStrings(s) {
+function protectQuotedStrings(src) {
     let numProtected = 0, protectionMap = [];
 
     // Hide escaped quotes
