@@ -44,6 +44,7 @@ function _arrayRem(x) {
             return;
         }
     }
+    // fail silently
 }
 
 function _arrayFind(x, s) {

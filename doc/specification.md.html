@@ -1219,6 +1219,7 @@ Array
 
 `array.rem(x)`
 : Delete the first instance of `x` in the array, maintaining order. O(n) time in the length of the array.
+  Does nothing if `x` is not in the array.
 
 `array.sort(k)`
 : Sort the array from least to greatest. If `k` is a string, then elements of the array are
@@ -1245,7 +1246,8 @@ String
 Table
 ---------------------------------------------------------
 `table.del(k)`
-: Remove a key-value pair by key.
+: Remove a key-value pair by key. Does nothing if `k` is not in the table.
+  Use `table[k] ≠ ∅` to test for containment explicitly.
 
 `table.keys`
 : An Array of the keys.

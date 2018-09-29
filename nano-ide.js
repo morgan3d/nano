@@ -1656,7 +1656,7 @@ function minify(nanoSource, aggressive) {
     s = s.replace(/\/\/.*$|\/\*[\s\S]*\*\//gm, ''). // Comments
         replace(/\n[ \t]*$/gm, '').               // Blank lines
         replace(/[ \t]+$/gm, '').                 // Trailing spaces
-        replace(/([,;.\[\]()])[ \t]*/g, '$1');    // Extra spaces after separators
+        replace(/[ \t]*([▻◅!¬~⊕∪∩{}⌈⌉⌊⌋%-/*∈≤≥<>+≠≟=:,;.\[\]()])[ \t]*/g, '$1');    // Extra spaces around operators and separators
 
     // More aggressive optimizations that hurt readability
     if (false && aggressive) { // TODO: currently makes illegal transformations
