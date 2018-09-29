@@ -107,6 +107,9 @@ if (! (_ch_isLocal && _ch_isChrome)) {
     if (window.AudioContext) {
         try {
             _ch_audioContext = new AudioContext();
+            _ch_audioContext.gainNode = _ch_audioContext.createGain();
+            _ch_audioContext.gainNode.gain.value = 0.6;
+            _ch_audioContext.gainNode.connect(_ch_audioContext.destination);
         } catch(e) {
             console.log(e);
         }
@@ -216,6 +219,7 @@ function onUIModeMenuButton(event) {
     }
     event.stopPropagation();
 }
+
 
 function getImageData(image) {
     var tempCanvas = document.createElement('canvas');
@@ -569,13 +573,13 @@ function insertSymbol(s) {
 function loadSound(url) {
     if (_ch_audioContext) {
         // Use asynchronous loading
-        var sound = Object.seal({ src: url, 
+        let sound = Object.seal({ src: url, 
                                   loaded: false, 
                                   source: null,
                                   buffer: null,
                                   playing: false });
         
-        var request = new XMLHttpRequest();
+        let request = new XMLHttpRequest();
         request.open('GET', url, true);
         request.responseType = 'arraybuffer';
         
@@ -591,7 +595,7 @@ function loadSound(url) {
                     // without delay later.
                     sound.source = _ch_audioContext.createBufferSource();
                     sound.source.buffer = sound.buffer;
-                    sound.source.connect(_ch_audioContext.destination);
+                    sound.source.connect(_ch_audioContext.gainNode);
                 }, 
                 function onFailure() {
                     console.warn("Could not load sound " + url);
@@ -604,7 +608,7 @@ function loadSound(url) {
 
     } else {
         // Legacy and local Chrome path
-        var s = new Audio();
+        let s = new Audio();
         s.src = url;
         s.preload = "auto";
         
@@ -1382,7 +1386,7 @@ function makeCartridgeWindowContents() {
 
     if (hasGoogleDrive && justLoggedIn) {
         justLoggedIn = false;
-        if (uiMode === 'IDE') {
+        if (displayMode === 'IDE') {
             let lastFileID = window.localStorage.getItem('lastFileID');
             if (lastFileID) {
                 for (let i = 0; i < cartridgeArray.length; ++i) {
