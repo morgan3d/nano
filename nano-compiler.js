@@ -8,9 +8,8 @@ String.prototype.rtrim = function() {
     return this.replace(/\s+$/, '');
 }
 
-var protectionBlockStart = 0xE001;
-var doubleQuoteProtection = String.fromCharCode(protectionBlockStart - 1);
-
+let protectionBlockStart = 0xE001;
+let doubleQuoteProtection = String.fromCharCode(protectionBlockStart - 1);
 
 /** Assumes that str[i]=='('. Returns the index of the
     matching close ')', assuming that parens are balanced
@@ -536,18 +535,36 @@ var maybeYieldGlobal = ' {if (!(__yieldCounter = (__yieldCounter + 1) & 1023)) {
 /** Expression for 'yield' inside a function, where regular yield is not allowed */
 var maybeYieldFunction = ''; // TODO
 
+/** Returns the new string and a map */
+function protectQuotedStrings(s) {
+    let numProtected = 0, protectionMap = [];
+
+    // Hide escaped quotes
+    src = src.replace('\\"', doubleQuoteProtection);
+                      
+    // Protect strings
+    src = src.replace(/"(.+?)"/g, function (match, str) {
+        protectionMap.push(str);
+        return '"' +  String.fromCharCode(numProtected++ + protectionBlockStart) + '"';
+    });
+
+    return [src, protectionMap];
+}
+
+
+function unprotectQuotedStrings(s, protectionMap) {
+    // Unprotect strings
+    for (var i = 0; i < protectionMap.length; ++i) {
+        s = s.replace(String.fromCharCode(protectionBlockStart + i), protectionMap[i]);
+    }
+
+    // Unprotect escaped quotes
+    return s.replace(doubleQuoteProtection, '\\"');
+}
+
 /** Compiles nano -> JavaScript. If noWrapper is true then no outer exception handler and
     infinite loop are injected. */
 function nanoToJS(src, noWrapper) {
-    /** Given a string, returns a unique reserved unicode character that can be 
-        used to replace it temporarily to hide it from the rest of the renaming. */
-    function protect(str) {
-        protectionMap.push(str);
-        return '' +  String.fromCharCode(numProtected++ + protectionBlockStart);
-    }
-    
-    let numProtected = 0, protectionMap = [];
-
     // Switch to small element-of everywhere before blocks or strings can be processed
     src = src.replace(/∈/g, '∊');
     
@@ -572,14 +589,10 @@ function nanoToJS(src, noWrapper) {
     if (! title) {
         throw makeError('The first line must be "#nanojam &lt;gametitle&gt;"', 0);
     }
-    
-    // Hide escaped quotes
-    src = src.replace('\\"', doubleQuoteProtection);
-                      
-    // Protect strings
-    src = src.replace(/"(.+?)"/g, function (match, str) {
-        return '"' + protect(str) + '"';
-    });
+
+    let pack = protectQuotedStrings(src);
+    src = pack[0];
+    let protectionMap = pack[1];
 
     // Remove multi-line comments, which cause problems with the indentation and end-of-line metrics
     src = src.replace(/\/\*([\s\S]*)\*\//g, function(match, contents) {
@@ -736,14 +749,8 @@ function nanoToJS(src, noWrapper) {
     src = src.replace(/;[ \t]*;/g, ';');
     src = src.replace(/(\S)[ \t]{2,}/g, '$1 ');
 
-    // Unprotect strings
-    for (var i = 0; i < protectionMap.length; ++i) {
-        src = src.replace(String.fromCharCode(protectionBlockStart + i), protectionMap[i]);
-    }
-
-    // Unprotect escaped quotes
-    src = src.replace(doubleQuoteProtection, '\\"');
-    
+    src = unprotectQuotedStrings(src, protectionMap);
+   
     return src;
 }
 

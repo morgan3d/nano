@@ -1646,11 +1646,12 @@ function setChanged(s) {
 
 /** Makes automated replacements to minimize the length of the program */
 function minify(nanoSource, aggressive) {
-    // TODO: protect strings
-    
+    let pack = protectQuotedStrings(nanoSource);
+    s = pack[0];
+    let protectionMap = pack[1];
+
     // Simple optimizations that don't affect readability tremendously
-    var s = nanoSource.
-        replace(/\/\/.*$|\/\*[\s\S]*\*\//gm, ''). // Comments
+    s = s.replace(/\/\/.*$|\/\*[\s\S]*\*\//gm, ''). // Comments
         replace(/\n[ \t]*$/gm, '').               // Blank lines
         replace(/[ \t]+$/gm, '').                 // Trailing spaces
         replace(/([,;.\[\]()])[ \t]*/g, '$1');    // Extra spaces after separators
@@ -1685,7 +1686,8 @@ function minify(nanoSource, aggressive) {
         }
     } // if aggressive
 
-    return s;
+    
+    return unprotectQuotedStrings(s, protectionMap);
 }
 
 
@@ -2221,15 +2223,12 @@ let justLoggedIn = true;
         activeCartridge.flags = getFlags(initialSource);
         activeCartridge.readOnly = true;
         activeCartridge.googleDriveFileID = undefined;
-        //setTimeout(function () {
         setUIMode('Emulator');
-        //}, 300);
     } else {
         activeCartridge.code = initialSource;
     }
 
     setActiveCartridge(activeCartridge, true);
-
 
     // Set button callbacks
     let buttons = 'WASD1ZXER';
