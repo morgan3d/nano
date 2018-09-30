@@ -1,6 +1,6 @@
 var tests = {
     debug:`#nanojam abc,1
-fcn f(x) ret (x + x)
+fcn f(x)ret(x + x)
 `,
 
     indent: `#nanojam indent,1
