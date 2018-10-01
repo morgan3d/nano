@@ -1,3 +1,36 @@
+/** Assumes blank lines and comments have already been removed */
+function minify_indentation(src) {
+    let lineArray = src.split('\n');
+
+    let spacesStack = [], spaces = '';
+    let oldIndentStack = [], prevIndent = 0;
+    
+    for (let L = 0; L < lineArray.length; ++L) {
+        let indent = lineArray[L].search(/\S/);
+        if (indent > prevIndent) {
+            spacesStack.push(spaces);
+            oldIndentStack.push(prevIndent);
+            prevIndent = indent;
+            spaces = ' ' + spaces;
+        } else if (indent < prevIndent) {
+            do {
+                if (oldIndentStack.length === 0) {
+                    // Inconsistent indentation, failure
+                    return src;
+                }
+                prevIndent = oldIndentStack.pop();
+                spaces = spacesStack.pop();
+            } while (indent !== prevIndent);
+        }
+        
+        lineArray[L] = spaces + lineArray[L].substr(indent);
+    }
+
+    src = lineArray.join('\n');
+
+    return src;
+}
+
 /** Makes automated replacements to minimize the length of the program */
 function minify(nanoSource, aggressive) {
     let pack = protectQuotedStrings(nanoSource);
@@ -19,8 +52,13 @@ function minify(nanoSource, aggressive) {
         // into 'for', 'while', etc, but that actually parses correctly.
         replace(/[ \t]*([▻◅!¬~⊕∪∩{}⌈⌉⌊⌋^%-/|*∊∈≤≥<>+≠≟=:,;.\[\]()])[ \t]*/g, '$1');
 
+    // Use single-space indentation
+    s = minify_indentation(s);
+
     // More aggressive optimizations that hurt readability
-    if (false && aggressive) { // TODO: currently makes illegal transformations
+    if (aggressive) {
+
+        /*
         // If two lines have the same indentation and the first does not contain
         // a conditional flow control, AND the following line is indented no more,
         // then they can be merged to save the indentation.
@@ -48,8 +86,10 @@ function minify(nanoSource, aggressive) {
                 }
             });
         }
+        */
     } // if aggressive
 
     
     return unprotectQuotedStrings(s, protectionMap);
 }
+
