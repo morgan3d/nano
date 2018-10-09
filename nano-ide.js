@@ -59,10 +59,11 @@ if(τ>31)cls(clr=0);i=j=x=v=∅
 
 
 var initialSource =
+    tests.forwith;
     //tests.customSprite;
     //tests.debug;
     //tests.textstyle;
-    tests.starattack;
+    //tests.starattack;
     //tests.indent;
     //tests.circles;
     //tests.nanoBoot;

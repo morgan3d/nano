@@ -214,6 +214,9 @@ if ¬τ
 
 U()`,
 
+    forwith: `#nanojam forwith,1
+for (x ∊ b ∊ []) ++x`,
+    
     customSprite: `#nanojam custom,5
 if ¬τ
   text("Hello",32,3)

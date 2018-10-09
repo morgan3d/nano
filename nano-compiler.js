@@ -642,10 +642,12 @@ function nanoToJS(src, noWrapper) {
         // parenthetical expression, or bracketed expression, followed by a variable name.
         src = src.replace(/([^A-Za-zαβγδζηθιλμρσϕφχψωΩ]|^)([0-9]+|[επτξ∞½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₎]|\)|\])[ \t]*([\(\[A-Za-zαβγδζηιθλμρσϕχψωΔΩτεπξ∞])/g, '$1$2 * $3');
         
-        // Fix any instances of text operatorsthat got accentially turned
-        // into implicit multiplication. If there are other text
-        // operators in the future, they can be added to this pattern.
-        src = src.replace(/\*[\t ]*(xor|or|and|not|bitand|bitor|bitnot|bitshr|bitshl)(\b|\d|$)/g, ' $1$2');
+        // Fix any instances of text operators that got accentially turned into implicit
+        // multiplication. If there are other text operators in the future, they can be added
+        // to this pattern.  This also fixes the one case where the nano compiler does not
+        // inject {} around a loop body: the for-with statement, where it needs to output
+        // a single expression to compile those as if they were FOR statements.
+        src = src.replace(/\*[\t ]*(xor|or|and|not|bitand|bitor|bitnot|bitshr|bitshl|for)(\b|\d|$)/g, ' $1$2');
 
         // Replace fractions
         src = src.replace(/[½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒]/g, function (match) { return fraction[match]; });
