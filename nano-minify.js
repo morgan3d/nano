@@ -34,7 +34,7 @@ function minify_indentation(src) {
 /** Makes automated replacements to minimize the length of the program */
 function minify(nanoSource, aggressive) {
     let pack = protectQuotedStrings(nanoSource);
-    s = pack[0];
+    let s = pack[0];
     let protectionMap = pack[1];
 
     // Simple optimizations that don't affect readability tremendously
@@ -58,21 +58,27 @@ function minify(nanoSource, aggressive) {
     // More aggressive optimizations that hurt readability
     if (aggressive) {
 
+        let flowControl = /\b(if|while|with|for|fcn|loop|until|else|elif)\b/;
+        
+        // If two lines have the same indentation, the first does not contain a flow control
+        // statement, and the second does not begin with a flow control statement, then they
+        // can be merged to save the indentation. Allow repeated, overlapping collapses.
+        let found = false;
+        do {
+            found = false;
+            s = s.replace(/(\n +)(\S[^\n]*)\1(\S+)/g, function (match, indent1, line1, line2prefix) {
+                if (line1.match(flowControl) || line2prefix.match(flowControl)) {
+                    // Can't merge
+                    return match;
+                } else {
+                    found = true;
+                    // Mergable
+                    return indent1 + line1 + ';' + line2prefix;
+                }
+            });
+        } while (found);
+        
         /*
-        // If two lines have the same indentation and the first does not contain
-        // a conditional flow control, AND the following line is indented no more,
-        // then they can be merged to save the indentation.
-        // Don't bother unless there is indentation.
-        s = s.replace(/(\n +)([^ \n]+)\1(?=[^ \n])/g, function (match, indent1, line1) {
-            if (line1.match(/\b(if|while|with|for|fcn|loop|until|else|elif)\b/)) {
-                // Can't merge
-                return match;
-            } else {
-                // Mergable
-                return indent1 + line1 + ';';
-            }
-        });
-
         if (false) { // buggy!
             // For some reason this is pulling up cases where the third line is not in fact at
             // the level of indent 1

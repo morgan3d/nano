@@ -1,13 +1,26 @@
 var tests = {
-    debug:`#nanojam abc,1
-fcn f(x)ret(x + x)
-`,
+    textstyle:`#nanojam textstyle,1
+cls(7)
+pal(408001307)
+text("Normal",32,3,4)
+text("Shadow",32,12,954)
+text("Outline",32,21,334)
+text("Shadow+Outline",32,30,354)
+
+fcn test(x, y, a)
+  rect(x,y,x+4,y+6,39)
+  pset(x+2,y+3,0)
+  text("X",x+2,y+3,4,a)
+
+for u < 3
+ for v < 3
+  test(10u+20,37+9v,u+4v)`,
 
     indent: `#nanojam indent,1
 for i < 6
   if i > 3
     pset(i,i,i)
- text(i)
+  text(i)
 `,
     
     IF: `#nanojam IF,1
@@ -148,9 +161,11 @@ a.sort()
 for i<a.len
  text(a[i],32,6i+2,1)`,
     
-    hash: `for(i<64)line(i,64hash(⅒(i+τ)),i,64,1)`,
+    hash: `#nanojam hash,1
+for(i<64)line(i,64hash(⅒(i+τ)),i,64,1)`,
 
-    variables: `a={β:6}
+    variables: `#nanojam variables,1
+a={β:6}
 text(a["β"],10,4)
 text(a.β,10,12)
 text("hi".len,10,20)
@@ -176,17 +191,38 @@ y+=v+=⅒
 // on ground
 if(y≥h)y=h;v=-2joy.aa`,
 
-    stars:`#nanojam stars,1
+    stars:`#nanojam stars,5
 if ¬τ
- S=[]
- for i<120
-  θ=2πξ;v=⅛+ξ⁸
-  S.add([60ξ,⅒v,cos(θ),sin(θ),gray(2v)])
+  S=[]
+  R=½screenWidth
+  for i<4R
+    θ=2πξ;v=ξ⁹+⅒
+    // radius, speed, dx, dy, color
+    S.add([ξR,v*R/480,cosθ,⅗sinθ,gray(2v)])
 
-for s∈S
- for j<2
-  pset(31+s₀s₂,31+s₀s₃,s₄)
-  if((s₀+=s₁s₀^⅗)>60)s₀=2;s₄=hsv(⅛-½ξ,ξ¹⁵,¼ξ+12s₁)`,
+  // One-frame increment function
+  fcn U()
+    for s∈S
+      // Stretch into lines
+      for j<3
+        pset(R+s₀s₂,R+s₀s₃,s₄)
+        if((s₀+=8s₁sqrt(s₀/R))>2R)s₀=2;s₄=hsv(⅛-½ξ,ξ¹⁵,¼ξ+12s₁)
+
+  // Prime the system
+  for (i<9R)U()
+  cls(0)
+
+U()`,
+
+    customSprite: `#nanojam custom,5
+if ¬τ
+  text("Hello",32,3)
+  s = sprget(0,0,63,7)
+  s = sprscale(s, 4, 2)
+  clr=4
+
+draw(s,screenWidth/2,32)`,
+
     
     textbots:`#nanojam textbots,1
 if ¬τ
@@ -270,7 +306,8 @@ draw(3,x,50,641) // Player ship
 // Victory screen
 if(τ≥9³)text("YOU WIN");wait;τ=0`,
 
-    text: `text("\`Hello, World!'", 32, 19, 6)
+    text: `#nanojam text,1
+text("\`Hello, World!'", 32, 19, 6)
 text("MICE WORLD", 32, 25, 6)
 text("AB\\"CZabcz" + "foo", 32, 32, 6)
 text("01 2x 39!,.-=+", 32, 38, 6)`,

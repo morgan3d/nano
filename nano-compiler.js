@@ -570,21 +570,22 @@ function nanoToJS(src, noWrapper) {
     src = src.replace(/∈/g, '∊');
     
     // Title line
-    let title = undefined, flags = 0;
+    let title = undefined, flags = 0, screenScale = 1;
     src = src.replace(/^#nanojam[ \t]+(..+?)((?:,)([ \t]*\d+[ \t]*))?(?:$|\n)/, function (match, specTitle, ignore, specFlags) {
         // remove comments
         specTitle = specTitle.replace(/\/\/.*$|\/\*.*\*\//g, '').trim();
         title = specTitle;
         flags = parseInt(specFlags || 0);
-        return '\n';
+
+        switch ((flags >> 1) & 3) {
+        case 1: screenScale = 2; break;
+        case 2: screenScale = 4; break;
+        case 3: throw makeError("Illegal screen size flags in title: 0b110", 0); break;
+        }
+        
+        return 'const screenWidth = ' + (64 * screenScale) + ', screenHeight = ' + (64 * screenScale) + ';\n';
     });
 
-    let screenScale = 1;
-    switch ((flags >> 1) & 3) {
-    case 1: screenScale = 2; break;
-    case 2: screenScale = 4; break;
-    case 3: throw makeError("Illegal screen size flags in title: 0b110", 0); break;
-    }
         
 
     if (! title) {
@@ -637,13 +638,14 @@ function nanoToJS(src, noWrapper) {
     // Process implicit multiplication twice, so that it can happen within exponents and subscripts
     for (var i = 0; i < 2; ++i) {
         // Implicit multiplication. Must be before operations that may put parentheses after
-        // numbers, making the product unclear. 
-        src = src.replace(/([^A-Za-zαβγδζηθιλμρσϕφχψωΩ])([0-9]+|[επτξ∞½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₎])[ \t]*([\(\[A-Za-zαβγδζηιθλμρσϕχψωΔΩτεπξ∞])/g, '$1$2 * $3');
+        // numbers, making the product unclear. Regexp is: a number (which cannot be part of a variable name),
+        // parenthetical expression, or bracketed expression, followed by a variable name.
+        src = src.replace(/([^A-Za-zαβγδζηθιλμρσϕφχψωΩ]|^)([0-9]+|[επτξ∞½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₎]|\)|\])[ \t]*([\(\[A-Za-zαβγδζηιθλμρσϕχψωΔΩτεπξ∞])/g, '$1$2 * $3');
         
         // Fix any instances of text operatorsthat got accentially turned
         // into implicit multiplication. If there are other text
         // operators in the future, they can be added to this pattern.
-        src = src.replace(/\*[\t ]*(or|and|not)(\b|\d|$)/g, ' $1$2');
+        src = src.replace(/\*[\t ]*(xor|or|and|not|bitand|bitor|bitnot|bitshr|bitshl)(\b|\d|$)/g, ' $1$2');
 
         // Replace fractions
         src = src.replace(/[½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒]/g, function (match) { return fraction[match]; });
@@ -687,7 +689,7 @@ function nanoToJS(src, noWrapper) {
     src = src.replace(/∪(=?)/g, ' |$1 ');
 
     // Optimize var**(int), which is much less efficient than var*var.
-    // Note that we don't allow rnd in here!
+    // Note that we don't allow rnd (ξ) in here, as it is not constant!
     src = src.replace(RegExp('(.|..)[ \t]*(' + identifierPattern + ')\\*\\*\\((-?\\d)\\)', 'g'), function (match, br, identifier, exponent) {
 
         if (br.match(/\+\+|--|\.|\*\*/)) {
@@ -709,7 +711,7 @@ function nanoToJS(src, noWrapper) {
     src = src.replace(/∞/g, ' (Infinity) ');
     src = src.replace(/∅/g, ' (undefined) ');
     src = src.replace(/π/g, ' (_Math.PI+0) ');
-    src = src.replace(/ε/g, ' (1e-4+0) ');
+    src = src.replace(/ε/g, ' (1e-7+0) ');
     src = src.replace(/ξ/g, ' rnd() ');
 
     // Must come after exponentiation
@@ -735,9 +737,18 @@ function nanoToJS(src, noWrapper) {
     
     // Add the outer loop, restoring tau if destroyed by assignment to a non-number and
     // catching RESET to allow jumping back to an interation of the outer loop.
+    var barTitle = '';
+    if (! noWrapper) {
+        barTitle = ' text("' + ((screenScale > 1) ? title.toUpperCase() : title) + '",31,-9,1);';
+        if (screenScale > 1) {
+            barTitle += 's=sprget(0,-12,63,-4,0); cls(0); draw(sprscale(s,' + screenScale + ',1),' + (screenWidth >> 1) + ',' + ((-barHeight >> 1) - barSeparator + screenScale) + '); s=undefined; '
+        }
+    }
+    
     src = 'var __yieldCounter = 0; _setFramebufferSize(' + screenWidth + '); ' + (noWrapper ? '' : 'while(true) { try { ') + (
         titleScreen +
-            '_drawPalette[0]=_initialPalette[0]; pal(); xform(0,0,1,1); clip(0,' + (-barHeight - barSeparator) + ',' + (screenWidth - 1) + ',' + (screenHeight - 1) + '); cls(0); text("' + (noWrapper ? '' : title) + '",' + (screenWidth >> 1) + ',' + (-barHeight) + ',1); clip(0,0,' + (screenWidth - 1) + ',' + (screenHeight - 1) + '); clr=0; srand(); ' +
+            '_drawPalette[0]=_initialPalette[0]; pal(); xform(0,0,1,1); clip(0,' + (-barHeight - barSeparator) + ',' + (screenWidth - 1) + ',' + (screenHeight - 1) + '); cls(0); ' + 
+            barTitle + ' clip(0,0,' + (screenWidth - 1) + ',' + (screenHeight - 1) + '); clr=0; srand(); ' +
             'for (var τ = 0, __count = 0; (τ !== 1) || (__count === 1); ++τ, ++__count) { if (isNaN(τ)) { τ=0; } show(); yield; cls(clr); ' +
             src +
             ' } '

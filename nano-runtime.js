@@ -200,6 +200,7 @@ function clip(x1,y1,x2,y2) {
             x1 = _clipX1;
         }
     }
+    
     if (y1 === undefined) { y1 = _clipY1 - yShift; }
 
     if (x2 === undefined) { x2 = _clipX2; }
@@ -278,7 +279,7 @@ abcdefghijklmnopqrstuvwxy
         if (c === '\n') { // newline resets
             x = -1; ++y;
         } else if (c !== ' ') { // skip spaces
-            map[c] = {x:x*5, y:y*7};
+            map[c] = {x:x*5, y:y*8};
         }
     }
     map['⊕'] = map['φ'] = map['ϕ'];
@@ -846,7 +847,7 @@ function pget(x, y) {
 }
 
 
-function text(str, x, y, colormap) {
+function text(str, x, y, colormap, align) {
     if (x === undefined) { x = _SCREEN_WIDTH >> 1; }
     if (y === undefined) { y = 3; }
     x = x * _scaleX + _offsetX; y = y * _scaleY + _offsetY;
@@ -855,15 +856,19 @@ function text(str, x, y, colormap) {
     colormap |= 0;
     var textColor = colormapToColor(colormap); colormap = (colormap / 10) | 0;
 
-    var shadowColor;
-    if (colormap % 10 === 0) {
-        shadowColor = TRANSPARENT;
-    } else {
-        shadowColor = colormapToColor(colormap); colormap = (colormap / 10) | 0;        
+    let shadowColor = TRANSPARENT, borderColor = TRANSPARENT;
+    
+    // Handled specially; for text only, if the second color is
+    // 0 it means transparent and not previous color
+    if (colormap !== 0) {
+        shadowColor = colormapToColor(colormap); colormap = (colormap / 10) | 0;
+        borderColor = colormapToColor(colormap);
+
+        if (borderColor !== TRANSPARENT && shadowColor == TRANSPARENT) {
+            shadowColor = borderColor;
+        }
     }
 
-    var borderColor = colormapToColor(colormap);
-    
     // Spaces between letters
     var width = str.length - 1;
     // Variable-width letters
@@ -871,43 +876,69 @@ function text(str, x, y, colormap) {
         width += (_fontWidth[str[c]] || 3);
     }
 
-    // Center and round
-    x = Math.round(x - width * 0.5) | 0;
-    y = Math.round(y - 2.5) | 0;
+    if (align === undefined) { align = 5; }
+    
+    let xalign = align & 3, yalign = Math.min(align >> 2, 2);
+    let height = 4.5;
+    
+    x -= width * xalign * 0.5;
+    if (xalign === 2) { ++x; }
+    y -= height * yalign * 0.5 + 1;
+
+    // Center and round. Have to call round() because values may
+    // be negative
+    x = Math.round(x - 1) | 0;
+    y = Math.round(y) | 0;
 
     if ((x > _clipX2) || (y > _clipY2) || (y + 6 < _clipY1) || (x + width + 4 < _clipX1)) {
         // Cull when off-screen
         return;
     }
     
-    if (borderColor !== TRANSPARENT) {
-        // TODO: Draw border
-    }
-
-    if (shadowColor !== TRANSPARENT) {
-        // TODO: Draw shadow
-    }
-
     const _FONT_WIDTH_BITS = 7;
 
     if (textColor != TRANSPARENT) {
-        for (var c = 0; c < str.length; ++c) {
-            var chr = str[c];
-            var src = _fontMap[chr];
+        for (let c = 0; c < str.length; ++c) {
+            let chr = str[c];
+            let src = _fontMap[chr];
             if (src) {
-                for (var j = 1, dstY = y; j < 6; ++j, ++dstY) {
+                for (let j = 0, dstY = y; j <= 7; ++j, ++dstY) {
                     // On screen in Y?
                     if (((dstY >>> 0) <= _clipY2) && (dstY >= _clipY1)) {
-                        for (var i = 1, dstX = x, dstIndex = x + (dstY << _SCREEN_WIDTH_BITS), srcIndex = 1 + src.x + ((src.y + j) << _FONT_WIDTH_BITS);
-                             i < 4;
+                        for (let i = 0, dstX = x, dstIndex = x + (dstY << _SCREEN_WIDTH_BITS), srcIndex = src.x + ((src.y + j) << _FONT_WIDTH_BITS);
+                             i <= 4;
                              ++i, ++dstX, ++dstIndex, ++srcIndex) {
                             // In character and on screen in X?
-                            if ((_fontSheet[srcIndex] === 4) && ((dstX >>> 0) <= _clipX2) && (dstX >= _clipX1)) {
-                                _screen[dstIndex] = textColor;
+                            if (((dstX >>> 0) <= _clipX2) && (dstX >= _clipX1)) {
+                                 switch (_fontSheet[srcIndex]) {
+                                 case 4:
+                                     _screen[dstIndex] = textColor;
+                                     break;
+
+                                 case 3:
+                                     if (shadowColor !== TRANSPARENT) {
+                                         _screen[dstIndex] = shadowColor;
+                                     }
+                                     break;
+
+                                 case 2:
+                                     if (borderColor !== TRANSPARENT) {
+                                         _screen[dstIndex] = borderColor;
+                                     }
+                                     break;
+
+                                 case 1: // border of shadow
+                                     if ((borderColor !== TRANSPARENT) && (shadowColor !== borderColor)) {
+                                         _screen[dstIndex] = borderColor;
+                                     }
+                                     break;
+                                     
+                                 } // switch on color
                             } // on screen x
                         } // for i
                     } // on screen y
                 } // for j
+
             } // character in font
             x += (_fontWidth[chr] || 3) + 1;
             
@@ -927,10 +958,31 @@ function _clone(a) {
     }
 }
 
+
 function _clamp(x, L, H) {
     return Math.max(Math.min(x, H), L);
 }
 
+
+function _drawSpr(spr, x, y, A, B, C, D, rot, screen, clipX1, clipY1, clipX2, clipY2) {
+    // TODO: xform and rotation
+    
+    // Ignore xform and rotation in the current implementation.
+    let w = spr.width, h = spr.height;
+    let x0 = (x - w * 0.5 + 0.5) | 0;
+    let y0 = (y - h * 0.5 + 0.5) | 0;
+
+    // Iterate over output pixels
+    for (let j = 0; j < h; ++j) {
+        for (let i = 0; i < w; ++i) {
+            let color = spr[i + j * w];
+            let u = i + x0, v = j + y0;
+            if ((color !== spr.transparentColor) && (u >= clipX1) && (u <= clipX2) && (v >= clipY1) && (v <= clipY2)) {
+                screen[u + (v << _SCREEN_WIDTH_BITS)] = color;
+            }
+        }
+    }
+}
 
 /** Helper function to share code between the IDE and the runtime. Clipping region has to be
  passed because it is different for those cases. */
@@ -955,6 +1007,11 @@ function _draw(spr, x, y, localPalette, xform, rot, screen, clipX1, clipY1, clip
     if (xform & 4) {
         // Flip V: negate Y
         C = -C; D = -D;
+    }
+
+    if (spr instanceof Uint8Array) {
+        _drawSpr(spr, x, y, A, B, C, D, rot, screen, clipX1, clipY1, clipX2, clipY2);
+        return;
     }
 
     // Center of the destination (integers)
@@ -1000,26 +1057,33 @@ function _draw(spr, x, y, localPalette, xform, rot, screen, clipX1, clipY1, clip
 function draw(spr, x, y, colormap, xform, rot) {
     x = x * _scaleX + _offsetX; y = y * _scaleY + _offsetY;
     rot = rot || 0;
-    
-    // Out of bounds sprite indices, off screen (including worst-case rotation)
-    spr |= 0;
-    if ((spr < 0) || (spr > 95) || (x < _clipX1 - 8) || (y < _clipY1 - 8) || (x > _clipX2 + 8) || (y > _clipY2 + 8)) {
-        return;
-    }
 
     // Maps sprite slots directly to screen color indices
     var localPalette = [TRANSPARENT, 0, 0, 0, 0,
                         0, 0, 0, 0, 0]; // Reserved
+        
 
-    colormap |= 0;
-
-    // Build the four-slot local palette mapping sprite values to colors
-    for (var slot = 0; slot < 4; ++slot) {
-        localPalette[4 - slot] = colormapToColor(colormap); colormap = (colormap / 10) | 0;
+    // Out of bounds sprite indices, off screen (including worst-case rotation)
+    if (spr instanceof Uint8Array) {
+        // sprite image
+        _draw(spr, x, y, localPalette, xform, rot, _screen,_clipX1, _clipY1, _clipX2, _clipY2);
+    } else {
+        // sprite index
+        spr |= 0;
+        if ((spr < 0) || (spr > 95) || (x < _clipX1 - 8) || (y < _clipY1 - 8) || (x > _clipX2 + 8) || (y > _clipY2 + 8)) {
+            return;
+        }
+        
+        colormap |= 0;
+        
+        // Build the four-slot local palette mapping sprite values to colors
+        for (var slot = 0; slot < 4; ++slot) {
+            localPalette[4 - slot] = colormapToColor(colormap); colormap = (colormap / 10) | 0;
+        }
+        
+        
+        _draw(spr, x, y, localPalette, xform, rot, _screen, _clipX1, _clipY1, _clipX2, _clipY2);
     }
-
-
-    _draw(spr, x, y, localPalette, xform, rot, _screen, _clipX1, _clipY1, _clipX2, _clipY2);    
 }
 
 
@@ -1052,6 +1116,193 @@ function cls(c) {
             }
         }
     }
+}
+
+
+function sprget(_x0, _y0, _x1, _y1, t) {
+    if (t === undefined) { t = 255; }
+    let x0 = Math.round(Math.min(_x0, _x1)) | 0;
+    let x1 = Math.round(Math.max(_x0, _x1)) | 0;
+    let y0 = (Math.round(Math.min(_y0, _y1)) | 0) + _BAR_HEIGHT + _BAR_SPACING;
+    let y1 = (Math.round(Math.max(_y0, _y1)) | 0) + _BAR_HEIGHT + _BAR_SPACING;
+
+    let w = x1 - x0 + 1;
+    let h = y1 - y0 + 1;
+    let dst = new Uint8Array(w * h);
+    dst.width = w;
+    dst.height = h;
+    dst.transparentColor = t;
+
+    for (let y = 0, i = 0; y < h; ++y) {
+        for (let x = 0; x < w; ++x, ++i) {
+            let u = x + x0, v = y + y0;
+            if ((u >= 0) && (v >= 0) && (u < _SCREEN_WIDTH) && (v < _FRAMEBUFFER_HEIGHT)) {
+                // in bounds
+                dst[i] = _screen[u + (v << _SCREEN_WIDTH_BITS)];
+            } else {
+                // out of bounds, force to transparent
+                dst[i] = t;
+            }
+        }
+    }
+    
+    return dst;    
+}
+
+
+function sprscale(src, scale, quality) {
+    quality |= 0;
+    if ((scale !== 1/2) && (scale !== 1/4) && (scale !== 1) && (scale !== 2) && (scale !== 4)) {
+        throw 'sprscale requires a scale factor of 1/4, 1/2, 1, 2, or 4';
+    }
+
+    if ((! src instanceof Uint8Array) || (src.width === undefined)) {
+        throw 'sprscale must be called on a sprite from sprget';
+    }
+    
+    if (scale < 1) {
+        let dst = new Uint8Array(Math.floor(src.width * scale) * Math.floor(src.height * scale));
+        dst.width = Math.floor(src.width * scale);
+        dst.height = Math.floor(src.height * scale);
+        dst.transparentColor = src.transparentColor;
+        let M = Math.round(1 / scale);
+
+        if (quality === 0 || true) {
+            // Shift so as to not always take the upper-left corner
+            let shift = (scale === 1/4) ? 1 : 0;
+            
+            for (let y = 0, i = 0; y < dst.height; ++y) {
+                for (let x = 0; x < dst.width; ++x, ++i) {
+                    dst[i] = src[(x * M + shift) + (shift + y * M) * src.width];
+                }
+            }
+        } else {
+            /*
+            // Average
+            for (let y = 0, i = 0; y < dst.height; ++y) {
+                for (let x = 0, j = y * M * src.width; x < dst.width; ++x, ++i, j += 2) {
+                    let A = src[j], B = src[j + 1], C = src[j + src.width], D = src[j + src.width + 1];
+                    _screenPalette[A]
+                    dst[i] = ;
+                }
+            }
+            */
+        }
+
+        return dst;
+    } else if (scale === 1) {
+        // Clone
+        let dst = src.slice();
+        dst.width = src.width;
+        dst.height = src.height;
+        dst.transparentColor = src.transparentColor;
+        return dst;        
+    } else if (scale === 2) {
+        return _scale2x(src, quality);
+    } else { // 4
+        return _scale2x(_scale2x(src, quality), quality);
+    }
+}
+    
+/** nearest neighbor interpolation + @casualeffects variant of exp/scale2x algorithm
+    https://en.wikipedia.org/wiki/pixel-art_scaling_algorithms#epx/scale2%c3%97/advmame2%c3%97 
+    
+    - src is a Uint8Array with width and height fields
+    - T is the transparent color index
+    - quality = 0, 1, 2
+*/
+function _scale2x(src, quality) {
+    let T = src.transparentColor;
+    quality = quality | 0;
+    
+    function get(x, y) {
+        return (x >= 0 && y >= 0 && x < src.width && y < src.height) ? src[x + y * src.width] : T;
+    }
+    
+    let dst = new Uint8Array(src.width * src.height * 4);
+    dst.transparentColor = src.transparentColor;
+    dst.width = src.width * 2;
+    dst.height = src.height * 2;
+
+    if (quality <= 0) {
+        for (let y = 0, offset = 0; y < src.height; ++y) {
+            let i0 = y * 2 * dst.width;
+            for (let x = 0; x < src.width; ++x, ++offset) {
+                let P = src[offset];
+                
+                // write four pixels
+                let i = x * 2 + i0;
+                dst[i] = dst[i + 1] = P;
+                i += dst.width;
+                dst[i] = dst[i + 1] = P;
+            }
+        }
+    } else { // quality > 0
+        for (let y = 0; y < src.height; ++y) {
+            for (let x = 0; x < src.width; ++x) {
+                
+                let A = get(x, y - 1);
+                let C = get(x - 1, y);
+                let P = get(x, y);
+                let B = get(x + 1, y);
+                let D = get(x, y + 1);
+                
+                let E = P, F = P, G = P, H = P;
+                if (C === A && C !== D && A !== B) { E = A; }
+                if (A === B && A !== C && B !== D) { F = B; }
+                if (D === C && D !== B && C !== A) { G = C; }
+                if (B === D && B !== A && D !== C) { H = D; }
+                
+                // write four pixels
+                let i = x * 2 + y * 2 * dst.width;
+                dst[i] = E;
+                dst[i + 1] = F;
+                i += dst.width;
+                dst[i] = G;
+                dst[i + 1] = H;
+            } // for x
+        } // for y
+        
+        if (quality > 1) {
+            // @casualeffects improvements
+            for (let y = 0; y < src.height; ++y) {
+                for (let x = 0; x < src.width; ++x) {
+                    let A = get(x - 1, y - 1);
+                    let B = get(x, y - 1);
+                    let C = get(x + 1, y - 1);
+                    
+                    let D = get(x - 1, y);
+                    let E = get(x, y);
+                    let F = get(x + 1, y);
+                    
+                    let G = get(x - 1, y + 1);
+                    let H = get(x, y + 1);
+                    let I = get(x + 1, y + 1);
+                    
+    
+                    // 1st row of each test: maintain square corners
+                    // 
+                    // 2nd row: smooth diagonals into transparent (also rounds curves while
+                    // maintaining 2:1 slopes)
+                    
+                    let j = x * 2 + y * 2 * dst.width;
+                    if ((G !== E && D !== E && A !== E && B !== E && C !== E) ||
+                        (C !== T && A === T && B === T && D === T && G !== T)) { dst[j] = E; }
+                    
+                    if ((A !== E && B !== E && C !== E && F !== E && I !== E) ||
+                        (A !== T && B === T && C === 0 && F === T && I !== T)) { dst[j + 1] = E; }
+                    
+                    if ((A !== E && D !== E && G !== E && H !== E && I !== E) ||
+                        (A !== T && D === T && G === T && H === T && I !== T)) { dst[j + dst.width] = E; }
+                    
+                    if ((G !== E && H !== E && I !== E && F !== E && C !== E) ||
+                        (G !== T && H === T && I === T && F === T && C !== T)) { dst[j + 1 + dst.width] = E; }
+                } // x
+            } // y
+        } // quality > 1
+    } // quality > 0
+    
+    return dst;
 }
 
 

@@ -752,12 +752,13 @@ Reserved
 
 These are reserved tokens that cannot be used as variable names:
 
-`and`, `arguments`, `args`, `as`, `async`, `auto`, `await`, `begin`, `break`, `catch`, `class`,
+`and`, `arguments`, `args`, `as`, `async`, `auto`, `await`, `begin`, `bitand`, `bitnot`, `bitor`, 
+`bitashl`, `bitshl`, `bitshr`, `break`, `catch`, `class`,
 `const`, `cont`, `continue`, `do`, `end`, `external`, `fcn`, `finally`, `for`, `from`, `function`, `get`, `global`,
 `go`, `goto`, `has`, `if`, `in`, `implements`, `inherits`, `include`, `import`, `len`, `let`, `local`, `loop`,
-`NaN`, `new`, `nonlocal`, `not`, `null`, `or`, `ret`, `to`, `try`, `var`, `xor`, `set`,
+`NaN`, `new`, `nil`, `nonlocal`, `not`, `null`, `or`, `ret`, `to`, `try`, `var`, `xor`, `set`,
 `until`, `while`, `with`, `then`, `else`, `elif`, `flip`, `reset`, `main`, `enum`, `throw`,
-`return`, `yield`, `template`, `public`, `private`, `protected`, `show`, `static`.
+`return`, `yield`, `template`, `public`, `private`, `protected`, `show`, `static`, `xor`.
 
 Built-in functions such as `tri` that are legal identifiers can be rebound. They are not
 reserved. `cos`, `sin`, and `tan` by themselves are bound to first-class functions, but the special
@@ -979,17 +980,19 @@ Built-in Objects
 The following are special zero-argument operators for special functions and constants. They are
 not variable names and thus cannot be redefined.
 
-Name   | Value
--------|-----------
-`ε`    | `0.0001`
-`π`    | `3.141592653589793115997963468544185161590576171875`
-`∞`    | infinity
-`NaN`  | floating-point "not-a-number" value
-`∅`    | nil ("undefined")
-`pad`  | array gamepad of tables 
-`joy`  | shorthand for `pad₀`
-`ξ`    | random number on [0, 1), resampled every time the expression is used
-v
+Name           | Value
+---------------|-----------
+`ε`            | `0.0000001`
+`π`            | `3.141592653589793115997963468544185161590576171875`
+`∞`            | infinity
+`NaN`          | floating-point "not-a-number" value
+`∅`            | nil ("undefined")
+`pad`          | array gamepad of tables 
+`joy`          | shorthand for `pad₀`
+`ξ`            | random number on [0, 1), resampled every time the expression is used
+`screenWidth`  | The width of the main screen, in pixels
+`screenHeight` | The height of the main screen, in pixels
+
 The main-loop variable `τ` is time, as integer number of frames. It may be reassigned 
 to reset time and is a built-in object, but is not an operator.
 
@@ -1356,7 +1359,8 @@ Graphics
 `clip(x1,y1,x2,y2)`
 : Set the clipping region to these coordinates. Unspecified values retain their 
   current value.  Coordinates are clamped to the physical screen. The initial
-  clipping region in default 64x64 resolution is `clip(0,0,63,63)`, and `clip()` resets to this default. Values are rounded to the nearest integer
+  clipping region in default 64x64 resolution is `clip(0,0,63,63)`, and
+  `clip()` resets to this default. Values are rounded to the nearest integer
   and the min and max are taken, so the order of `y2` and `y1` and of `x1` 
   and `x2` does not matter. It is impossible to set a clipping region smaller than
   1x1 pixels. The clipping region for the top bar screen is `clip(0,0,-12,-4)`.
@@ -1368,7 +1372,9 @@ Graphics
 : Draw sprite with index `s` centered at (`x`, `y`), remapping sprite colours by 4-digit
   `colourmap` and transforming by `flips`. See the Sprites section for more information.
   The result is undefined and may change between versions for the cases where `s` is less than
-  zero or greater than 63.
+  zero or greater than 63. `s` may also be a sprite created by `sprget` or `sprscale`,
+  in which case `colourmap`, `flips`, and `rot` are ignored (`flips` and `rot` may be supported
+  in a future implementation).
 
 `gray(v,x,y)`
 : Same as `rgb(v,v,v,x,y)`
@@ -1382,6 +1388,8 @@ Graphics
   
 `pget(x,y)`
 : Get the screen colour of pixel (`x`, `y`). Returns `∅` if out of bounds of the clipping region.
+  The area between the main screen and the bar screen exists in the framebuffer and can be
+  read back using `pget` if the clipping region includes it.
 
 `pal(p)`
 : Sets the draw palette colours 1-8 from the 12-digit palette. See the Colours section for details.
@@ -1401,13 +1409,29 @@ Graphics
 : Return the colour closest to (`r`,`g`,`b`), which are each on [0, 1].
   If `x` and `y` are specified, apply a dithering pattern based on the pixel position.
 
-`text(s,x,y,colourmap)`
-: Print string `s` centered at (`x`, `y`) using the 2-digit colourmap. The first digit (1's place) is
-  the text colour, the second digit (10's place) is the shadow colour, and the third digit (100's place)
-  is the outline colour. The second digit is handled differently for other commands. 0 means transparent 
-  instead of "previous colour" so that single-digit colourmaps render text with no outline or shadow.
-  If only `s` is provided, defaults to drawing in the center of the top of the screen in the previous color.
+`sprget(x0,y0,x1,y1,t)`
+: Get a sprite from the screen. Values offscreen become transparent.  Ignores the current
+  `clip` and `xform`. The `t` value if specified is the color that will be treated as
+  transparent.
 
+`sprscale(spr,scale,quality)`
+: Return a new sprite that is `spr` rescaled by a `scale` factor in each dimension,
+  which must be `1/4`, `1/2`, `1`, `2`, or `4`. The `quality` is an optional integer from 
+  `0` (fastest) to `1` (best). The default quality is 0.
+
+`text(s,x,y,colourmap,align)`
+: Print string `s` centered at (`x`, `y`) using the 2-digit colourmap. The first digit (1's
+  place) is the text colour, the second digit (10's place) is the shadow colour, and the third
+  digit (100's place) is the outline colour. The second digit is handled differently for other
+  commands. 0 means transparent instead of "previous colour" so that single-digit colourmaps
+  render text with no outline or shadow.  If only `s` is provided, `text` defaults to drawing
+  in the center of the top of the screen in the previous color. `align` specifies the relative
+  alignment of the string to (`x`, `y`). Compute it as $u + 4v$, where $u$ is the x-alignment
+  of 0 = left, 1 = center, 2 = right; and $v$ is the y-alignment of 0 = top, 1 = middle, 2 =
+  baseline, 3 = bottom. If unspecified, the default alignment is 5 = center, middle. 
+  The current nano font has the baseline at the bottom, so there is no difference between
+  $v=2$ and $v=3$.
+  
 `tri(Ax,Ay,Bx,By,Cx,Cy,colourmap)`
 : Draw the triangle using the 2-digit colourmap for fill and border.
 
@@ -1424,6 +1448,21 @@ border is identical to a border that is the same colour as the fill. Shapes incl
 endpoints and borders.
 
 Pixel centers are at integer locations. That is, pixel (0,0) covers (-½, -½) to (½, ½).
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ JavaScript
+#nanojam Text Style,1
+cls(7)
+pal(408001307)
+text("Normal",32,10,4)
+text("Shadow",32,25,954)
+text("Outline",32,40,334)
+text("Shadow+Outline",32,55,354)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[Text styling options]
+
+![Text styling options. The grid shows `align` values from 0-8](text-style.png)
+
 
 ### Colours
 
@@ -1600,10 +1639,7 @@ The following features are documented but not implemented in the current Beta bu
 are scheduled for upcoming releases:
 
 - `for` loops that count down
-- Sound effects
-- Text shadow and outline
 - Title screen animations
-- Triangle borders don't always align perfectly with triangle fill
 
 The following are permanent limitations:
 
@@ -1654,8 +1690,21 @@ its license, which permits any use.
 
 Changes for both the specification and implementation:
 
+2018 Oct 8:
+ - Implemented `text` border and shadow colours
+ - Added `text` alignment options
+ - Made indent guides brighter in the editor
+ - Minifier now reduces indentation
+ - Fixed implicit multiplication miscompiling after subscripts
+ - Added `screenWidth` and `screenHeight`
+ - Changed `ε` to 10<sup>-7</sup>
+ - Documented that `pget` works between the bar and main screens
+ - Added `sprget` and `sprscale` sprite creation functions
+ - `draw` now supports sprites from `sprget`
+ - High resolution modes now draw the title large on the bar screen
+
 2018 Sep 15:
- - `joy.aa` and other just-pressed values no longer repeat
+ - `joy.aa` and other just-pressed values no longer repeat incorrectly when using keyboard controls
  - Permitted arbitrary indentation conventions
  - Changed tab to two space indentation by default
  - Added errors for inconsistent indentation
@@ -1664,7 +1713,6 @@ Changes for both the specification and implementation:
  - Fixed circle rendering with fractional radius
  - Fixed single-line `fcn` definitions
  - Added `for`-`with` loops
- - Made indent guides brighter in the editor
 
 2018 Sep 9:
  - Optimized loading cartridge list from Google Drive

@@ -59,8 +59,10 @@ if(τ>31)cls(clr=0);i=j=x=v=∅
 
 
 var initialSource =
-    tests.debug;
-    //tests.starattack;
+    //tests.customSprite;
+    //tests.debug;
+    //tests.textstyle;
+    tests.starattack;
     //tests.indent;
     //tests.circles;
     //tests.nanoBoot;
@@ -94,6 +96,9 @@ var initialSource =
     //tests.colorgrid;
 
 
+if (! deployed) {
+    document.getElementById('header').innerHTML += '<a style="text-decoration: underline; cursor:pointer" onclick="onRunTests()">Run Tests</a>'; 
+}
 
 /** If null, use HTML Audio tags. Otherwise, use web audio support, which has more features and
     lower latency. Implementation from codeheart.js */
@@ -1226,6 +1231,21 @@ function computeCartridgeArray() {
     });
 }
 
+
+function onRunTests() {
+    for (let name in tests) {
+        let code = tests[name];
+        if (compile(code) === null) {
+            editor.setValue(code);
+            alert('test "' + name + '" failed');
+            return false;
+        }
+    }
+    alert('All tests passed');
+    return true;
+}
+
+
 var authorizeDiv = document.getElementById('authorize-div');
 var signoutButton = document.getElementById('signout-button');
 var cartridgeViewer = document.getElementById('cartridgeViewer');
@@ -1806,13 +1826,13 @@ function setFramebufferSize(w) {
     onResize();
 }
 
-/** Returns javascript source or throws an exception */
+/** Returns javascript source and returns it, or returns null */
 function compile(src) {
     try {
         // Insert the nano reset sequence as a single line, so that line numbers are preserved.
         // Eliminate unnecessary semicolons for cleanliness when reading the merged code.
-        var resetAnimation = nanoToJS(resetAnimationNanoSource, true).replace(/\n/g, ';').replace(/;(\s?;)*/g, ';').replace(/};/g, '}');
-        var code = resetAnimation + nanoToJS(src);
+        let resetAnimation = nanoToJS(resetAnimationNanoSource, true).replace(/\n/g, ';').replace(/;(\s?;)*/g, ';').replace(/};/g, '}');
+        let code = resetAnimation + nanoToJS(src);
         if (jsCode) {
             jsCode.setValue(code);
             jsCode.gotoLine(1);
