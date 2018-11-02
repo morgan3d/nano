@@ -640,7 +640,7 @@ function nanoToJS(src, noWrapper) {
         // Implicit multiplication. Must be before operations that may put parentheses after
         // numbers, making the product unclear. Regexp is: a number (which cannot be part of a variable name),
         // parenthetical expression, or bracketed expression, followed by a variable name.
-        src = src.replace(/([^A-Za-zαβγδζηθιλμρσϕφχψωΩ]|^)([0-9]+|[επτξ∞½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₎]|\)|\])[ \t]*([\(\[A-Za-zαβγδζηιθλμρσϕχψωΔΩτεπξ∞])/g, '$1$2 * $3');
+        src = src.replace(/([^A-Za-zαβγδζηθιλμρσϕφχψωΩ]|^)([0-9]+|[επτξ∞½⅓⅔¼¾⅕⅖⅗⅘⅙⅐⅛⅑⅒⁰¹²³⁴⁵⁶⁷⁸⁹ᵃᵝⁱʲˣᵏᵘⁿ⁾₀₁₂₃₄₅₆₇₈₉ₐᵦᵢⱼₓₖᵤₙ₎]|\)|\])[ \t]*([\(A-Za-zαβγδζηιθλμρσϕχψωΔΩτεπξ∞])/g, '$1$2 * $3');
         
         // Fix any instances of text operators that got accentially turned into implicit
         // multiplication. If there are other text operators in the future, they can be added

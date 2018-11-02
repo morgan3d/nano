@@ -924,12 +924,12 @@ tables cannot be invoked using the `()` syntax. Instead, use the `call` function
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ JavaScript
 // Illegal:
-x = (a ? abs : cos)(θ)
+x = (a and abs or cos)(θ)
 y = tbl["myfunc"](3, 4)
 z = f(a)(b)
 
 // Legal:
-x = call(a ? abs : cos, θ)
+x = call(a and abs or cos, θ)
 y = call(tbl["myfunc"], 3, 4)
 z = call(f(a), b)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
