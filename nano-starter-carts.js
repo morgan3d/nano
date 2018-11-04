@@ -292,5 +292,267 @@ for v<64
  for w<64
   α=(w-32)/s+x;β=(v-32)/s+y;a=b=i=0
   while(i++<64&a²+b²<4)c=a²-b²+α;b=2a*b+β;a=c
-  pset(w,v,hsv(⅛²i))`
+  pset(w,v,hsv(⅛²i))`,
+
+`#nanojam Terra Force
+// By Morgan McGuire
+
+fcn rebuildShields()
+  extern shieldArray
+  extern shieldPattern
+  
+  shieldArray = []
+  shieldPattern = (shieldPattern + 1) % 2
+  if shieldPattern
+
+    // arc
+    for x < 64
+      for Δy < 2
+        shieldArray.add(xy(x, 41 + Δy + (0.05|x - 32|)²))
+
+  else
+  
+    // barriers
+    for s < 3
+      let x = 20s + 12
+      let y = 41 - 2(s ∩ 1)
+      for -4 ≤ i ≤ 4
+        for j < 4
+          if |2j - (|i|)| < 4
+            shieldArray.add(xy(x + i, y + j))
+
+////////////////////////////////////////////////////////////
+// Init
+if ¬τ
+  clr = 0
+  ship = xy(32, 49)
+  score = 0
+  ufo = ∅
+  shieldPattern = 0
+  
+  bombArray = []
+  explosionArray = []  
+  missileArray = []
+  alienArray = []
+
+  earthArray = [{pos: xy(20, 60), spr:62, pal:243}] // house
+  earthArray.add({pos: xy(5, 58), spr:12, pal:378}) // tree
+  earthArray.add({pos: xy(12, 58), spr:12, pal:738}) // tree
+  earthArray.add({pos: xy(51, 60), spr:62, pal:243}) // house
+  earthArray.add({pos: xy(34, 58), spr:12, pal:738}) // tree
+  earthArray.add({pos: xy(41, 60), spr:63, pal:231}) // building
+  earthArray.add({pos: xy(59, 60), spr:62, pal:243}) // house
+  
+  lastFired = 0
+  
+  alienColor = [20414, 41909, 232211, 261225]
+  rebuildShields()
+
+////////////////////////////////////////////////////////////
+
+fcn inRadius(A, B, r) ret (A.x - B.x)² + (A.y - B.y)² ≤ r²
+
+fcn inBox(A, B, r) ret max(|A.x - B.x|, |A.y - B.y|) ≤ r
+
+fcn makeExplosion(x, y)
+  explosionArray.add({pos:xy(x, y), time:τ})
+  
+  for i < 2
+    explosionArray.add({pos:xy(x+8ξ-4, y+8ξ-4), time:τ-4-14ξ})
+  
+  // Wipe out shields in the area
+  for s ∊ shieldArray
+    if ((s.x - x)² + (s.y - y)² < 5²) shieldArray.rem(s)
+
+
+// Spawn a set of vertical aliens
+if ¬τ or ¬((τ - 512) % 1024)
+  shift = 18(τ > 0)
+  for j < 4
+    for i < 4
+      alienArray.add({pos:xy(16i+11.5, 8j - 14 - shift), sprite: 16(j ∩ 1) + 4, pal:alienColorⱼ})
+
+  if (τ) ufo = xy(-65, 18)
+
+lose = false
+
+//////////////////////////////////////////////////
+// score
+clip(0, -12, 63, 63)
+cls(0)
+text(score, 32, -8, 5)
+clip()
+
+
+//////////////////////////////////////////////////
+// background stars
+k=130
+// axes
+θ = τ/10000; u = cosθ; v = sinθ
+for i < 128
+  for j < 2
+    x = 140hash(k++) - 70; y = 140hash(k++) - 70
+    pset(u * x + v * y + 32, u * y - v * x + 70, 5 + 26j)
+
+// twinkle
+if ξ>½
+  k = 130 + 2⌊50ξ⌋
+  x = 140hash(k++) - 70; y = 140hash(k++) - 70
+  pset(u * x + v * y + 32, u * y - v * x + 70, 5 + 2ξ)
+
+//////////////////////////////////////////////////
+// aliens
+let animate = (τ / 16) ∩ 1
+let move = xy(¼(((τ / 64) ∩ 1) - ½), τ % 64 ≤ 2)
+for a ∊ alienArray
+  pal(a.pal)
+  draw(a.sprite + animate, a.pos.x, a.pos.y, 4321)
+  a.pos.x += move.x; a.pos.y += move.y
+  if (ξ > 0.9994) and (bombArray.len < 3)
+    bombArray.add(xy(a.pos.x, a.pos.y + 4))
+
+  if (a.pos.y > 61) lose = 1
+  
+  // Explode on touching shields    
+  for s ∊ shieldArray
+    if inRadius(s, a.pos, 3)
+      alienArray.rem(a)
+      sound(25)
+      makeExplosion(a.pos.x, a.pos.y)
+
+  // Explode on touching houses
+  for e ∊ earthArray
+    if ¬e.burn and inRadius(e.pos, a.pos, 6)
+      makeExplosion(a.pos.x, a.pos.y)
+      alienArray.rem(a)
+      sound(25)
+      e.burn = 1
+  
+  if (inRadius(ship, a.pos)) lose = 1
+
+//////////////////////////////////////////////////
+// shields
+color = 10 + (⅓τ % 3)
+for (s ∊ shieldArray) pset(s.x, s.y, color)
+
+//////////////////////////////////////////////////
+// bombs
+pal(208)
+for x,y ∊ b ∊ bombArray
+  y += ⅓
+  draw(43, x, y, 192)
+
+  // off screen
+  if (y > 68) bombArray.rem(b)
+
+  // hit player
+  if (inBox(b, ship, 3)) lose = true
+  
+  for e ∊ earthArray
+    if ¬e.burn and inRadius(e.pos, b, 6)
+      makeExplosion(x, y)
+      bombArray.rem(b)
+      sound(25)
+      e.burn = 1
+        
+  // Check shields
+  for s ∊ shieldArray
+    if inRadius(s, b, 4)
+      makeExplosion(x, y)
+      bombArray.rem(b)
+      sound(25)
+ 
+//////////////////////////////////////////////////
+// ufo
+pal()
+if ufo
+  draw(37, ufo.x, ufo.y, 4321)
+  ufo.x += ½
+  if (ufo.x > 68) ufo = ∅
+  
+  
+//////////////////////////////////////////////////
+// missiles
+pal(7)
+for m ∊ missileArray
+  line(m.x, m.y - 1, m.x, m.y + 2, 1)
+  m.y -= 1
+ 
+  // off screen
+  if (m.y < -3) missileArray.rem(m)
+ 
+  // hit shield
+  for s ∊ shieldArray
+    if m.x ≟ s.x and |m.y - s.y| < 2
+      sound(21)
+      shieldArray.rem(s)
+      missileArray.rem(m)
+      score = max(0, score - 1)
+  
+  // hit ufo
+  if ufo and inRadius(m, ufo, 5)
+    missileArray.rem(m)
+    sound(22); sound(30)
+    score += 400
+    rebuildShields()
+    ufo = ∅
+  
+  // hit bomb
+  for b ∊ bombArray
+    if inRadius(m, b, 4)
+      bombArray.rem(b)
+      missileArray.rem(m)
+      makeExplosion(m.x, m.y)    
+      sound(20)
+      score += 150
+  
+  // hit alien
+  for a ∊ alienArray
+    if inBox(m, a.pos, 4)
+      missileArray.rem(m)
+      alienArray.rem(a)
+      makeExplosion(m.x, m.y)    
+      sound(25)
+      score += 100
+
+ 
+//////////////////////////////////////////////////
+// ship
+pal(1012)
+draw(3, ship.x, ship.y, 122)
+
+//////////////////////////////////////////////////
+// houses
+pal(2203121012051016)
+line(0, 63, 63, 63, 7)
+earthLeft = 0
+for pos, spr, pal ∊ e ∊ earthArray
+  draw(spr, pos.x, pos.y, pal)
+  if e.burn
+    draw(80 + ((pos.x + τ + 4ξ) / 5 % 3), pos.x, pos.y - 2, 12, 2(pos.x ∩ 1))
+  else
+    earthLeft = 1
+
+lose += ¬earthLeft
+
+//////////////////////////////////////////////////
+// explosions
+pal(710091408160531)
+for e ∊ explosionArray
+  r = 11 - ½(τ - e.time)
+  if (r < 1) explosionArray.rem(e)
+  circ(e.pos.x, e.pos.y, min(4, r), min(8, ⌊r⌋))
+    
+
+// Controls
+ship.x = mid(3, ship.x + joy.x, 60)
+if joy.aa and (lastFired + 13 < τ)
+  missileArray.add(xy(ship.x, ship.y -4))
+  sound(18)
+  lastFired = τ
+  
+if lose
+  sound(78)
+  for (r < 60) circ(ship.x, ship.y, 2r, mid(8, ½(40 - r), 1)); flip
+  text("GAME OVER", 32, 32, 8); wait; reset`
 ];
