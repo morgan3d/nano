@@ -964,26 +964,6 @@ function _clamp(x, L, H) {
 }
 
 
-function _drawSpr(spr, x, y, A, B, C, D, rot, screen, clipX1, clipY1, clipX2, clipY2) {
-    // TODO: xform and rotation
-    
-    // Ignore xform and rotation in the current implementation.
-    let w = spr.width, h = spr.height;
-    let x0 = (x - w * 0.5 + 0.5) | 0;
-    let y0 = (y - h * 0.5 + 0.5) | 0;
-
-    // Iterate over output pixels
-    for (let j = 0; j < h; ++j) {
-        for (let i = 0; i < w; ++i) {
-            let color = spr[i + j * w];
-            let u = i + x0, v = j + y0;
-            if ((color !== spr.transparentColor) && (u >= clipX1) && (u <= clipX2) && (v >= clipY1) && (v <= clipY2)) {
-                screen[u + (v << _SCREEN_WIDTH_BITS)] = color;
-            }
-        }
-    }
-}
-
 /** Helper function to share code between the IDE and the runtime. Clipping region has to be
  passed because it is different for those cases. */
 function _draw(spr, x, y, localPalette, xform, rot, screen, clipX1, clipY1, clipX2, clipY2) {
@@ -1009,14 +989,67 @@ function _draw(spr, x, y, localPalette, xform, rot, screen, clipX1, clipY1, clip
         C = -C; D = -D;
     }
 
-    if (spr instanceof Uint8Array) {
-        _drawSpr(spr, x, y, A, B, C, D, rot, screen, clipX1, clipY1, clipX2, clipY2);
+    const isCaptured = (spr instanceof Uint8Array);
+    
+    let srcWidth = 8, srcHeight = 8;
+
+    if (isCaptured) { srcWidth = spr.width; srcHeight = spr.height; }
+    
+    const centerOffsetX = (srcWidth - 1) * 0.5, centerOffsetY = (srcHeight - 1) * 0.5;
+    
+    // Center of the destination (integers)
+    const dstX0 = Math.round(x - centerOffsetX) | 0;
+    const dstY0 = Math.round(y - centerOffsetY) | 0;
+
+    if (isCaptured) {
+        const t = spr.transparentColor;
+        if ((rot === 0) && (xform === 0)) {
+            // Common case for captured sprites of no transformation. Optimize this in case the
+            // sprite is big.
+            for (let j = 0; j < srcHeight; ++j) {
+                for (let i = 0; i < srcWidth; ++i) {
+                    let color = spr[i + j * srcWidth];
+                    let u = i + dstX0, v = j + dstY0;
+                    if ((color !== t) && (u >= clipX1) && (u <= clipX2) && (v >= clipY1) && (v <= clipY2)) {
+                        screen[u + (v << _SCREEN_WIDTH_BITS)] = color;
+                    }
+                }
+            }
+        } else {
+            // Transformed captured sprite
+            const maxBounds = Math.max(srcWidth, srcHeight);
+
+            // What is the farthest a rotated corner sticks out from the original bounds?
+            // = diameter * (sqrt(2)/2 - 1/2)
+            const p = Math.ceil(maxBounds * 0.20711);
+            
+            // Iterate over *output* pixels
+            for (let j = -p; j < maxBounds + p; ++j) {
+                const dstY = dstY0 + j;
+                const v = j - centerOffsetY;
+                
+                for (let i = -p; i < maxBounds + p; ++i) {
+                    const dstX = dstX0 + i;
+                    const u = i - centerOffsetX;
+                    
+                    const srcX = Math.round(u * A + v * B + centerOffsetX) | 0;
+                    const srcY = Math.round(u * C + v * D + centerOffsetY) | 0;
+                    
+                    if (((srcX >>> 0) < srcWidth) && ((srcY >>> 0) < srcHeight)) {
+                        // Inside the source sprite
+                        let color = spr[srcX + srcY * srcWidth];
+                        if ((color !== t) && ((dstX >>> 0) <= clipX2) && ((dstY >>> 0) <= clipY2) && (dstX >= clipX1) && (dstY >= clipY1)) {
+                            screen[dstX + (dstY << _SCREEN_WIDTH_BITS)] = color;
+                        } // if not transparent
+                    } // Clamp to bounds
+                } // i
+            } // j
+        } // if transformed
+
         return;
     }
-
-    // Center of the destination (integers)
-    let dstX0 = Math.round(x - 3.5) | 0;
-    let dstY0 = Math.round(y - 3.5) | 0;
+    
+    // Transformed built-in sprite
     
     // Top left of the source (integer)
     let srcX0 = ((spr & 15) << 3);
@@ -1034,8 +1067,8 @@ function _draw(spr, x, y, localPalette, xform, rot, screen, clipX1, clipY1, clip
             let dstX = dstX0 + i;
             let u = i - 3.5;
 
-            let srcX = Math.round(u * A + v * B + 3.5) | 0;
-            let srcY = Math.round(u * C + v * D + 3.5) | 0;
+            let srcX = Math.round(u * A + v * B + centerOffsetX) | 0;
+            let srcY = Math.round(u * C + v * D + centerOffsetY) | 0;
 
             if (((srcX >>> 0) < 8) && ((srcY >>> 0) < 8)) {
                 // Inside the source sprite

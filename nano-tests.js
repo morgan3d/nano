@@ -1,4 +1,22 @@
 var tests = {
+    customRotate:`#nanojam Custom Rotate,3
+if ¬τ
+  clr=0
+  pal(2911121025101307)
+  draw(39,3,3,4311)
+  small = sprget(0,0,7,7,0)
+  big = sprscale(small,2,1)
+  cls(0)
+
+rect(screenWidth/2-3.5, screenHeight/2-3.5,screenWidth/2+3.5, screenHeight/2+3.5,29)
+line(0,screenHeight/2,screenWidth,screenHeight/2,2)
+line(screenWidth/2,0,screenWidth/2,screenHeight)
+draw(small, screenWidth/2, screenHeight/2,0,0,π/4)
+
+draw(39, screenWidth/2, screenHeight*3/4,4311,0,π/4)
+
+draw(big,screenWidth/2,screenHeight/4,0,0,π/4)`,
+    
     textstyle:`#nanojam textstyle,1
 cls(7)
 pal(408001307)
