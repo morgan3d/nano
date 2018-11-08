@@ -23,7 +23,7 @@ Virtual Hardware Features:
 - 64x8 pixel status bar screen (optional 128x16 or 256x32)
 - 32 colors
 - 60 fps
-- 96 built-in sprites
+- 128 built-in sprites
 - 80 built-in sound effects
 - Nine-button gamepad
 - External 2nd gamepad for multiplayer
@@ -1372,9 +1372,8 @@ Graphics
 : Draw sprite with index `s` centered at (`x`, `y`), remapping sprite colours by 4-digit
   `colourmap` and transforming by `flips`. See the Sprites section for more information.
   The result is undefined and may change between versions for the cases where `s` is less than
-  zero or greater than 63. `s` may also be a sprite created by `sprget` or `sprscale`,
-  in which case `colourmap`, `flips`, and `rot` are ignored (`flips` and `rot` may be supported
-  in a future implementation).
+  zero or greater than 127. `s` may also be a sprite created by `sprget` or `sprscale`,
+  in which case `colourmap` is ignored.
 
 `gray(v,x,y)`
 : Same as `rgb(v,v,v,x,y)`
@@ -1678,6 +1677,10 @@ Dekker.
 The random number generator is derived from [an implementation](https://github.com/AndreasMadsen/xorshift/blob/master/xorshift.js) 
 of xorshift (c) 2014 Andreas Madsen and Emil Bay used under the MIT license.
 
+The 4x4 character art is inspired by Parlor's
+[CRATER](https://www.lexaloffle.com/bbs/?tid=30293) sprite for PICO8 (although it is not the
+same).
+
 The code editor for the nano IDE is [ace.js](https://ace.c9.io/) used under the BSD license.
 
 URL encoding uses [lz-string.js](https://github.com/pieroxy/lz-string) (c) 2014 Pieroxy under
@@ -1690,7 +1693,9 @@ Changes for both the specification and implementation:
 
 2018 Nov 8:
  - Made custom sprites align exactly with regular sprites for `draw`
- - Custom sprites support rotation and xform
+ - Custom sprites now support rotation and xform
+ - Extended the sprite sheet to 128 sprites
+ - Added new 4x4 character
 
 2018 Oct 8:
  - Implemented `text` border and shadow colours
@@ -1819,7 +1824,7 @@ Changes for both the specification and implementation:
 
 
 <style class="fallback">body{color:#FFF}</style>
-<script>markdeepOptions = {tocStyle:'medium'};</script>
+v<script>markdeepOptions = {tocStyle:'medium'};</script>
 <link rel="stylesheet" href="https://casual-effects.com/markdeep/latest/apidoc.css?">
 <style>
 .md div.title {font-family:Helvetica; line-height:14px;font-size:30px;margin-top:50px;}

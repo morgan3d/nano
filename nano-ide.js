@@ -296,7 +296,7 @@ afterImageLoad('sprites.png', function (spriteSheetImage) {
         sctx.stroke();
     }
     
-    for (var y = 1; y < 6; ++y) {
+    for (var y = 1; y < 8; ++y) {
         sctx.moveTo(0, y * 3 * 8);
         sctx.lineTo(spritesDisplay.width, y * 3 * 8);
         sctx.stroke();
@@ -311,7 +311,7 @@ var selectedSpriteIndex = 0;
 function onSpriteSelect(event) {
     // 8x8 sprites scaled up by 3x
     var x = clamp(Math.floor(event.offsetX / (3 * 8)), 0, 15);
-    var y = clamp(Math.floor(event.offsetY / (3 * 8)), 0, 5);
+    var y = clamp(Math.floor(event.offsetY / (3 * 8)), 0, 7);
     selectedSpriteIndex = x + y * 16;
     redrawSelectedSprite();
 }

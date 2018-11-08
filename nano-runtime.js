@@ -1103,7 +1103,7 @@ function draw(spr, x, y, colormap, xform, rot) {
     } else {
         // sprite index
         spr |= 0;
-        if ((spr < 0) || (spr > 95) || (x < _clipX1 - 8) || (y < _clipY1 - 8) || (x > _clipX2 + 8) || (y > _clipY2 + 8)) {
+        if ((spr < 0) || (spr > 127) || (x < _clipX1 - 8) || (y < _clipY1 - 8) || (x > _clipX2 + 8) || (y > _clipY2 + 8)) {
             return;
         }
         
@@ -1113,7 +1113,6 @@ function draw(spr, x, y, colormap, xform, rot) {
         for (var slot = 0; slot < 4; ++slot) {
             localPalette[4 - slot] = colormapToColor(colormap); colormap = (colormap / 10) | 0;
         }
-        
         
         _draw(spr, x, y, localPalette, xform, rot, _screen, _clipX1, _clipY1, _clipX2, _clipY2);
     }
