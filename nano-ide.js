@@ -270,7 +270,7 @@ var fontPixelData = null;
 })();
 
 
-/** The sprite sheet. Always 128px wide. Currently 48px high. Shared with Runtime */
+/** The sprite sheet. Always 128px wide. Currently 64px high. Shared with Runtime */
 var spritePixelData = null;
 
 afterImageLoad('sprites.png', function (spriteSheetImage) {
