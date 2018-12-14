@@ -687,6 +687,7 @@ function nanoToJS(src, noWrapper) {
     src = src.replace(/\^/g, '**');
 
     src = src.replace(/(\b|\d)or(\b|\d)/g, '$1 || $2');
+    src = src.replace(/(\b|\d)&(\b|\d)/g, '$1 && $2');
     src = src.replace(/∩(=?)/g, ' &$1 ');
     src = src.replace(/∪(=?)/g, ' |$1 ');
 
@@ -718,7 +719,7 @@ function nanoToJS(src, noWrapper) {
 
     // Must come after exponentiation
     src = src.replace(/⊕(=?)/g, ' ^$1 ');
-
+    
     // Alternatives for readable code
     src = src.replace(/(\b|\d)and(\b|\d)/g, '$1 && $2');
     src = src.replace(/\bnot\b/g, '!');
