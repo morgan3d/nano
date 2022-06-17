@@ -177,7 +177,15 @@ text(f)`,
 a=[1,10,3,5,2]
 a.sort()
 for i<a.len
- text(a[i],32,6i+2,1)`,
+ text(a[i],16,6i+2,1)
+o=[{y:2,x:2,a:2,t:"b"},{y:1,x:1,a:1,t:"a"},{y:3,x:3,a:3,t:"c"}]
+o.sort()
+for i<o.len
+ text(o[i].a,32,6i+2,1)
+o.sort("x")
+for i<o.len
+ text(o[i].x,48,6i+2,1)
+`,
     
     hash: `#nanojam hash,1
 for(i<64)line(i,64hash(⅒(i+τ)),i,64,1)`,
