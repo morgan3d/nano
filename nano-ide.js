@@ -61,7 +61,7 @@ if(τ>31)cls(clr=0);i=j=x=v=∅
 var initialSource =
     //tests.forwith;
     //tests.customSprite;
-    tests.customRotate;
+    //tests.customRotate;
     //tests.debug;
     //tests.textstyle;
     //tests.starattack;
@@ -87,7 +87,7 @@ var initialSource =
     //tests.plasma2;
     //tests.manySprites;
     //tests.FCN;
-    //tests.sort;
+    tests.sort;
     //tests.ping;
     //tests.IF;
     //tests.keyrepeat;

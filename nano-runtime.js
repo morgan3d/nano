@@ -69,14 +69,14 @@ function _arraySort(k) {
         if (typeof this[0] === 'object') {
             // find the first property, alphabetically
             var entries = Object.entries(this[0]);
-            entries.sort(function(a, b) { return a[0] > b[0]; });
+            entries.sort(function(a, b) { return a[0]-b[0]; });
             k = entries[0][0];
-            compare = function (a, b) { return a[k] > b[k]; };
+            compare = function (a, b) { return a[k]-b[k]; };
         } else {
-            compare = _greaterThan;
+            compare = function (a, b) {return a-b};
         }
     } else {
-        compare = function (a, b) { return a[k] > b[k]; };
+        compare = function (a, b) { return a[k]-b[k]; };
     }
 
     this.sort(compare);
