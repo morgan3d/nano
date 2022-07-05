@@ -87,12 +87,12 @@ var initialSource =
     //tests.plasma2;
     //tests.manySprites;
     //tests.FCN;
-    tests.sort;
+    //tests.sort;
     //tests.ping;
     //tests.IF;
     //tests.keyrepeat;
     //tests.FOR;
-    //tests.input;
+    tests.input;
     //tests.agent;
     //tests.rect;
     //tests.colorgrid;
@@ -1982,6 +1982,25 @@ function reloadRuntime(oncomplete) {
 
 
 /************** Emulator event handling ******************************/
+var mouseTarget = document.getElementById('screen');
+var emulatorMouseBtnState = {}
+var emulatorMouseBtnJustPressed = {}
+mouseTarget.addEventListener('mousemove', e => {
+    Runtime.mouse.x = Math.floor(e.offsetX*SCREEN_WIDTH/mouseTarget.width);
+    Runtime.mouse.y = Math.floor(e.offsetY*SCREEN_HEIGHT/mouseTarget.height);
+});
+mouseTarget.addEventListener('mousedown', e => {
+    event.stopPropagation();
+    event.preventDefault();
+    emulatorMouseBtnJustPressed[e.button] = true
+    emulatorMouseBtnState[e.button] = true
+});
+mouseTarget.addEventListener('mouseup', e => {
+    emulatorMouseBtnState[e.button] = false
+});
+// disable context menu, if browser allows
+mouseTarget.addEventListener("contextmenu",e=>{return false;})
+
 var emulatorKeyState = {};
 var emulatorKeyJustPressed = {};
 
@@ -2159,6 +2178,19 @@ function submitFrame() {
 
     // Reset the just-pressed state
     emulatorKeyJustPressed = {};
+
+    // mouse state
+    // 0==left, 1==middle, 2==right
+    let mouseBtns = 'lmr';
+    for (let i=0; i<mouseBtns.length; i++) {
+        var mbtn = mouseBtns[i];
+        Runtime.mouse[mbtn] = emulatorMouseBtnState[i] ? 1 : 0;
+        Runtime.mouse[mbtn+mbtn] = emulatorMouseBtnJustPressed[i] ? 1 : 0;
+    }
+
+    // Reset mouse btn just-pressed state
+    emulatorMouseBtnJustPressed = {};
+
 }
 
 

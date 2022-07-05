@@ -274,10 +274,18 @@ for x<64
     input:`#nanojam input,1
 clr=6
 for i<2
- y=30i;j=padᵢ
- circ(44,22+y,4,14+j.a);circ(50,14+y,4,14+j.b)
- circ(30,16+y,2.7,14+j.s)
- line(15,16+y,15+6j.x,16+6j.y+y,1)`,
+ y=20i;j=padᵢ
+ circ(44,12+y,4,14+j.a);circ(50,4+y,4,14+j.b)
+ circ(30,6+y,2.7,14+j.s)
+ line(15,6+y,15+6j.x,6+6j.y+y,1)
+x=10
+y=40
+u=3
+rect(x,y,x+4u,y+5u,12)
+text(mouse.x+"/"+mouse.y,x+8u,y+3u)
+rect(x,y,x+2u,y+2u,14+mouse.l+mouse.ll)
+rect(x+2u,y,x+4u,y+2u,14+mouse.r+mouse.rr)
+circ(x+2u,y+2u,3,14+mouse.m+mouse.mm)`,
 
     starattack: `#nanojam Star Attack
 if τ ≟ 0
