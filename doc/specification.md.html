@@ -27,6 +27,7 @@ Virtual Hardware Features:
 - 80 built-in sound effects
 - Nine-button gamepad
 - External 2nd gamepad for multiplayer
+- 3 button pointer device
 
 Online Software Features:
 
@@ -1092,6 +1093,34 @@ Field | Values   | Meaning
 `s`   | 0 or 1   | 1 if the start button is currently pressed
 `ss`  | 0 or 1   | 1 if the start button was just pressed this frame
 
+The mouse object has the following fields:
+
+Field | Values   | Meaning
+------|----------|----------------------------------
+`l`   | 0 or 1   | 1 if the primary button (usually left) is currently pressed
+`ll`  | 0 or 1   | 1 if the primary button was just pressed this frame
+`m`   | 0 or 1   | 1 if the auxiliary button (usually middle/mouse wheel) is currently pressed
+`mm`  | 0 or 1   | 1 if the auxiliary button was just pressed this frame
+`r`   | 0 or 1   | 1 if the secondary button (usually right) is currently pressed
+`rr`  | 0 or 1   | 1 if the secondary button was just pressed this frame
+
+Caution: the secondary button might bring up the browser context menu, this might also cause 
+this button's state to be faulty.  
+
+mouse usage example code:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ C++ linenumbers
+#nanojam mouse,1
+clr=6
+x=10
+y=22
+u=3
+rect(x,y,x+4u,y+5u,12)
+text(mouse.x+"/"+mouse.y,x+8u,y+3u)
+rect(x,y,x+2u,y+2u,14+mouse.l+mouse.ll)
+rect(x+2u,y,x+4u,y+2u,14+mouse.r+mouse.rr)
+circ(x+2u,y+2u,3,14+mouse.m+mouse.mm)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Flow Control
 ==============================================================================================
